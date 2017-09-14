@@ -1,0 +1,38 @@
+{
+  "name": "tiny-entity",
+  "version": "0.9.11",
+  "description": "A simple and easy to use ORM framework, support NEDB, IndexedDB, MySQL and Sqlite and other commonly used database ",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test:nedb&&npm run test:mysql&&npm run test:indexedDB",
+    "test:nedb": "cross-env currentDataBaseType=nedb  istanbul cover node_modules/mocha/bin/_mocha -- -R spec",
+    "test:mysql": "cross-env currentDataBaseType=mysql istanbul cover node_modules/mocha/bin/_mocha -- -R spec",
+    "test:indexedDB": "cross-env currentDataBaseType=indexedDB karma start test/karma.conf.js --single-run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joinlee/tiny-entity.git"
+  },
+  "keywords": [
+    "tiny",
+    "nedb",
+    "sqlite",
+    "indexedDB",
+    "mysql"
+  ],
+  "author": "likecheng",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/joinlee/tiny-entity/issues"
+  },
+  "homepage": "https://github.com/joinlee/tiny-entity#readme",
+  "dependencies": {
+    "@types/lodash": "^4.14.52",
+    "@types/mocha": "^2.2.39",
+    "mocha": "^3.2.0",
+    "mysql": "^2.11.1",
+    "nedb": "*",
+    "reflect-metadata": "^0.1.10",
+    "sqlite-sync": "^0.3.5"
+  }
+}
