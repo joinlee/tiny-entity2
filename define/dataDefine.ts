@@ -6,8 +6,8 @@ export namespace Define {
     export function Table(target: any): void;
     export function Table(opt: TableDefineOption): void | Function {
         let options = Object.assign({}, opt);
-        // Reflect.defineMetadata(tableDefineMetadataKey, options.TableName, DataDefine.Current, "Table");
         return (constructor: { new(...args: any[]): {} }) => {
+            DataDefine.Current.AddMetqdata("TableName", options.TableName, constructor.name);
             return class extends constructor {
                 constructor(...args: any[]) {
                     super();
@@ -15,7 +15,7 @@ export namespace Define {
                         this[key] = constructor.prototype[key];
                     }
                     this.toString = function () {
-                        return  options.TableName;
+                        return options.TableName;
                     }
                 }
             }
@@ -24,12 +24,19 @@ export namespace Define {
 
     export function PrimaryKey(opt?: PropertyDefineOption) {
         return (target: any, propertyName: string, propertyDescriptor?: PropertyDescriptor) => {
+            opt || (opt = {});
+            opt.ColumnName = propertyName;
+            opt.IsPrimaryKey = true;
+            DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
             SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
         };
     }
 
     export function Column(opt?: PropertyDefineOption) {
         return (target: any, propertyName: string, propertyDescriptor?: PropertyDescriptor) => {
+            opt || (opt = {});
+            opt.ColumnName = propertyName;
+            DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
             SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
         };
     }
@@ -41,7 +48,7 @@ export namespace Define {
     }
 
     export enum DataType {
-        STRING,
+        VARCHAR,
         FLOAT,
         INT,
         BOOL,
@@ -50,17 +57,55 @@ export namespace Define {
 
     export class DataDefine {
         static Current: DataDefine = new DataDefine();
-        GetMetedata() {
-            // return Reflect.getMetadataKeys(DataDefine.Current, "Table");
+        private metadatObjList = [];
+        private metadataKeyList = [];
+        private lastTableName: string;
+        GetMetedata(entity: any) {
+            let tableName = entity.toString().toLocaleLowerCase();
+            let target = this.GetTargetByTableName(tableName);
+            let list: PropertyDefineOption[] = [];
+            for (let key in entity) {
+                if(typeof(entity[key]) == "function") continue;
+                let s = Reflect.getMetadata(tableName + "_metadataKey", target, key);
+                list.push(JSON.parse(s));
+            }
+
+            return list;
+        }
+
+        AddMetqdata(propertyKey: string, propertyValue: string, tableName?: string) {
+            if (tableName) this.lastTableName = tableName.toLocaleLowerCase();
+            tableName = tableName.toLocaleLowerCase();
+            let target = this.GetTargetByTableName(tableName);
+            if (!target) {
+                let t = new Object();
+                this.metadatObjList.push({
+                    key: tableName,
+                    target: t
+                });
+                target = t;
+            }
+
+            Reflect.defineMetadata(tableName + "_metadataKey", propertyValue, target, propertyKey);
+        }
+
+        private GetTargetByTableName(tableName: string) {
+            let item = this.metadatObjList.find(x => x.key == tableName);
+            if (item) {
+                return item.target;
+            }
+            else return null;
         }
     }
 
 
-    interface PropertyDefineOption {
+   interface PropertyDefineOption {
         DataType?: DataType;
         DefualtValue?: any;
         NotAllowNULL?: boolean;
         DataLength?: number;
+        ColumnName?: string;
+        IsPrimaryKey?: boolean;
     }
 
     interface TableDefineOption {

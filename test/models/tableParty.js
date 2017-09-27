@@ -9,24 +9,20 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const entityObject_1 = require("./../../entityObject");
 const dataDefine_1 = require("../../define/dataDefine");
-let DeskTable = class DeskTable extends entityObject_1.EntityObject {
+const entityObject_1 = require("../../entityObject");
+let TableParty = class TableParty extends entityObject_1.EntityObject {
 };
 __decorate([
     dataDefine_1.Define.PrimaryKey(),
     __metadata("design:type", String)
-], DeskTable.prototype, "id", void 0);
+], TableParty.prototype, "id", void 0);
 __decorate([
     dataDefine_1.Define.Column(),
     __metadata("design:type", String)
-], DeskTable.prototype, "name", void 0);
-__decorate([
-    dataDefine_1.Define.Column({ DefualtValue: "opening", DataType: dataDefine_1.Define.DataType.VARCHAR }),
-    __metadata("design:type", String)
-], DeskTable.prototype, "status", void 0);
-DeskTable = __decorate([
-    dataDefine_1.Define.Table({ TableName: "desktable" })
-], DeskTable);
-exports.DeskTable = DeskTable;
-//# sourceMappingURL=table.js.map
+], TableParty.prototype, "tableId", void 0);
+TableParty = __decorate([
+    dataDefine_1.Define.Table({ TableName: "tableparty" })
+], TableParty);
+exports.TableParty = TableParty;
+//# sourceMappingURL=tableParty.js.map
