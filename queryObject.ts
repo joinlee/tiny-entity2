@@ -1,8 +1,9 @@
 import { IEntityObject } from './entityObject';
 
-export interface IQueryObject<T> extends IResultQueryObject<T> {
+export interface IQueryObject<T> extends IResultQueryObject<T>, IAssembleResultQuery<T> {
     Where(func: (entity: T) => boolean): IQueryObject<T>;
-    Where<K extends IEntityObject>(func: (entity: K) => boolean, entityObj: K): IQueryObject<T>;
+    Where(func: (entity: T) => boolean, paramsKey: string[], paramsValue: any[]): IQueryObject<T>;
+    Where<K extends IEntityObject>(func: (entity: K) => boolean, entityObj: K, paramsKey?: string[], paramsValue?: any[]): IQueryObject<T>;
     Select(func: (entity: T) => void): IResultQueryObject<T>;
     OrderBy(func: (entity: T) => void): IResultQueryObject<T>
     OrderByDesc(func: (entity: T) => void): IResultQueryObject<T>;
@@ -14,15 +15,16 @@ export interface IQueryObject<T> extends IResultQueryObject<T> {
     IndexOf<K extends IEntityObject>(func: (entity: K) => boolean, entityObj: K): IQueryObject<T>;
 }
 
-export interface IJoinChildQueryObject<T, K> {
-    On(func: (mEntity: T, fEntity: K) => boolean): IQueryObject<T>;
+export interface IJoinChildQueryObject<T, F> {
+    On(func: (m: T, f: F) => void): IQueryObject<T>;
+    On<M extends IEntityObject>(func: (m: M, f: F) => void, mEntity: M): IQueryObject<T>;
 }
 
 export interface ITakeChildQueryObject<T> extends IResultQueryObject<T> {
     Skip(count: number): IAssembleResultQuery<T>;
 }
 
-export interface IResultQueryObject<T> extends IAssembleResultQuery<T> {
+export interface IResultQueryObject<T> {
     Max(func: (entity: T) => void): Promise<number>;
     Min(func: (entity: T) => void): Promise<number>;
     Count(func: (entity: T) => void): Promise<number>;
@@ -32,5 +34,5 @@ export interface IResultQueryObject<T> extends IAssembleResultQuery<T> {
 
 export interface IAssembleResultQuery<T> {
     ToList(): Promise<T[]>;
-    ToList<R>(): Promise<R[]>
+    ToList<R>(): Promise<R[]>;
 }

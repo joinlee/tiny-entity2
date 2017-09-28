@@ -9,9 +9,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const entityObjectMysql_1 = require("./../../mysql/entityObjectMysql");
 const dataDefine_1 = require("../../define/dataDefine");
-const entityObject_1 = require("../../entityObject");
-let TableParty = class TableParty extends entityObject_1.EntityObject {
+let TableParty = class TableParty extends entityObjectMysql_1.EntityObjectMysql {
 };
 __decorate([
     dataDefine_1.Define.PrimaryKey(),
@@ -21,6 +21,10 @@ __decorate([
     dataDefine_1.Define.Column(),
     __metadata("design:type", String)
 ], TableParty.prototype, "tableId", void 0);
+__decorate([
+    dataDefine_1.Define.Column(),
+    __metadata("design:type", String)
+], TableParty.prototype, "orderId", void 0);
 TableParty = __decorate([
     dataDefine_1.Define.Table({ TableName: "tableparty" })
 ], TableParty);

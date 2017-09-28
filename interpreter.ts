@@ -4,11 +4,32 @@ export class Interpreter {
     private escape: any;
     private partOfWhere: string[] = [];
     private partOfSelect: string = "*";
+    private partOfJoin: string[] = [];
+    private joinTeamp;
     constructor(escape?) {
         if (escape)
             this.escape = escape;
         else
             this.escape = function (value) { return value; }
+    }
+
+    GetFinalSql(tableName: string): string {
+        let sqlCharts: string[] = [];
+        sqlCharts.push("SELECT");
+        sqlCharts.push(this.partOfSelect);
+        sqlCharts.push("FROM");
+        sqlCharts.push("`" + tableName + "`");
+        for (let joinSql of this.partOfJoin) {
+            sqlCharts.push(joinSql);
+        }
+        if (this.partOfWhere.length > 0) {
+            sqlCharts.push("WHERE");
+            sqlCharts.push(this.partOfWhere.join(" AND "));
+        }
+
+        sqlCharts.push(";");
+
+        return sqlCharts.join(" ");
     }
 
     TransToInsertSql(entity: any): string {
@@ -26,18 +47,6 @@ export class Interpreter {
         sqlStr += qList.join(',') + " WHERE " + primaryKeyObj.key + "=" + this.escape(primaryKeyObj.value) + ";";
 
         return sqlStr;
-    }
-
-    private GetPrimaryKeyObj(entity: any) {
-        let result: { key: string; value: any } = <any>{};
-        for (let item of Define.DataDefine.Current.GetMetedata(entity)) {
-            if (item.IsPrimaryKey) {
-                result.key = item.ColumnName;
-                result.value = entity[item.ColumnName];
-            }
-        }
-
-        return result;
     }
 
     TransToDeleteSql(entity: any, func?: any, paramsKey?: any, paramsValue?: any) {
@@ -59,18 +68,65 @@ export class Interpreter {
         this.partOfWhere.push("(" + this.TransToSQL(func, tableName, param) + ")");
         return this.TransToSQL(func, tableName, param);
     }
-
-    TransToSQLOfSelect(func: Function, tableName: string) {
-        let r = this.TransToSQL(func, tableName);
-        // add to sql part of select
-        this.partOfSelect = r.split('AND').join(',');
-        console.log("rrrrrrrrrrrrrrrr", this.partOfSelect, this.partOfWhere);
+    TransToSQLOfSelect(entity: any);
+    TransToSQLOfSelect(func: Function, tableName: string);
+    TransToSQLOfSelect(p1: any, p2?: any) {
+        if (arguments.length == 1) {
+            this.partOfSelect = this.GetSelectFieldList(p1).join(",");
+        }
+        else if (arguments.length == 2) {
+            let r = this.TransToSQL(p1, p2);
+            // add to sql part of select
+            this.partOfSelect = r.split('AND').join(',');
+        }
 
         return this.partOfSelect;
     }
 
-    TransToSQLOfJoin(func: Function, foreignTable: any) {
-        let foreignTableName = foreignTable.toString().toLocaleLowerCase();
+    TransToSQLOfJoin(fEntity: any) {
+        if (this.partOfSelect === "*") {
+            this.partOfSelect = this.GetSelectFieldList(fEntity).join(",");
+        }
+        else {
+            this.partOfSelect += ",";
+            this.partOfSelect += this.GetSelectFieldList(fEntity).join(",");
+        }
+
+        this.joinTeamp = {
+            fTableName: fEntity.toString(),
+        };
+    }
+    TransToSQLOfOn(func: Function, mTableName: string) {
+        if (!this.joinTeamp) throw new Error("must use TransToSQLJoin() before!");
+        let fTableName = this.joinTeamp.fTableName;
+
+        let funcStr = func.toString();
+        let fe = funcStr.substr(0, funcStr.indexOf("=>")).trim();
+        funcStr = funcStr.replace(new RegExp(fe, "gm"), "");
+        fe = fe.replace(/\(/g, "");
+        fe = fe.replace(/\)/g, "");
+        let felist = fe.split(",");
+        let m = felist[0].trim();
+        let f = felist[1].trim();
+
+        let funcCharList = funcStr.split(" ");
+        funcCharList[0] = "";
+        funcCharList[1] = "";
+        for (let i = 2; i < funcCharList.length; i++) {
+            if (funcCharList[i].indexOf(m + ".") > -1) {
+                funcCharList[i] = funcCharList[i].replace(new RegExp(m + "\\.", "gm"), "`" + mTableName.toLocaleLowerCase() + "`.");
+            }
+            if (funcCharList[i].indexOf(f + ".") > -1) {
+                funcCharList[i] = funcCharList[i].replace(new RegExp(f + "\\.", "gm"), "`" + fTableName.toLocaleLowerCase() + "`.");
+            }
+
+            if (funcCharList[i] === "==") funcCharList[i] = " = ";
+        }
+
+        let sql = "LEFT JOIN `" + fTableName + "` ON " + funcCharList.join("");
+        this.partOfJoin.push(sql);
+
+        return this.partOfJoin;
     }
 
     TransToSQL(func: Function, tableName?: string, param?: any): string {
@@ -94,7 +150,6 @@ export class Interpreter {
 
         return funcCharList;
     }
-
     private GetQueryCharList(funcCharList: string[], tableName: string): string[] {
         let fChar = funcCharList[0];
         if (tableName)
@@ -113,7 +168,8 @@ export class Interpreter {
             if (item === "&&") funcCharList[index] = "AND";
             if (item === "||") funcCharList[index] = "OR";
             if (item.toLocaleLowerCase() == "null") {
-                funcCharList[index - 1] = "IS";
+                if (funcCharList[index - 1] === "==") funcCharList[index - 1] = "IS";
+                else if (funcCharList[index - 1] === "!=") funcCharList[index - 1] = "IS NOT";
                 funcCharList[index] = "NULL";
             }
             if (item.indexOf(".IndexOf") > -1) {
@@ -129,7 +185,6 @@ export class Interpreter {
         funcCharList.splice(0, 1);
         return funcCharList;
     }
-
     private MakeParams(paramsKey: string[], paramsValue: any[]) {
         if (paramsKey && paramsValue) {
             let p: any = {};
@@ -140,11 +195,9 @@ export class Interpreter {
         }
         else return null;
     }
-
     private IsAvailableValue(value): boolean {
         return typeof (value) == "object" || typeof (value) == "string" || typeof (value) == "number" || typeof (value) == "boolean";
     }
-
     private InsertPropertyFormat(obj: any) {
         const propertyNameList: string[] = [];
         const propertyValueList = [];
@@ -195,7 +248,6 @@ export class Interpreter {
 
         return qList;
     }
-
     private dateFormat(d: Date, fmt: string) {
         let o = {
             "M+": d.getMonth() + 1, //月份 
@@ -211,5 +263,24 @@ export class Interpreter {
             if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
         return fmt;
     }
+    private GetPrimaryKeyObj(entity: any) {
+        let result: { key: string; value: any } = <any>{};
+        for (let item of Define.DataDefine.Current.GetMetedata(entity)) {
+            if (item.IsPrimaryKey) {
+                result.key = item.ColumnName;
+                result.value = entity[item.ColumnName];
+            }
+        }
 
+        return result;
+    }
+    private GetSelectFieldList(entity) {
+        let feildList = [];
+        let tableName = entity.toString();
+        let pList = Define.DataDefine.Current.GetMetedata(entity);
+        for (let p of pList) {
+            feildList.push(tableName + ".`" + p.ColumnName + "` AS " + tableName + "_" + p.ColumnName);
+        }
+        return feildList;
+    }
 }

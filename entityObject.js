@@ -1,11 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-class EntityObject {
+class EntityObjectBase {
+    On(func, mEntity) {
+        return this;
+    }
+    Where(func, entityObj, paramsKey, paramsValue) {
+        return this;
+    }
     Clone(obj) {
         throw new Error("Method not implemented.");
-    }
-    Where(func, entityObj) {
-        return this;
     }
     Select(func) {
         throw new Error("Method not implemented.");
@@ -52,6 +55,9 @@ class EntityObject {
     toString() {
         throw new Error("Method not implemented.");
     }
+}
+exports.EntityObjectBase = EntityObjectBase;
+class EntityObject extends EntityObjectBase {
 }
 exports.EntityObject = EntityObject;
 //# sourceMappingURL=entityObject.js.map

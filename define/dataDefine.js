@@ -17,6 +17,9 @@ var Define;
                     this.toString = function () {
                         return options.TableName;
                     };
+                    this.getFuncName = function () {
+                        return constructor.name;
+                    };
                 }
             };
         };
@@ -61,11 +64,11 @@ var Define;
             this.metadataKeyList = [];
         }
         GetMetedata(entity) {
-            let tableName = entity.toString().toLocaleLowerCase();
+            let tableName = entity.getFuncName().toLocaleLowerCase();
             let target = this.GetTargetByTableName(tableName);
             let list = [];
             for (let key in entity) {
-                if (typeof (entity[key]) == "function")
+                if (typeof (entity[key]) == "function" || key === "interpreter")
                     continue;
                 let s = Reflect.getMetadata(tableName + "_metadataKey", target, key);
                 list.push(JSON.parse(s));

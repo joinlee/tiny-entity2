@@ -1,7 +1,8 @@
+import { EntityObjectMysql } from './../../mysql/entityObjectMysql';
 import { Define } from '../../define/dataDefine';
 
 @Define.Table({ TableName: "orders" })
-export class Order {
+export class Order extends EntityObjectMysql<Order> {
     @Define.PrimaryKey()
     id: string;
 

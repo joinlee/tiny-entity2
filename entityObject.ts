@@ -1,13 +1,22 @@
 import { IQueryObject, IResultQueryObject, ITakeChildQueryObject, IJoinChildQueryObject } from './queryObject';
-export abstract class EntityObject<T extends IEntityObject> implements IEntityObject, IQueryObject<T>{
+
+export abstract class EntityObjectBase<T extends IEntityObject, R> implements  IEntityObject, IQueryObject<T>, IJoinChildQueryObject<T, R>{
+    On(func: (m: T, f: R) => void): IQueryObject<T>;
+    On<M extends IEntityObject>(func: (m: M, f: R) => void, mEntity: M): IQueryObject<T>;
+    On(func: any, mEntity?: any) {
+        return this;
+    }
+
+    Where(func: (entity: T) => boolean): IQueryObject<T>;
+    Where(func: (entity: T) => boolean, paramsKey: string[], paramsValue: any[]): IQueryObject<T>;
+    Where<K extends IEntityObject>(func: (entity: K) => boolean, entityObj: K, paramsKey: string[], paramsValue?: any[]): IQueryObject<T>;
+    Where(func: any, entityObj?: any, paramsKey?: any, paramsValue?: any) {
+        return this;
+    }
     Clone(obj: any): void {
         throw new Error("Method not implemented.");
     }
-    Where(func: (entity: T) => boolean): IQueryObject<T>;
-    Where<K extends IEntityObject>(func: (entity: K) => boolean, entityObj: K): IQueryObject<T>;
-    Where(func: any, entityObj?: any) {
-        return this;
-    }
+
     Select(func: (entity: T) => void): IResultQueryObject<T> {
         throw new Error("Method not implemented.");
     }
@@ -29,6 +38,7 @@ export abstract class EntityObject<T extends IEntityObject> implements IEntityOb
     Join<F extends IEntityObject>(fEntity: F): IJoinChildQueryObject<T, F> {
         throw new Error("Method not implemented.");
     }
+
     IndexOf(func: (entity: T) => boolean): IQueryObject<T>;
     IndexOf<K extends IEntityObject>(func: (entity: K) => boolean, entityObj: K): IQueryObject<T>;
     IndexOf(func: any, entityObj?: any) {
@@ -58,8 +68,9 @@ export abstract class EntityObject<T extends IEntityObject> implements IEntityOb
     toString(): string {
         throw new Error("Method not implemented.");
     }
-
 }
+
+export abstract class EntityObject<T extends IEntityObject> extends EntityObjectBase<T, null> { }
 
 export interface IEntityObject {
     toString(): string;

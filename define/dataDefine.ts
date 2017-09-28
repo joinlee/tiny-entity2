@@ -9,6 +9,7 @@ export namespace Define {
         return (constructor: { new(...args: any[]): {} }) => {
             DataDefine.Current.AddMetqdata("TableName", options.TableName, constructor.name);
             return class extends constructor {
+                getFuncName: () => string;
                 constructor(...args: any[]) {
                     super();
                     for (let key in constructor.prototype) {
@@ -16,6 +17,9 @@ export namespace Define {
                     }
                     this.toString = function () {
                         return options.TableName;
+                    }
+                    this.getFuncName = function(){
+                        return constructor.name;
                     }
                 }
             }
@@ -61,11 +65,11 @@ export namespace Define {
         private metadataKeyList = [];
         private lastTableName: string;
         GetMetedata(entity: any) {
-            let tableName = entity.toString().toLocaleLowerCase();
+            let tableName = entity.getFuncName().toLocaleLowerCase();
             let target = this.GetTargetByTableName(tableName);
             let list: PropertyDefineOption[] = [];
             for (let key in entity) {
-                if(typeof(entity[key]) == "function") continue;
+                if(typeof(entity[key]) == "function" || key === "interpreter") continue;
                 let s = Reflect.getMetadata(tableName + "_metadataKey", target, key);
                 list.push(JSON.parse(s));
             }
