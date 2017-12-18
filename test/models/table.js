@@ -9,9 +9,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const entityObject_1 = require("./../../entityObject");
 const dataDefine_1 = require("../../define/dataDefine");
-let DeskTable = class DeskTable extends entityObject_1.EntityObject {
+const entityObjectMysql_1 = require("../../mysql/entityObjectMysql");
+let DeskTable = class DeskTable extends entityObjectMysql_1.EntityObjectMysql {
 };
 __decorate([
     dataDefine_1.Define.PrimaryKey(),

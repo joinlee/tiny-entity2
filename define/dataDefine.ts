@@ -9,7 +9,8 @@ export namespace Define {
         return (constructor: { new(...args: any[]): {} }) => {
             DataDefine.Current.AddMetqdata("TableName", options.TableName, constructor.name);
             return class extends constructor {
-                getFuncName: () => string;
+                ClassName: () => string;
+                TableName: () => string;
                 constructor(...args: any[]) {
                     super();
                     for (let key in constructor.prototype) {
@@ -18,7 +19,10 @@ export namespace Define {
                     this.toString = function () {
                         return options.TableName;
                     }
-                    this.getFuncName = function(){
+                    this.TableName = function () {
+                        return options.TableName;
+                    }
+                    this.ClassName = function () {
                         return constructor.name;
                     }
                 }
@@ -40,6 +44,10 @@ export namespace Define {
         return (target: any, propertyName: string, propertyDescriptor?: PropertyDescriptor) => {
             opt || (opt = {});
             opt.ColumnName = propertyName;
+            if (!opt.DataType) {
+                opt.DataType = DataType.VARCHAR;
+                opt.DataLength = 255;
+            }
             DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
             SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
         };
@@ -53,10 +61,10 @@ export namespace Define {
 
     export enum DataType {
         VARCHAR,
+        TEXT,
         FLOAT,
         INT,
         BOOL,
-        TEXT
     }
 
     export class DataDefine {
@@ -65,11 +73,11 @@ export namespace Define {
         private metadataKeyList = [];
         private lastTableName: string;
         GetMetedata(entity: any) {
-            let tableName = entity.getFuncName().toLocaleLowerCase();
+            let tableName = entity.ClassName().toLocaleLowerCase();
             let target = this.GetTargetByTableName(tableName);
             let list: PropertyDefineOption[] = [];
             for (let key in entity) {
-                if(typeof(entity[key]) == "function" || key === "interpreter") continue;
+                if (typeof (entity[key]) == "function" || key === "interpreter" || key === "ctx") continue;
                 let s = Reflect.getMetadata(tableName + "_metadataKey", target, key);
                 list.push(JSON.parse(s));
             }
@@ -103,13 +111,14 @@ export namespace Define {
     }
 
 
-   interface PropertyDefineOption {
+    interface PropertyDefineOption {
         DataType?: DataType;
         DefualtValue?: any;
         NotAllowNULL?: boolean;
         DataLength?: number;
         ColumnName?: string;
         IsPrimaryKey?: boolean;
+        DecimalPoint?: number;
     }
 
     interface TableDefineOption {

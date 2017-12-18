@@ -2,13 +2,17 @@ import { IQueryObject, IJoinChildQueryObject } from './../queryObject';
 import { IEntityObject, EntityObject } from './../entityObject';
 import { Interpreter } from '../interpreter';
 import mysql = require("mysql");
+import { MysqlDataContext } from './dataContextMysql';
 
 export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
     private interpreter: Interpreter;
-    constructor() {
+    private ctx: MysqlDataContext;/*  */
+    constructor(ctx?: MysqlDataContext) {
         super();
         this.interpreter = new Interpreter(mysql.escape);
+        this.ctx = ctx;
     }
+
     Where(func: (entity: T) => boolean): IQueryObject<T>;
     Where(func: (entity: T) => boolean, paramsKey?: string[], paramsValue?: any[]): IQueryObject<T>;
     Where<K extends IEntityObject>(func: (entity: K) => boolean, entityObj: K, paramsKey?: string[], paramsValue?: any[]): IQueryObject<T>;
@@ -18,11 +22,13 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
             paramsValue = arguments[2];
         }
         let tableName;
-        if (entityObj && !(entityObj instanceof Array)) tableName = entityObj.toString();
-        else tableName = this.toString();
+        if (entityObj && !(entityObj instanceof Array)) tableName = entityObj.TableName();
+        else tableName = this.TableName();
         this.interpreter.TransToSQLOfWhere(func, tableName, paramsKey, paramsValue);
         return this;
     }
+
+
     Join<F extends IEntityObject>(fEntity: F): IJoinChildQueryObject<T, F> {
         this.interpreter.TransToSQLOfSelect(this);
         this.interpreter.TransToSQLOfJoin(fEntity);
@@ -38,11 +44,14 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         return this;
     }
 
+
     ToList(): Promise<T[]>;
     ToList<R>(): Promise<R[]>;
-    ToList() {
+    async ToList() {
         let sql = this.interpreter.GetFinalSql(this.toString());
         console.log(sql);
+        let rows = await this.ctx.Query(sql);
+
         return null;
     }
 }

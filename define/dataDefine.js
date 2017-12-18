@@ -17,7 +17,10 @@ var Define;
                     this.toString = function () {
                         return options.TableName;
                     };
-                    this.getFuncName = function () {
+                    this.TableName = function () {
+                        return options.TableName;
+                    };
+                    this.ClassName = function () {
                         return constructor.name;
                     };
                 }
@@ -39,6 +42,10 @@ var Define;
         return (target, propertyName, propertyDescriptor) => {
             opt || (opt = {});
             opt.ColumnName = propertyName;
+            if (!opt.DataType) {
+                opt.DataType = DataType.VARCHAR;
+                opt.DataLength = 255;
+            }
             DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
             SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
         };
@@ -53,10 +60,10 @@ var Define;
     let DataType;
     (function (DataType) {
         DataType[DataType["VARCHAR"] = 0] = "VARCHAR";
-        DataType[DataType["FLOAT"] = 1] = "FLOAT";
-        DataType[DataType["INT"] = 2] = "INT";
-        DataType[DataType["BOOL"] = 3] = "BOOL";
-        DataType[DataType["TEXT"] = 4] = "TEXT";
+        DataType[DataType["TEXT"] = 1] = "TEXT";
+        DataType[DataType["FLOAT"] = 2] = "FLOAT";
+        DataType[DataType["INT"] = 3] = "INT";
+        DataType[DataType["BOOL"] = 4] = "BOOL";
     })(DataType = Define.DataType || (Define.DataType = {}));
     class DataDefine {
         constructor() {
@@ -64,11 +71,11 @@ var Define;
             this.metadataKeyList = [];
         }
         GetMetedata(entity) {
-            let tableName = entity.getFuncName().toLocaleLowerCase();
+            let tableName = entity.ClassName().toLocaleLowerCase();
             let target = this.GetTargetByTableName(tableName);
             let list = [];
             for (let key in entity) {
-                if (typeof (entity[key]) == "function" || key === "interpreter")
+                if (typeof (entity[key]) == "function" || key === "interpreter" || key === "ctx")
                     continue;
                 let s = Reflect.getMetadata(tableName + "_metadataKey", target, key);
                 list.push(JSON.parse(s));

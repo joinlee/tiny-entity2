@@ -1,6 +1,5 @@
 import { EntityObjectMysql } from './../../mysql/entityObjectMysql';
 import { Define } from "../../define/dataDefine";
-import { EntityObject } from '../../entityObject';
 
 @Define.Table({ TableName: "tableparty" })
 export class TableParty extends EntityObjectMysql<TableParty> {

@@ -1,6 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class EntityObjectBase {
+    TableName() {
+        throw new Error("Method not implemented.");
+    }
+    ClassName() {
+        throw new Error("Method not implemented.");
+    }
     On(func, mEntity) {
         return this;
     }

@@ -3,8 +3,9 @@ import { IEntityObject } from '../entityObject';
 import { IMySql, IPool, IPoolConfig, IConnection } from 'mysql';
 import { Interpreter } from '../interpreter';
 import mysql = require("mysql");
+import { Define } from '../define/dataDefine';
 
-var mysqlPool: IPool;
+let mysqlPool: IPool;
 function log() {
     if (process.env.tinyLog == "on") {
         console.log(arguments);
@@ -17,9 +18,11 @@ export class MysqlDataContext implements IDataContext {
     private transStatus: any;
     private transactionOn: string;
     private interpreter: Interpreter;
+    private option: IPoolConfig;
     constructor(option: IPoolConfig) {
         if (!mysqlPool) mysqlPool = mysql.createPool(option);
         this.interpreter = new Interpreter(mysql.escape);
+        this.option = option;
     }
 
     async Create(obj: any) {
@@ -32,6 +35,7 @@ export class MysqlDataContext implements IDataContext {
         }
         return obj;
     }
+
     async Update(obj: IEntityObject) {
         let sqlStr = this.interpreter.TransToUpdateSql(obj);
         if (this.transactionOn) {
@@ -42,9 +46,10 @@ export class MysqlDataContext implements IDataContext {
         }
         return obj;
     }
+
     Delete(obj: IEntityObject);
-    Delete<T extends IEntityObject>(entity: T, func: (x: T) => boolean);
-    Delete(entity: any, func?: any, paramsKey?: string[], paramsValue?: any[]) {
+    Delete<T extends IEntityObject>(func: (x: T) => boolean, entity: T, paramsKey?: string[], paramsValue?: any[]);
+    Delete(func: any, entity?: any, paramsKey?: any, paramsValue?: any) {
         let sqlStr = this.interpreter.TransToDeleteSql(entity, func, paramsKey, paramsValue);
         if (this.transactionOn) {
             this.querySentence.push(sqlStr);
@@ -53,10 +58,13 @@ export class MysqlDataContext implements IDataContext {
             return this.onSubmit(sqlStr);
         }
     }
+
+
     BeginTranscation() {
         this.transactionOn = "on";
         this.transStatus.push({ key: new Date().getTime() });
     }
+
     Commit() {
         if (this.transStatus.length > 1) {
             logger("transaction is pedding!");
@@ -106,7 +114,51 @@ export class MysqlDataContext implements IDataContext {
         this.CleanTransactionStatus();
     }
     DeleteDatabase() {
-        
+        throw new Error("Method not implemented.");
+    }
+    async CreateDatabase() {
+        let sql = "CREATE DATABASE IF NOT EXISTS `" + this.option.database + "` DEFAULT CHARACTER SET " + this.option.charset + " COLLATE utf8_unicode_ci;";
+        let r = await this.onSubmit(sql);
+        return r;
+    }
+
+    async CreateTable(entity: IEntityObject) {
+        let tableDefine = Define.DataDefine.Current.GetMetedata(entity);
+        let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
+        let columnSqlList = [];
+
+        for (let item of tableDefine) {
+            let valueStr = item.NotAllowNULL ? "NOT NULL" : "DEFAULT NULL";
+
+            let lengthStr = "";
+            if (item.DataLength != undefined) {
+                let dcp = item.DecimalPoint != undefined ? "," + item.DecimalPoint : "";
+                lengthStr = "(" + item.DataLength + dcp + ")";
+            }
+
+            if (item.DefualtValue != undefined) {
+                if (item.DataType >= 0 && item.DataType <= 1) {
+                    //string type
+                    valueStr = "DEFAULT '" + item.DefualtValue + "'";
+                }
+                else {
+                    //number type
+                    valueStr = "DEFAULT " + item.DefualtValue;
+                }
+            }
+
+            let cs = "`" + item.ColumnName + "` " + Define.DataType[item.DataType] + lengthStr + " COLLATE " + (<any>this.option).collate + " " + valueStr;
+            if (item.IsPrimaryKey) {
+                columnSqlList.push("PRIMARY KEY (`" + item.ColumnName + "`)");
+            }
+
+            columnSqlList.push(cs);
+        }
+
+        sqls.push("CREATE TABLE `" + entity.TableName() + "` (" + columnSqlList.join(",") + ") ENGINE=InnoDB DEFAULT CHARSET=" + this.option.charset + " COLLATE=" + (<any>this.option).collate + ";");
+
+        let r = await this.onSubmit(sqls.join(" "));
+        return r;
     }
 
     private async TrasnQuery(conn: IConnection, sql: string) {

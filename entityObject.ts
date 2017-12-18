@@ -1,6 +1,12 @@
 import { IQueryObject, IResultQueryObject, ITakeChildQueryObject, IJoinChildQueryObject } from './queryObject';
 
-export abstract class EntityObjectBase<T extends IEntityObject, R> implements  IEntityObject, IQueryObject<T>, IJoinChildQueryObject<T, R>{
+export abstract class EntityObjectBase<T extends IEntityObject, R> implements IEntityObject, IQueryObject<T>, IJoinChildQueryObject<T, R>{
+    TableName(): string {
+        throw new Error("Method not implemented.");
+    }
+    ClassName(): string {
+        throw new Error("Method not implemented.");
+    }
     On(func: (m: T, f: R) => void): IQueryObject<T>;
     On<M extends IEntityObject>(func: (m: M, f: R) => void, mEntity: M): IQueryObject<T>;
     On(func: any, mEntity?: any) {
@@ -75,5 +81,7 @@ export abstract class EntityObject<T extends IEntityObject> extends EntityObject
 export interface IEntityObject {
     toString(): string;
     Clone(obj: any): void;
+    ClassName(): string;
+    TableName(): string;
 }
 

@@ -10,7 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const interpreter_1 = require("../interpreter");
 const mysql = require("mysql");
-var mysqlPool;
+const dataDefine_1 = require("../define/dataDefine");
+let mysqlPool;
 function log() {
     if (process.env.tinyLog == "on") {
         console.log(arguments);
@@ -22,6 +23,7 @@ class MysqlDataContext {
         if (!mysqlPool)
             mysqlPool = mysql.createPool(option);
         this.interpreter = new interpreter_1.Interpreter(mysql.escape);
+        this.option = option;
     }
     Create(obj) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -47,7 +49,7 @@ class MysqlDataContext {
             return obj;
         });
     }
-    Delete(entity, func, paramsKey, paramsValue) {
+    Delete(func, entity, paramsKey, paramsValue) {
         let sqlStr = this.interpreter.TransToDeleteSql(entity, func, paramsKey, paramsValue);
         if (this.transactionOn) {
             this.querySentence.push(sqlStr);
@@ -111,6 +113,45 @@ class MysqlDataContext {
         this.CleanTransactionStatus();
     }
     DeleteDatabase() {
+        throw new Error("Method not implemented.");
+    }
+    CreateDatabase() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let sql = "CREATE DATABASE IF NOT EXISTS `" + this.option.database + "` DEFAULT CHARACTER SET " + this.option.charset + " COLLATE utf8_unicode_ci;";
+            let r = yield this.onSubmit(sql);
+            return r;
+        });
+    }
+    CreateTable(entity) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let tableDefine = dataDefine_1.Define.DataDefine.Current.GetMetedata(entity);
+            let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
+            let columnSqlList = [];
+            for (let item of tableDefine) {
+                let valueStr = item.NotAllowNULL ? "NOT NULL" : "DEFAULT NULL";
+                let lengthStr = "";
+                if (item.DataLength != undefined) {
+                    let dcp = item.DecimalPoint != undefined ? "," + item.DecimalPoint : "";
+                    lengthStr = "(" + item.DataLength + dcp + ")";
+                }
+                if (item.DefualtValue != undefined) {
+                    if (item.DataType >= 0 && item.DataType <= 1) {
+                        valueStr = "DEFAULT '" + item.DefualtValue + "'";
+                    }
+                    else {
+                        valueStr = "DEFAULT " + item.DefualtValue;
+                    }
+                }
+                let cs = "`" + item.ColumnName + "` " + dataDefine_1.Define.DataType[item.DataType] + lengthStr + " COLLATE " + this.option.collate + " " + valueStr;
+                if (item.IsPrimaryKey) {
+                    columnSqlList.push("PRIMARY KEY (`" + item.ColumnName + "`)");
+                }
+                columnSqlList.push(cs);
+            }
+            sqls.push("CREATE TABLE `" + entity.TableName() + "` (" + columnSqlList.join(",") + ") ENGINE=InnoDB DEFAULT CHARSET=" + this.option.charset + " COLLATE=" + this.option.collate + ";");
+            let r = yield this.onSubmit(sqls.join(" "));
+            return r;
+        });
     }
     TrasnQuery(conn, sql) {
         return __awaiter(this, void 0, void 0, function* () {

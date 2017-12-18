@@ -256,9 +256,10 @@ class Interpreter {
     GetSelectFieldList(entity) {
         let feildList = [];
         let tableName = entity.toString();
+        let entityClassName = entity.ClassName();
         let pList = dataDefine_1.Define.DataDefine.Current.GetMetedata(entity);
         for (let p of pList) {
-            feildList.push(tableName + ".`" + p.ColumnName + "` AS " + tableName + "_" + p.ColumnName);
+            feildList.push(tableName + ".`" + p.ColumnName + "` AS " + entityClassName + "_" + p.ColumnName);
         }
         return feildList;
     }
