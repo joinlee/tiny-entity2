@@ -33,6 +33,8 @@ var Define;
             opt || (opt = {});
             opt.ColumnName = propertyName;
             opt.IsPrimaryKey = true;
+            opt.NotAllowNULL = true;
+            opt = SetPropertyDefineOptionValue(opt);
             DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
             SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
         };
@@ -46,11 +48,19 @@ var Define;
                 opt.DataType = DataType.VARCHAR;
                 opt.DataLength = 255;
             }
+            opt = SetPropertyDefineOptionValue(opt);
             DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
             SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
         };
     }
     Define.Column = Column;
+    function SetPropertyDefineOptionValue(opt) {
+        if (!opt.DataType) {
+            opt.DataType = DataType.VARCHAR;
+            opt.DataLength = 255;
+        }
+        return opt;
+    }
     function SetClassPropertyDefualtValue(target, propertyName, defualtValue) {
         let propertyValue = null;
         if (defualtValue)

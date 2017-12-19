@@ -35,6 +35,10 @@ export namespace Define {
             opt || (opt = {});
             opt.ColumnName = propertyName;
             opt.IsPrimaryKey = true;
+            opt.NotAllowNULL = true;
+
+            opt = SetPropertyDefineOptionValue(opt);
+
             DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
             SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
         };
@@ -48,9 +52,20 @@ export namespace Define {
                 opt.DataType = DataType.VARCHAR;
                 opt.DataLength = 255;
             }
+            opt = SetPropertyDefineOptionValue(opt);
+
             DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
             SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
         };
+    }
+
+    function SetPropertyDefineOptionValue(opt: PropertyDefineOption) {
+        if (!opt.DataType) {
+            opt.DataType = DataType.VARCHAR;
+            opt.DataLength = 255;
+        }
+
+        return opt;
     }
 
     function SetClassPropertyDefualtValue(target, propertyName, defualtValue) {
@@ -118,7 +133,9 @@ export namespace Define {
         DataLength?: number;
         ColumnName?: string;
         IsPrimaryKey?: boolean;
+        ForeignKey?: { ForeignTable: string; ForeignColumn: string; };
         DecimalPoint?: number;
+        IsIndex?: boolean;
     }
 
     interface TableDefineOption {

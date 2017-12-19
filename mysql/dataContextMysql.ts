@@ -118,8 +118,8 @@ export class MysqlDataContext implements IDataContext {
     }
     async CreateDatabase() {
         let sql = "CREATE DATABASE IF NOT EXISTS `" + this.option.database + "` DEFAULT CHARACTER SET " + this.option.charset + " COLLATE utf8_unicode_ci;";
-        let r = await this.onSubmit(sql);
-        return r;
+        await this.onSubmit(sql);
+        return true;
     }
 
     async CreateTable(entity: IEntityObject) {
@@ -152,13 +152,25 @@ export class MysqlDataContext implements IDataContext {
                 columnSqlList.push("PRIMARY KEY (`" + item.ColumnName + "`)");
             }
 
+            let indexType = "USING BTREE";
+            if (item.ForeignKey) {
+                indexType = "";
+                columnSqlList.push("CONSTRAINT `fk_" + item.ColumnName + "` FOREIGN KEY (`" + item.ColumnName + "`) REFERENCES `" + item.ForeignKey.ForeignTable + "` (`" + item.ForeignKey.ForeignColumn + "`)");
+            }
+            if (item.IsIndex) {
+                columnSqlList.push("KEY `idx_" + item.ColumnName + "` (`" + item.ColumnName + "`) " + indexType);
+            }
+
             columnSqlList.push(cs);
         }
 
-        sqls.push("CREATE TABLE `" + entity.TableName() + "` (" + columnSqlList.join(",") + ") ENGINE=InnoDB DEFAULT CHARSET=" + this.option.charset + " COLLATE=" + (<any>this.option).collate + ";");
+        sqls.push("CREATE TABLE `" + entity.TableName() + "` ( " + columnSqlList.join(",") + " ) ENGINE=InnoDB DEFAULT CHARSET=" + this.option.charset + " COLLATE=" + (<any>this.option).collate + ";");
 
-        let r = await this.onSubmit(sqls.join(" "));
-        return r;
+        for (let sql of sqls) {
+            await this.onSubmit(sql);
+        }
+
+        return true;
     }
 
     private async TrasnQuery(conn: IConnection, sql: string) {

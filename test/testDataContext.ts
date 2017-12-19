@@ -2,16 +2,7 @@ import { MysqlDataContext } from "../mysql/dataContextMysql";
 import { Order } from "./models/order";
 import { TableParty } from "./models/tableParty";
 import { DeskTable } from "./models/table";
-
-let mysqlConnectOptions = {
-    connectionLimit: 50,
-    host: '172.16.254.127',
-    user: 'root',
-    password: 'onetwo',
-    database: 'fbs_db',
-    charset: "utf8",
-    collate: "utf8_unicode_ci"
-}
+const config = require("./config");
 
 export class TestDataContext extends MysqlDataContext {
     private order: Order;
@@ -19,7 +10,7 @@ export class TestDataContext extends MysqlDataContext {
     private deskTable: DeskTable;
 
     constructor() {
-        super(mysqlConnectOptions);
+        super(config);
 
         this.order = new Order(this);
         this.tableParty = new TableParty(this);
@@ -32,9 +23,9 @@ export class TestDataContext extends MysqlDataContext {
 
     async CreateDatabase() {
         await super.CreateDatabase();
-        //await super.CreateTable(this.order);
-        await super.CreateTable(this.tableParty);
+        await super.CreateTable(this.order);
         await super.CreateTable(this.deskTable);
+        await super.CreateTable(this.tableParty);
         return true;
     }
 }

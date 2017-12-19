@@ -118,8 +118,8 @@ class MysqlDataContext {
     CreateDatabase() {
         return __awaiter(this, void 0, void 0, function* () {
             let sql = "CREATE DATABASE IF NOT EXISTS `" + this.option.database + "` DEFAULT CHARACTER SET " + this.option.charset + " COLLATE utf8_unicode_ci;";
-            let r = yield this.onSubmit(sql);
-            return r;
+            yield this.onSubmit(sql);
+            return true;
         });
     }
     CreateTable(entity) {
@@ -146,11 +146,21 @@ class MysqlDataContext {
                 if (item.IsPrimaryKey) {
                     columnSqlList.push("PRIMARY KEY (`" + item.ColumnName + "`)");
                 }
+                let indexType = "USING BTREE";
+                if (item.ForeignKey) {
+                    indexType = "";
+                    columnSqlList.push("CONSTRAINT `fk_" + item.ColumnName + "` FOREIGN KEY (`" + item.ColumnName + "`) REFERENCES `" + item.ForeignKey.ForeignTable + "` (`" + item.ForeignKey.ForeignColumn + "`)");
+                }
+                if (item.IsIndex) {
+                    columnSqlList.push("KEY `idx_" + item.ColumnName + "` (`" + item.ColumnName + "`) " + indexType);
+                }
                 columnSqlList.push(cs);
             }
-            sqls.push("CREATE TABLE `" + entity.TableName() + "` (" + columnSqlList.join(",") + ") ENGINE=InnoDB DEFAULT CHARSET=" + this.option.charset + " COLLATE=" + this.option.collate + ";");
-            let r = yield this.onSubmit(sqls.join(" "));
-            return r;
+            sqls.push("CREATE TABLE `" + entity.TableName() + "` ( " + columnSqlList.join(",") + " ) ENGINE=InnoDB DEFAULT CHARSET=" + this.option.charset + " COLLATE=" + this.option.collate + ";");
+            for (let sql of sqls) {
+                yield this.onSubmit(sql);
+            }
+            return true;
         });
     }
     TrasnQuery(conn, sql) {
