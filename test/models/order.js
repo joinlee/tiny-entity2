@@ -18,7 +18,7 @@ __decorate([
     __metadata("design:type", String)
 ], Order.prototype, "id", void 0);
 __decorate([
-    dataDefine_1.Define.Column(),
+    dataDefine_1.Define.Column({ DataType: dataDefine_1.Define.DataType.Decimal, DataLength: 11, DecimalPoint: 3 }),
     __metadata("design:type", Number)
 ], Order.prototype, "amountDue", void 0);
 __decorate([
@@ -38,7 +38,7 @@ __decorate([
     __metadata("design:type", String)
 ], Order.prototype, "checkoutMode", void 0);
 __decorate([
-    dataDefine_1.Define.Column(),
+    dataDefine_1.Define.Column({ DataType: dataDefine_1.Define.DataType.BIGINT }),
     __metadata("design:type", Number)
 ], Order.prototype, "closeTime", void 0);
 __decorate([

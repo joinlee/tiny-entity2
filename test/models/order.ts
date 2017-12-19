@@ -6,7 +6,7 @@ export class Order extends EntityObjectMysql<Order> {
     @Define.PrimaryKey()
     id: string;
 
-    @Define.Column()
+    @Define.Column({ DataType: Define.DataType.Decimal, DataLength: 11, DecimalPoint: 3 })
     amountDue: number;
 
     @Define.Column()
@@ -21,7 +21,7 @@ export class Order extends EntityObjectMysql<Order> {
     @Define.Column()
     checkoutMode: string;
 
-    @Define.Column()
+    @Define.Column({ DataType: Define.DataType.BIGINT })
     closeTime: number;
 
     @Define.Column()

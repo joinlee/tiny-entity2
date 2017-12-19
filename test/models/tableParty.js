@@ -18,7 +18,7 @@ __decorate([
     __metadata("design:type", String)
 ], TableParty.prototype, "id", void 0);
 __decorate([
-    dataDefine_1.Define.Column({ ForeignKey: { ForeignTable: "deskTable", ForeignColumn: "id" } }),
+    dataDefine_1.Define.Column({ IsIndex: true }),
     __metadata("design:type", String)
 ], TableParty.prototype, "tableId", void 0);
 __decorate([

@@ -32,8 +32,8 @@
     "@types/mysql": "0.0.34",
     "mocha": "^3.2.0",
     "mysql": "^2.14.1",
-    "nedb": "*",
     "reflect-metadata": "^0.1.10",
-    "sqlite-sync": "^0.3.5"
+    "sqlite-sync": "^0.3.5",
+    "gulp": "*"
   }
 }

@@ -6,7 +6,7 @@ export class TableParty extends EntityObjectMysql<TableParty> {
     @Define.PrimaryKey()
     id: string;
 
-    @Define.Column({ ForeignKey: { ForeignTable: "deskTable", ForeignColumn: "id" } })
+    @Define.Column({ IsIndex: true })
     tableId: string;
 
     @Define.Column({ IsIndex: true })

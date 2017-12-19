@@ -71,9 +71,10 @@ var Define;
     (function (DataType) {
         DataType[DataType["VARCHAR"] = 0] = "VARCHAR";
         DataType[DataType["TEXT"] = 1] = "TEXT";
-        DataType[DataType["FLOAT"] = 2] = "FLOAT";
+        DataType[DataType["Decimal"] = 2] = "Decimal";
         DataType[DataType["INT"] = 3] = "INT";
-        DataType[DataType["BOOL"] = 4] = "BOOL";
+        DataType[DataType["BIGINT"] = 4] = "BIGINT";
+        DataType[DataType["BOOL"] = 5] = "BOOL";
     })(DataType = Define.DataType || (Define.DataType = {}));
     class DataDefine {
         constructor() {

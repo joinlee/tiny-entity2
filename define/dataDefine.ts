@@ -77,8 +77,9 @@ export namespace Define {
     export enum DataType {
         VARCHAR,
         TEXT,
-        FLOAT,
+        Decimal,
         INT,
+        BIGINT,
         BOOL,
     }
 
