@@ -8,26 +8,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const config = require("../config");
 const dataContextMysql_1 = require("../mysql/dataContextMysql");
 const order_1 = require("./models/order");
-const tableParty_1 = require("./models/tableParty");
+const person_1 = require("./models/person");
 const table_1 = require("./models/table");
-const config = require("./config");
+const tableParty_1 = require("./models/tableParty");
 class TestDataContext extends dataContextMysql_1.MysqlDataContext {
     constructor() {
         super(config);
         this.order = new order_1.Order(this);
-        this.tableParty = new tableParty_1.TableParty(this);
+        this.person = new person_1.Person(this);
         this.deskTable = new table_1.DeskTable(this);
+        this.tableParty = new tableParty_1.TableParty(this);
     }
     get Order() { return this.order; }
-    get TableParty() { return this.tableParty; }
+    get Person() { return this.person; }
     get DeskTable() { return this.deskTable; }
+    get TableParty() { return this.tableParty; }
     CreateDatabase() {
         const _super = name => super[name];
         return __awaiter(this, void 0, void 0, function* () {
             yield _super("CreateDatabase").call(this);
             yield _super("CreateTable").call(this, this.order);
+            yield _super("CreateTable").call(this, this.person);
             yield _super("CreateTable").call(this, this.deskTable);
             yield _super("CreateTable").call(this, this.tableParty);
             return true;
