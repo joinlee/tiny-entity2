@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const config = require("../config");
+const config = require("./config");
 const dataContextMysql_1 = require("../mysql/dataContextMysql");
 const order_1 = require("./models/order");
 const person_1 = require("./models/person");

@@ -1,12 +1,10 @@
-import { Define } from './../define/dataDefine';
 import { DeskTable } from './models/table';
 import { TableParty } from './models/tableParty';
-import { Interpreter } from '../interpreter';
-import mysql = require("mysql");
 import { Order } from './models/order';
 import { TestDataContext } from './testDataContext';
 import { Guid } from './guid';
 import * as assert from "assert";
+import { Person } from './models/person';
 
 // let t = new DeskTable();
 // t.id = "123";
@@ -64,13 +62,50 @@ import * as assert from "assert";
 //     })
 // });
 
-describe("CreateDatabase and Tables", () => {
+// =============================================================
+
+// describe("CreateDatabase and Tables", () => {
+//     let ctx = new TestDataContext();
+//     it("when database exist", async () => {
+//         let r = await ctx.CreateDatabase();
+//         console.log(r);
+//     })
+// });
+
+describe("ToList", () => {
     let ctx = new TestDataContext();
-    it("when database exist", async () => {
-        let r = await ctx.CreateDatabase();
-        console.log(r);
+
+    before(async () => {
+        //insert 10 persons to database;
+        for (let i = 0; i < 10; i++) {
+            let person = new Person();
+            person.id = Guid.GetGuid();
+            person.name = "likecheng" + i;
+            person.age = 30 + i;
+            person.birth = new Date("1987-12-1").getTime();
+
+            await ctx.Create(person);
+        }
     })
-});
+
+    it("no query criteria", async () => {
+        let list = await ctx.Person.ToList();
+        assert.equal(list.length, 1);
+        console.log(list[0]);
+    })
+
+    it("inculde query criteria", async () => {
+
+    })
+
+    after(async () => {
+        // clean person table from database;
+        let list = await ctx.Person.ToList();
+        for (let item of list) {
+            await ctx.Delete(item);
+        }
+    })
+})
 
 
 

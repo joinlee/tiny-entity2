@@ -6,11 +6,11 @@ import { MysqlDataContext } from './dataContextMysql';
 
 export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
     private interpreter: Interpreter;
-    private ctx: MysqlDataContext;/*  */
+    protected ctx: MysqlDataContext;
     constructor(ctx?: MysqlDataContext) {
         super();
         this.interpreter = new Interpreter(mysql.escape);
-        this.ctx = ctx;
+        this.ctx = arguments[0][0];
     }
 
     Where(func: (entity: T) => boolean): IQueryObject<T>;
@@ -49,9 +49,8 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
     ToList<R>(): Promise<R[]>;
     async ToList() {
         let sql = this.interpreter.GetFinalSql(this.toString());
-        console.log(sql);
         let rows = await this.ctx.Query(sql);
-
-        return null;
+        
+        return rows;
     }
 }

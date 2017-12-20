@@ -12,7 +12,7 @@ export namespace Define {
                 ClassName: () => string;
                 TableName: () => string;
                 constructor(...args: any[]) {
-                    super();
+                    super(args);
                     for (let key in constructor.prototype) {
                         this[key] = constructor.prototype[key];
                     }

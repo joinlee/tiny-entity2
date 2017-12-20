@@ -10,7 +10,7 @@ var Define;
             DataDefine.Current.AddMetqdata("TableName", options.TableName, constructor.name);
             return class extends constructor {
                 constructor(...args) {
-                    super();
+                    super(args);
                     for (let key in constructor.prototype) {
                         this[key] = constructor.prototype[key];
                     }

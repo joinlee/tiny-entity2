@@ -14,7 +14,7 @@ const modelExportPath = "./models";
 const ctxExportPath = "../mysql";
 
 //相对于outDir路径
-const configFilePath = "../config";
+const configFilePath = "./config";
 
 const outFileName = "testDataContext.ts";
 

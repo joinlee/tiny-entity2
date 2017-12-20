@@ -9,11 +9,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const testDataContext_1 = require("./testDataContext");
-describe("CreateDatabase and Tables", () => {
+const guid_1 = require("./guid");
+const assert = require("assert");
+const person_1 = require("./models/person");
+describe("ToList", () => {
     let ctx = new testDataContext_1.TestDataContext();
-    it("when database exist", () => __awaiter(this, void 0, void 0, function* () {
-        let r = yield ctx.CreateDatabase();
-        console.log(r);
+    before(() => __awaiter(this, void 0, void 0, function* () {
+        for (let i = 0; i < 10; i++) {
+            let person = new person_1.Person();
+            person.id = guid_1.Guid.GetGuid();
+            person.name = "likecheng" + i;
+            person.age = 30 + i;
+            person.birth = new Date("1987-12-1").getTime();
+            yield ctx.Create(person);
+        }
+    }));
+    it("no query criteria", () => __awaiter(this, void 0, void 0, function* () {
+        let list = yield ctx.Person.ToList();
+        assert.equal(list.length, 1);
+        console.log(list[0]);
+    }));
+    it("inculde query criteria", () => __awaiter(this, void 0, void 0, function* () {
+    }));
+    after(() => __awaiter(this, void 0, void 0, function* () {
+        let list = yield ctx.Person.ToList();
+        for (let item of list) {
+            yield ctx.Delete(item);
+        }
     }));
 });
 //# sourceMappingURL=test.js.map

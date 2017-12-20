@@ -34,13 +34,25 @@ export class Interpreter {
 
     TransToInsertSql(entity: any): string {
         let sqlStr = "INSERT INTO `" + entity.toString() + "`";
-        let pt = this.InsertPropertyFormat(entity);
-        sqlStr += " (" + pt.PropertyNameList.join(',') + ") VALUES (" + pt.PropertyValueList.join(',') + ");";
+
+        let entityMetadata = Define.DataDefine.Current.GetMetedata(entity);
+        let keyList = [], valueList = [];
+
+        entityMetadata.forEach(item => {
+            keyList.push("`" + item.ColumnName + "`");
+            if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null) {
+                valueList.push("NULL");
+            }
+            else {
+                valueList.push(this.escape(entity[item.ColumnName]));
+            }
+        });
+        sqlStr += " (" + keyList.join(',') + ") VALUES (" + valueList.join(',') + ");";
         return sqlStr;
     }
 
     TransToUpdateSql(entity: any): string {
-        let sqlStr = "UPDATE `" + entity.toString() + "` SET ";
+        let sqlStr = "UPDATE `" + entity.TableName() + "` SET ";
         let qList = this.UpdatePropertyFormat(entity);
 
         let primaryKeyObj = this.GetPrimaryKeyObj(entity);
@@ -49,15 +61,17 @@ export class Interpreter {
         return sqlStr;
     }
 
-    TransToDeleteSql(entity: any, func?: any, paramsKey?: any, paramsValue?: any) {
+    TransToDeleteSql(func: any, entity: any, paramsKey?: any, paramsValue?: any) {
         let sqlStr = "";
         if (func) {
-            let s = this.TransToSQLOfWhere(func, entity.toString(), paramsKey, paramsValue);
-            sqlStr = "DELETE FROM " + entity.toString() + " WHERE " + s + ";";
+            let s = this.TransToSQLOfWhere(func, entity.TableName(), paramsKey, paramsValue);
+            sqlStr = "DELETE FROM `" + entity.TableName() + "` WHERE " + s + ";";
         }
         else {
             let primaryKeyObj = this.GetPrimaryKeyObj(entity);
-            sqlStr = "DELETE FROM " + entity.toString() + " WHERE " + primaryKeyObj.key + "='" + primaryKeyObj.value + "';";
+            if (!primaryKeyObj.key) throw "entity not set primary key!";
+            if (primaryKeyObj.value == null || primaryKeyObj.value == undefined) throw "the property " + primaryKeyObj.key + " can not be null!";
+            sqlStr = "DELETE FROM `" + entity.TableName() + "` WHERE " + primaryKeyObj.key + "='" + primaryKeyObj.value + "';";
         }
         return sqlStr;
     }
@@ -93,7 +107,7 @@ export class Interpreter {
         }
 
         this.joinTeamp = {
-            fTableName: fEntity.toString(),
+            fTableName: fEntity.TableName(),
         };
     }
     TransToSQLOfOn(func: Function, mTableName: string) {
@@ -276,7 +290,7 @@ export class Interpreter {
     }
     private GetSelectFieldList(entity) {
         let feildList = [];
-        let tableName = entity.toString();
+        let tableName = entity.TableName();
         let entityClassName = entity.ClassName();
         let pList = Define.DataDefine.Current.GetMetedata(entity);
         for (let p of pList) {

@@ -1,4 +1,4 @@
-const config = require("../config");
+const config = require("./config");
 import { MysqlDataContext } from "../mysql/dataContextMysql";
 import { Order } from "./models/order"
 import { Person } from "./models/person"

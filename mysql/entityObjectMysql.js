@@ -15,7 +15,7 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
     constructor(ctx) {
         super();
         this.interpreter = new interpreter_1.Interpreter(mysql.escape);
-        this.ctx = ctx;
+        this.ctx = arguments[0][0];
     }
     Where(func, entityObj, paramsKey, paramsValue) {
         if (arguments.length == 3) {
@@ -47,9 +47,8 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
     ToList() {
         return __awaiter(this, void 0, void 0, function* () {
             let sql = this.interpreter.GetFinalSql(this.toString());
-            console.log(sql);
             let rows = yield this.ctx.Query(sql);
-            return null;
+            return rows;
         });
     }
 }
