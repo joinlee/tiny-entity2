@@ -12,8 +12,9 @@ const testDataContext_1 = require("./testDataContext");
 const guid_1 = require("./guid");
 const assert = require("assert");
 const person_1 = require("./models/person");
-describe("ToList", () => {
+describe("query data", () => {
     let ctx = new testDataContext_1.TestDataContext();
+    let personList = [];
     before(() => __awaiter(this, void 0, void 0, function* () {
         for (let i = 0; i < 10; i++) {
             let person = new person_1.Person();
@@ -22,14 +23,34 @@ describe("ToList", () => {
             person.age = 30 + i;
             person.birth = new Date("1987-12-1").getTime();
             yield ctx.Create(person);
+            personList.push(person);
         }
     }));
     it("no query criteria", () => __awaiter(this, void 0, void 0, function* () {
         let list = yield ctx.Person.ToList();
-        assert.equal(list.length, 1);
-        console.log(list[0]);
+        assert.equal(list.length, 10);
     }));
     it("inculde query criteria", () => __awaiter(this, void 0, void 0, function* () {
+        let age = 35;
+        let list = yield ctx.Person.Where(x => x.age > age, { age }).ToList();
+        assert.equal(list.length, personList.filter(x => x.age > age).length);
+        assert.equal(list.filter(x => x.age < 35), 0);
+    }));
+    it("fuzzy query ", () => __awaiter(this, void 0, void 0, function* () {
+        let params = {
+            name: "likecheng"
+        };
+        let list = yield ctx.Person.Where(x => x.name.indexOf(params.name), { "params.name": params.name }).ToList();
+        assert.equal(list.length, 10);
+    }));
+    it("select part ", () => __awaiter(this, void 0, void 0, function* () {
+        let age = 35;
+        let list = yield ctx.Person.Where(x => x.age > age, { age }).Select(x => x.name).ToList();
+    }));
+    it("no data", () => __awaiter(this, void 0, void 0, function* () {
+        yield ctx.Delete(x => x.id != null, ctx.Person);
+        let result = yield ctx.Person.ToList();
+        assert.equal(result.length, 0);
     }));
     after(() => __awaiter(this, void 0, void 0, function* () {
         let list = yield ctx.Person.ToList();

@@ -17,17 +17,17 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
         this.interpreter = new interpreter_1.Interpreter(mysql.escape);
         this.ctx = arguments[0][0];
     }
-    Where(func, entityObj, paramsKey, paramsValue) {
-        if (arguments.length == 3) {
-            paramsKey = arguments[1];
-            paramsValue = arguments[2];
-        }
+    Where(func, params, entityObj) {
         let tableName;
         if (entityObj && !(entityObj instanceof Array))
             tableName = entityObj.TableName();
         else
             tableName = this.TableName();
-        this.interpreter.TransToSQLOfWhere(func, tableName, paramsKey, paramsValue);
+        this.interpreter.TransToSQLOfWhere(func, tableName, params);
+        return this;
+    }
+    Select(func) {
+        this.interpreter.TransToSQLOfSelect(func, this.TableName());
         return this;
     }
     Join(fEntity) {
@@ -48,7 +48,13 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
         return __awaiter(this, void 0, void 0, function* () {
             let sql = this.interpreter.GetFinalSql(this.toString());
             let rows = yield this.ctx.Query(sql);
-            return rows;
+            let resultList = [];
+            for (let row of rows) {
+                let entity = this.ConverToEntity(row);
+                resultList.push(entity);
+            }
+            this.interpreter = new interpreter_1.Interpreter(mysql.escape);
+            return resultList;
         });
     }
 }

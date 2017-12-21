@@ -4,6 +4,7 @@ import { IMySql, IPool, IPoolConfig, IConnection } from 'mysql';
 import { Interpreter } from '../interpreter';
 import mysql = require("mysql");
 import { Define } from '../define/dataDefine';
+import { IQueryParameter, IQuerySelector } from '../queryObject';
 
 let mysqlPool: IPool;
 function log() {
@@ -48,8 +49,8 @@ export class MysqlDataContext implements IDataContext {
     }
 
     Delete(obj: IEntityObject);
-    Delete<T extends IEntityObject>(func: (x: T) => boolean, entity: T, paramsKey?: string[], paramsValue?: any[]);
-    Delete(func: any, entity?: any, paramsKey?: any, paramsValue?: any) {
+    Delete<T extends IEntityObject>(func: IQuerySelector<T>, entity: T, params?: IQueryParameter);
+    Delete(func: any, entity?: any, params?: IQueryParameter) {
         if (arguments.length > 1) {
             func = arguments[0];
             entity = arguments[1];
@@ -58,7 +59,7 @@ export class MysqlDataContext implements IDataContext {
             func = null;
             entity = arguments[0];
         }
-        let sqlStr = this.interpreter.TransToDeleteSql(func, entity, paramsKey, paramsValue);
+        let sqlStr = this.interpreter.TransToDeleteSql(func, entity, params);
         if (this.transactionOn) {
             this.querySentence.push(sqlStr);
         }
@@ -114,7 +115,7 @@ export class MysqlDataContext implements IDataContext {
             });
         });
     }
-    Query(...args: any[]) {
+    Query(...args: any[]): Promise<any> {
         if (args.length >= 1)
             return this.onSubmit(args[0]);
     }

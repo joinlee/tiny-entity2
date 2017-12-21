@@ -1,4 +1,4 @@
-import { IQueryObject, IJoinChildQueryObject } from './../queryObject';
+import { IQueryObject, IJoinChildQueryObject, IQueryParameter, IQuerySelector, IQueryEnumerable, IResultQueryObject } from './../queryObject';
 import { IEntityObject, EntityObject } from './../entityObject';
 import { Interpreter } from '../interpreter';
 import mysql = require("mysql");
@@ -13,21 +13,21 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         this.ctx = arguments[0][0];
     }
 
-    Where(func: (entity: T) => boolean): IQueryObject<T>;
-    Where(func: (entity: T) => boolean, paramsKey?: string[], paramsValue?: any[]): IQueryObject<T>;
-    Where<K extends IEntityObject>(func: (entity: K) => boolean, entityObj: K, paramsKey?: string[], paramsValue?: any[]): IQueryObject<T>;
-    Where(func: any, entityObj?: any, paramsKey?: any, paramsValue?: any) {
-        if (arguments.length == 3) {
-            paramsKey = arguments[1];
-            paramsValue = arguments[2];
-        }
+    Where(func: IQuerySelector<T>): IQueryObject<T>;
+    Where(func: IQuerySelector<T>, params: IQueryParameter): IQueryObject<T>;
+    Where<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): IQueryObject<T>;
+    Where(func: any, params?: any, entityObj?: any) {
         let tableName;
         if (entityObj && !(entityObj instanceof Array)) tableName = entityObj.TableName();
         else tableName = this.TableName();
-        this.interpreter.TransToSQLOfWhere(func, tableName, paramsKey, paramsValue);
+        this.interpreter.TransToSQLOfWhere(func, tableName, params);
         return this;
     }
 
+    Select(func: IQueryEnumerable<T>): IResultQueryObject<T> {
+        this.interpreter.TransToSQLOfSelect(func, this.TableName());
+        return this;
+    }
 
     Join<F extends IEntityObject>(fEntity: F): IJoinChildQueryObject<T, F> {
         this.interpreter.TransToSQLOfSelect(this);
@@ -50,7 +50,16 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
     async ToList() {
         let sql = this.interpreter.GetFinalSql(this.toString());
         let rows = await this.ctx.Query(sql);
-        
-        return rows;
+
+        // conver to entity;
+        let resultList = [];
+        for (let row of rows) {
+            let entity = this.ConverToEntity(row);
+            resultList.push(entity);
+        }
+
+        this.interpreter = new Interpreter(mysql.escape);
+
+        return resultList;
     }
 }

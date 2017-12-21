@@ -1,18 +1,18 @@
 import { IEntityObject } from './entityObject';
 
 export interface IQueryObject<T> extends IResultQueryObject<T>, IAssembleResultQuery<T> {
-    Where(func: (entity: T) => boolean): IQueryObject<T>;
-    Where(func: (entity: T) => boolean, paramsKey: string[], paramsValue: any[]): IQueryObject<T>;
-    Where<K extends IEntityObject>(func: (entity: K) => boolean, entityObj: K, paramsKey?: string[], paramsValue?: any[]): IQueryObject<T>;
-    Select(func: (entity: T) => void): IResultQueryObject<T>;
-    OrderBy(func: (entity: T) => void): IResultQueryObject<T>
-    OrderByDesc(func: (entity: T) => void): IResultQueryObject<T>;
-    GroupBy(func: (entity: T) => void): IResultQueryObject<T>;
-    Contains(func: (entity: T) => void, values: any[]): IResultQueryObject<T>
+    Where(func: IQuerySelector<T>): IQueryObject<T>;
+    Where(func: IQuerySelector<T>, params: IQueryParameter): IQueryObject<T>;
+    Where<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): IQueryObject<T>;
+    Select(func: IQueryEnumerable<T>): IResultQueryObject<T>;
+    OrderBy(func: IQueryEnumerable<T>): IResultQueryObject<T>
+    OrderByDesc(func: IQueryEnumerable<T>): IResultQueryObject<T>;
+    GroupBy(func: IQueryEnumerable<T>): IResultQueryObject<T>;
+    Contains(func: IQueryEnumerable<T>, values: any[]): IResultQueryObject<T>
     Take(count: number): ITakeChildQueryObject<T>;
     Join<F extends IEntityObject>(fEntity: F): IJoinChildQueryObject<T, F>;
-    IndexOf(func: (entity: T) => boolean): IQueryObject<T>;
-    IndexOf<K extends IEntityObject>(func: (entity: K) => boolean, entityObj: K): IQueryObject<T>;
+    IndexOf(func: IQuerySelector<T>): IQueryObject<T>;
+    IndexOf<K extends IEntityObject>(func: IQuerySelector<T>, entityObj: K): IQueryObject<T>;
 }
 
 export interface IJoinChildQueryObject<T, F> {
@@ -24,15 +24,27 @@ export interface ITakeChildQueryObject<T> extends IResultQueryObject<T> {
     Skip(count: number): IAssembleResultQuery<T>;
 }
 
-export interface IResultQueryObject<T> {
-    Max(func: (entity: T) => void): Promise<number>;
-    Min(func: (entity: T) => void): Promise<number>;
-    Count(func: (entity: T) => void): Promise<number>;
-    Any(func: (entity: T) => boolean): Promise<number>;
-    First(func: (entity: T) => boolean): Promise<number>;
+export interface IResultQueryObject<T> extends IAssembleResultQuery<T> {
+    Max(func: IQueryEnumerable<T>): Promise<number>;
+    Min(func: IQueryEnumerable<T>): Promise<number>;
+    Count(func: IQueryEnumerable<T>): Promise<number>;
+    Any(func: IQuerySelector<T>): Promise<number>;
+    First(func: IQuerySelector<T>): Promise<number>;
 }
 
 export interface IAssembleResultQuery<T> {
     ToList(): Promise<T[]>;
     ToList<R>(): Promise<R[]>;
+}
+
+export interface IQueryParameter {
+
+}
+
+export interface IQuerySelector<T> {
+    (entity: T): boolean | number;
+}
+
+export interface IQueryEnumerable<T> {
+    (entity: T): void;
 }

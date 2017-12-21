@@ -1,6 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class EntityObjectBase {
+    IndexOf(func, entityObj) {
+        return this;
+    }
+    Any(func) {
+        throw new Error("Method not implemented.");
+    }
+    First(func) {
+        throw new Error("Method not implemented.");
+    }
+    Where(func, params, entityObj) {
+        return this;
+    }
+    ConverToEntity(obj) {
+        throw new Error("Method not implemented.");
+    }
     TableName() {
         throw new Error("Method not implemented.");
     }
@@ -9,12 +24,6 @@ class EntityObjectBase {
     }
     On(func, mEntity) {
         return this;
-    }
-    Where(func, entityObj, paramsKey, paramsValue) {
-        return this;
-    }
-    Clone(obj) {
-        throw new Error("Method not implemented.");
     }
     Select(func) {
         throw new Error("Method not implemented.");
@@ -37,9 +46,6 @@ class EntityObjectBase {
     Join(fEntity) {
         throw new Error("Method not implemented.");
     }
-    IndexOf(func, entityObj) {
-        return this;
-    }
     Max(func) {
         throw new Error("Method not implemented.");
     }
@@ -47,12 +53,6 @@ class EntityObjectBase {
         throw new Error("Method not implemented.");
     }
     Count(func) {
-        throw new Error("Method not implemented.");
-    }
-    Any(func) {
-        throw new Error("Method not implemented.");
-    }
-    First(func) {
         throw new Error("Method not implemented.");
     }
     ToList() {

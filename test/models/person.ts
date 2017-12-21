@@ -10,10 +10,10 @@ export class Person extends EntityObjectMysql<Person> {
     weight: number;
 
     @Define.Column()
-    name;
+    name: string;
 
     @Define.Column({ DataType: Define.DataType.INT, DataLength: 11 })
-    age;
+    age: number;
 
     @Define.Column({ DataType: Define.DataType.BIGINT })
     birth: number;

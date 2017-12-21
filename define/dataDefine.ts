@@ -11,6 +11,7 @@ export namespace Define {
             return class extends constructor {
                 ClassName: () => string;
                 TableName: () => string;
+                ConverToEntity: <T>(obj: any) => T;
                 constructor(...args: any[]) {
                     super(args);
                     for (let key in constructor.prototype) {
@@ -24,6 +25,19 @@ export namespace Define {
                     }
                     this.ClassName = function () {
                         return constructor.name;
+                    }
+                    this.ConverToEntity = function (obj) {
+                        let medateData = DataDefine.Current.GetMetedata(this);
+                        for (let item of medateData) {
+                            this[item.ColumnName] = obj[item.ColumnName];
+                        }
+
+                        let resultObj: any = {};
+                        for (let key in this) {
+                            if (key === "interpreter" || key === "ctx" || key === "ConverToEntity") continue;
+                            resultObj[key] = this[key];
+                        }
+                        return resultObj;
                     }
                 }
             }

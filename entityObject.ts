@@ -1,6 +1,27 @@
-import { IQueryObject, IResultQueryObject, ITakeChildQueryObject, IJoinChildQueryObject } from './queryObject';
+import { IQueryObject, IResultQueryObject, ITakeChildQueryObject, IJoinChildQueryObject, IQueryParameter, IQuerySelector, IQueryEnumerable } from './queryObject';
 
 export abstract class EntityObjectBase<T extends IEntityObject, R> implements IEntityObject, IQueryObject<T>, IJoinChildQueryObject<T, R>{
+    IndexOf(func: IQuerySelector<T>): IQueryObject<T>;
+    IndexOf<K extends IEntityObject>(func: IQuerySelector<T>, entityObj: K): IQueryObject<T>;
+    IndexOf(func: any, entityObj?: any) {
+        return this;
+    }
+    Any(func: IQuerySelector<T>): Promise<number> {
+        throw new Error("Method not implemented.");
+    }
+    First(func: IQuerySelector<T>): Promise<number> {
+        throw new Error("Method not implemented.");
+    }
+    Where(func: IQuerySelector<T>): IQueryObject<T>;
+    Where(func: IQuerySelector<T>, params: IQueryParameter): IQueryObject<T>;
+    Where<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): IQueryObject<T>;
+    Where(func: IQuerySelector<T>, params?: any, entityObj?: any) {
+        return this;
+    }
+
+    ConverToEntity<T>(obj: any): T {
+        throw new Error("Method not implemented.");
+    }
     TableName(): string {
         throw new Error("Method not implemented.");
     }
@@ -13,29 +34,19 @@ export abstract class EntityObjectBase<T extends IEntityObject, R> implements IE
         return this;
     }
 
-    Where(func: (entity: T) => boolean): IQueryObject<T>;
-    Where(func: (entity: T) => boolean, paramsKey: string[], paramsValue: any[]): IQueryObject<T>;
-    Where<K extends IEntityObject>(func: (entity: K) => boolean, entityObj: K, paramsKey: string[], paramsValue?: any[]): IQueryObject<T>;
-    Where(func: any, entityObj?: any, paramsKey?: any, paramsValue?: any) {
-        return this;
-    }
-    Clone(obj: any): void {
+    Select(func: IQueryEnumerable<T>): IResultQueryObject<T> {
         throw new Error("Method not implemented.");
     }
-
-    Select(func: (entity: T) => void): IResultQueryObject<T> {
+    OrderBy(func: IQueryEnumerable<T>): IResultQueryObject<T> {
         throw new Error("Method not implemented.");
     }
-    OrderBy(func: (entity: T) => void): IResultQueryObject<T> {
+    OrderByDesc(func: IQueryEnumerable<T>): IResultQueryObject<T> {
         throw new Error("Method not implemented.");
     }
-    OrderByDesc(func: (entity: T) => void): IResultQueryObject<T> {
+    GroupBy(func: IQueryEnumerable<T>): IResultQueryObject<T> {
         throw new Error("Method not implemented.");
     }
-    GroupBy(func: (entity: T) => void): IResultQueryObject<T> {
-        throw new Error("Method not implemented.");
-    }
-    Contains(func: (entity: T) => void, values: any[]): IResultQueryObject<T> {
+    Contains(func: IQueryEnumerable<T>, values: any[]): IResultQueryObject<T> {
         throw new Error("Method not implemented.");
     }
     Take(count: number): ITakeChildQueryObject<T> {
@@ -45,26 +56,17 @@ export abstract class EntityObjectBase<T extends IEntityObject, R> implements IE
         throw new Error("Method not implemented.");
     }
 
-    IndexOf(func: (entity: T) => boolean): IQueryObject<T>;
-    IndexOf<K extends IEntityObject>(func: (entity: K) => boolean, entityObj: K): IQueryObject<T>;
-    IndexOf(func: any, entityObj?: any) {
-        return this;
-    }
-    Max(func: (entity: T) => void): Promise<number> {
+
+    Max(func: IQueryEnumerable<T>): Promise<number> {
         throw new Error("Method not implemented.");
     }
-    Min(func: (entity: T) => void): Promise<number> {
+    Min(func: IQueryEnumerable<T>): Promise<number> {
         throw new Error("Method not implemented.");
     }
-    Count(func: (entity: T) => void): Promise<number> {
+    Count(func: IQueryEnumerable<T>): Promise<number> {
         throw new Error("Method not implemented.");
     }
-    Any(func: (entity: T) => boolean): Promise<number> {
-        throw new Error("Method not implemented.");
-    }
-    First(func: (entity: T) => boolean): Promise<number> {
-        throw new Error("Method not implemented.");
-    }
+
     ToList(): Promise<T[]>;
     ToList<R>(): Promise<R[]>;
     ToList() {
@@ -80,8 +82,8 @@ export abstract class EntityObject<T extends IEntityObject> extends EntityObject
 
 export interface IEntityObject {
     toString(): string;
-    Clone(obj: any): void;
     ClassName(): string;
     TableName(): string;
+    ConverToEntity<T>(obj: any): T;
 }
 

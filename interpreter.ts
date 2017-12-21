@@ -1,5 +1,5 @@
 import { Define } from './define/dataDefine';
-import { IJoinChildQueryObject } from './queryObject';
+import { IJoinChildQueryObject, IQueryParameter } from './queryObject';
 export class Interpreter {
     private escape: any;
     private partOfWhere: string[] = [];
@@ -61,10 +61,10 @@ export class Interpreter {
         return sqlStr;
     }
 
-    TransToDeleteSql(func: any, entity: any, paramsKey?: any, paramsValue?: any) {
+    TransToDeleteSql(func: any, entity: any, params?: IQueryParameter) {
         let sqlStr = "";
         if (func) {
-            let s = this.TransToSQLOfWhere(func, entity.TableName(), paramsKey, paramsValue);
+            let s = this.TransToSQLOfWhere(func, entity.TableName(), params);
             sqlStr = "DELETE FROM `" + entity.TableName() + "` WHERE " + s + ";";
         }
         else {
@@ -76,11 +76,10 @@ export class Interpreter {
         return sqlStr;
     }
 
-    TransToSQLOfWhere(func: Function, tableName?: string, paramsKey?: string[], paramsValue?: any[]): string {
-        let param = this.MakeParams(paramsKey, paramsValue);
+    TransToSQLOfWhere(func: Function, tableName?: string, params?: IQueryParameter): string {
         // add to sql part of where;
-        this.partOfWhere.push("(" + this.TransToSQL(func, tableName, param) + ")");
-        return this.TransToSQL(func, tableName, param);
+        this.partOfWhere.push("(" + this.TransToSQL(func, tableName, params) + ")");
+        return this.TransToSQL(func, tableName, params);
     }
     TransToSQLOfSelect(entity: any);
     TransToSQLOfSelect(func: Function, tableName: string);
@@ -186,8 +185,8 @@ export class Interpreter {
                 else if (funcCharList[index - 1] === "!=") funcCharList[index - 1] = "IS NOT";
                 funcCharList[index] = "NULL";
             }
-            if (item.indexOf(".IndexOf") > -1) {
-                funcCharList[index] = funcCharList[index].replace(new RegExp("\\.IndexOf", "gm"), " LIKE ");
+            if (item.indexOf(".indexOf") > -1) {
+                funcCharList[index] = funcCharList[index].replace(new RegExp("\\.indexOf", "gm"), " LIKE ");
                 funcCharList[index] = funcCharList[index].replace(/\(\"/g, '"%');
                 funcCharList[index] = funcCharList[index].replace(/\"\)/g, '%"');
                 funcCharList[index] = funcCharList[index].replace(/\(\'/g, '"%');

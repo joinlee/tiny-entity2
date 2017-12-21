@@ -49,7 +49,7 @@ class MysqlDataContext {
             return obj;
         });
     }
-    Delete(func, entity, paramsKey, paramsValue) {
+    Delete(func, entity, params) {
         if (arguments.length > 1) {
             func = arguments[0];
             entity = arguments[1];
@@ -58,7 +58,7 @@ class MysqlDataContext {
             func = null;
             entity = arguments[0];
         }
-        let sqlStr = this.interpreter.TransToDeleteSql(func, entity, paramsKey, paramsValue);
+        let sqlStr = this.interpreter.TransToDeleteSql(func, entity, params);
         if (this.transactionOn) {
             this.querySentence.push(sqlStr);
         }

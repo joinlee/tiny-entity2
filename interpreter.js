@@ -50,10 +50,10 @@ class Interpreter {
         sqlStr += qList.join(',') + " WHERE " + primaryKeyObj.key + "=" + this.escape(primaryKeyObj.value) + ";";
         return sqlStr;
     }
-    TransToDeleteSql(func, entity, paramsKey, paramsValue) {
+    TransToDeleteSql(func, entity, params) {
         let sqlStr = "";
         if (func) {
-            let s = this.TransToSQLOfWhere(func, entity.TableName(), paramsKey, paramsValue);
+            let s = this.TransToSQLOfWhere(func, entity.TableName(), params);
             sqlStr = "DELETE FROM `" + entity.TableName() + "` WHERE " + s + ";";
         }
         else {
@@ -66,10 +66,9 @@ class Interpreter {
         }
         return sqlStr;
     }
-    TransToSQLOfWhere(func, tableName, paramsKey, paramsValue) {
-        let param = this.MakeParams(paramsKey, paramsValue);
-        this.partOfWhere.push("(" + this.TransToSQL(func, tableName, param) + ")");
-        return this.TransToSQL(func, tableName, param);
+    TransToSQLOfWhere(func, tableName, params) {
+        this.partOfWhere.push("(" + this.TransToSQL(func, tableName, params) + ")");
+        return this.TransToSQL(func, tableName, params);
     }
     TransToSQLOfSelect(p1, p2) {
         if (arguments.length == 1) {
@@ -165,8 +164,8 @@ class Interpreter {
                     funcCharList[index - 1] = "IS NOT";
                 funcCharList[index] = "NULL";
             }
-            if (item.indexOf(".IndexOf") > -1) {
-                funcCharList[index] = funcCharList[index].replace(new RegExp("\\.IndexOf", "gm"), " LIKE ");
+            if (item.indexOf(".indexOf") > -1) {
+                funcCharList[index] = funcCharList[index].replace(new RegExp("\\.indexOf", "gm"), " LIKE ");
                 funcCharList[index] = funcCharList[index].replace(/\(\"/g, '"%');
                 funcCharList[index] = funcCharList[index].replace(/\"\)/g, '%"');
                 funcCharList[index] = funcCharList[index].replace(/\(\'/g, '"%');

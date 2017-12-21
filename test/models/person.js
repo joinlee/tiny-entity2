@@ -23,11 +23,11 @@ __decorate([
 ], Person.prototype, "weight", void 0);
 __decorate([
     dataDefine_1.Define.Column(),
-    __metadata("design:type", Object)
+    __metadata("design:type", String)
 ], Person.prototype, "name", void 0);
 __decorate([
     dataDefine_1.Define.Column({ DataType: dataDefine_1.Define.DataType.INT, DataLength: 11 }),
-    __metadata("design:type", Object)
+    __metadata("design:type", Number)
 ], Person.prototype, "age", void 0);
 __decorate([
     dataDefine_1.Define.Column({ DataType: dataDefine_1.Define.DataType.BIGINT }),
