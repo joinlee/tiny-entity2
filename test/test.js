@@ -43,9 +43,11 @@ describe("query data", () => {
         let list = yield ctx.Person.Where(x => x.name.indexOf(params.name), { "params.name": params.name }).ToList();
         assert.equal(list.length, 10);
     }));
-    it("select part ", () => __awaiter(this, void 0, void 0, function* () {
+    it("select part of feilds", () => __awaiter(this, void 0, void 0, function* () {
         let age = 35;
         let list = yield ctx.Person.Where(x => x.age > age, { age }).Select(x => x.name).ToList();
+        assert.equal(list.filter(x => x.name != null).length, 10);
+        assert.equal(list.filter(x => x.id != null).length, 0);
     }));
     it("no data", () => __awaiter(this, void 0, void 0, function* () {
         yield ctx.Delete(x => x.id != null, ctx.Person);
@@ -57,6 +59,11 @@ describe("query data", () => {
         for (let item of list) {
             yield ctx.Delete(item);
         }
+    }));
+});
+describe("using left join key work query multi tables ", () => {
+    let ctx = new testDataContext_1.TestDataContext();
+    before(() => __awaiter(this, void 0, void 0, function* () {
     }));
 });
 //# sourceMappingURL=test.js.map

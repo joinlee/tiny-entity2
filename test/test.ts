@@ -51,11 +51,12 @@ describe("query data", () => {
         let list = await ctx.Person.Where(x => x.name.indexOf(params.name), { "params.name": params.name }).ToList();
         assert.equal(list.length, 10);
     })
-    it("select part ", async () => {
+    it("select part of feilds", async () => {
         let age = 35;
         let list = await ctx.Person.Where(x => x.age > age, { age }).Select(x => x.name).ToList();
 
-        // assert.equal()
+        assert.equal(list.filter(x => x.name != null).length, 10);
+        assert.equal(list.filter(x => x.id != null).length, 0);
     })
 
     it("no data", async () => {
@@ -71,6 +72,14 @@ describe("query data", () => {
             await ctx.Delete(item);
         }
     })
+})
+
+describe("using left join key work query multi tables ", () => {
+    let ctx = new TestDataContext();
+    
+    before(async () => {
+        // init data to database
+    });
 })
 
 
