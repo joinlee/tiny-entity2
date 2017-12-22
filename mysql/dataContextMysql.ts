@@ -182,6 +182,15 @@ export class MysqlDataContext implements IDataContext {
         return true;
     }
 
+    GetEntityInstance(entityName: string) {
+        let r = new this[entityName].constructor();
+        delete r.ctx;
+        delete r.interpreter;
+        delete r.ConverToEntity;
+        delete r.joinEntities;
+        return r;
+    }
+
     private async TrasnQuery(conn: IConnection, sql: string) {
         return new Promise((resolve, reject) => {
             conn.query(sql, (err, result) => {

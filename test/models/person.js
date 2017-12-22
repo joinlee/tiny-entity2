@@ -33,6 +33,10 @@ __decorate([
     dataDefine_1.Define.Column({ DataType: dataDefine_1.Define.DataType.BIGINT }),
     __metadata("design:type", Number)
 ], Person.prototype, "birth", void 0);
+__decorate([
+    dataDefine_1.Define.Mapping({ MappingTable: "Account" }),
+    __metadata("design:type", Array)
+], Person.prototype, "accounts", void 0);
 Person = __decorate([
     dataDefine_1.Define.Table({ TableName: "person" })
 ], Person);

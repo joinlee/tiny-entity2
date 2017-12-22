@@ -1,5 +1,6 @@
 import { EntityObjectMysql } from './../../mysql/entityObjectMysql';
 import { Define } from '../../define/dataDefine';
+import { Account } from './account';
 
 @Define.Table({ TableName: "person" })
 export class Person extends EntityObjectMysql<Person> {
@@ -18,4 +19,6 @@ export class Person extends EntityObjectMysql<Person> {
     @Define.Column({ DataType: Define.DataType.BIGINT })
     birth: number;
 
+    @Define.Mapping({ MappingTable: "Account" })
+    accounts: Account[];
 }

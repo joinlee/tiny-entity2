@@ -39,6 +39,7 @@ export class Interpreter {
         let keyList = [], valueList = [];
 
         entityMetadata.forEach(item => {
+            if(item.MappingTable) return;
             keyList.push("`" + item.ColumnName + "`");
             if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null) {
                 valueList.push("NULL");
@@ -293,6 +294,7 @@ export class Interpreter {
         let entityClassName = entity.ClassName();
         let pList = Define.DataDefine.Current.GetMetedata(entity);
         for (let p of pList) {
+            if(p.MappingTable) continue;
             feildList.push(tableName + ".`" + p.ColumnName + "` AS " + entityClassName + "_" + p.ColumnName);
         }
         return feildList;

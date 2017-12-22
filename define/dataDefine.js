@@ -30,7 +30,7 @@ var Define;
                         }
                         let resultObj = {};
                         for (let key in this) {
-                            if (key === "interpreter" || key === "ctx" || key === "ConverToEntity")
+                            if (key === "interpreter" || key === "ctx" || key === "ConverToEntity" || key === "joinEntities")
                                 continue;
                             resultObj[key] = this[key];
                         }
@@ -67,6 +67,14 @@ var Define;
         };
     }
     Define.Column = Column;
+    function Mapping(opt) {
+        return (target, propertyName, propertyDescriptor) => {
+            opt.ColumnName = propertyName;
+            DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
+            SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
+        };
+    }
+    Define.Mapping = Mapping;
     function SetPropertyDefineOptionValue(opt) {
         if (!opt.DataType) {
             opt.DataType = DataType.VARCHAR;
@@ -99,7 +107,7 @@ var Define;
             let target = this.GetTargetByTableName(tableName);
             let list = [];
             for (let key in entity) {
-                if (typeof (entity[key]) == "function" || key === "interpreter" || key === "ctx")
+                if (typeof (entity[key]) == "function" || key === "interpreter" || key === "ctx" || key === "joinEntities")
                     continue;
                 let s = Reflect.getMetadata(tableName + "_metadataKey", target, key);
                 list.push(JSON.parse(s));
@@ -107,8 +115,6 @@ var Define;
             return list;
         }
         AddMetqdata(propertyKey, propertyValue, tableName) {
-            if (tableName)
-                this.lastTableName = tableName.toLocaleLowerCase();
             tableName = tableName.toLocaleLowerCase();
             let target = this.GetTargetByTableName(tableName);
             if (!target) {

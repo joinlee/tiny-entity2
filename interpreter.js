@@ -32,6 +32,8 @@ class Interpreter {
         let entityMetadata = dataDefine_1.Define.DataDefine.Current.GetMetedata(entity);
         let keyList = [], valueList = [];
         entityMetadata.forEach(item => {
+            if (item.MappingTable)
+                return;
             keyList.push("`" + item.ColumnName + "`");
             if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null) {
                 valueList.push("NULL");
@@ -272,6 +274,8 @@ class Interpreter {
         let entityClassName = entity.ClassName();
         let pList = dataDefine_1.Define.DataDefine.Current.GetMetedata(entity);
         for (let p of pList) {
+            if (p.MappingTable)
+                continue;
             feildList.push(tableName + ".`" + p.ColumnName + "` AS " + entityClassName + "_" + p.ColumnName);
         }
         return feildList;

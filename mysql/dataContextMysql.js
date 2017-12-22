@@ -171,6 +171,14 @@ class MysqlDataContext {
             return true;
         });
     }
+    GetEntityInstance(entityName) {
+        let r = new this[entityName].constructor();
+        delete r.ctx;
+        delete r.interpreter;
+        delete r.ConverToEntity;
+        delete r.joinEntities;
+        return r;
+    }
     TrasnQuery(conn, sql) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {

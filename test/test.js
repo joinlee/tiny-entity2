@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const account_1 = require("./models/account");
 const testDataContext_1 = require("./testDataContext");
 const guid_1 = require("./guid");
 const assert = require("assert");
@@ -55,15 +56,34 @@ describe("query data", () => {
         assert.equal(result.length, 0);
     }));
     after(() => __awaiter(this, void 0, void 0, function* () {
-        let list = yield ctx.Person.ToList();
-        for (let item of list) {
-            yield ctx.Delete(item);
-        }
+        yield ctx.Delete(x => x.id != null, ctx.Person);
     }));
 });
 describe("using left join key work query multi tables ", () => {
     let ctx = new testDataContext_1.TestDataContext();
+    let person = new person_1.Person();
+    person.id = guid_1.Guid.GetGuid();
+    person.name = "jack lee";
+    person.age = 25;
+    let accountRecord = [];
     before(() => __awaiter(this, void 0, void 0, function* () {
+        yield ctx.Create(person);
+        for (let i = 0; i < 10; i++) {
+            let account = new account_1.Account();
+            account.id = guid_1.Guid.GetGuid();
+            account.personId = person.id;
+            account.amount = 100 + i / 2;
+            yield ctx.Create(account);
+            accountRecord.push(account);
+        }
+    }));
+    it("query person left join accounts", () => __awaiter(this, void 0, void 0, function* () {
+        let list = yield ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).ToList();
+        assert.equal(list.length, 1);
+    }));
+    after(() => __awaiter(this, void 0, void 0, function* () {
+        yield ctx.Delete(x => x.id != null, ctx.Person);
+        yield ctx.Delete(x => x.id != null, ctx.Account);
     }));
 });
 //# sourceMappingURL=test.js.map

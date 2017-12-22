@@ -11,9 +11,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const entityObject_1 = require("./../entityObject");
 const interpreter_1 = require("../interpreter");
 const mysql = require("mysql");
+const dataDefine_1 = require("../define/dataDefine");
 class EntityObjectMysql extends entityObject_1.EntityObject {
     constructor(ctx) {
         super();
+        this.joinEntities = [];
         this.interpreter = new interpreter_1.Interpreter(mysql.escape);
         this.ctx = arguments[0][0];
     }
@@ -33,6 +35,7 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
     Join(fEntity) {
         this.interpreter.TransToSQLOfSelect(this);
         this.interpreter.TransToSQLOfJoin(fEntity);
+        this.joinEntities.push(fEntity);
         return this;
     }
     On(func, mEntity) {
@@ -49,13 +52,50 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
             let sql = this.interpreter.GetFinalSql(this.toString());
             let rows = yield this.ctx.Query(sql);
             let resultList = [];
-            for (let row of rows) {
-                let entity = this.ConverToEntity(row);
-                resultList.push(entity);
+            if (this.joinEntities.length > 0) {
+                let obj = this.ctx.GetEntityInstance(this.ClassName());
+                resultList = this.TransRowToEnity(obj, rows);
             }
-            this.interpreter = new interpreter_1.Interpreter(mysql.escape);
+            else {
+                for (let row of rows) {
+                    let entity = this.ConverToEntity(row);
+                    resultList.push(entity);
+                }
+            }
+            this.Disposed();
             return resultList;
         });
+    }
+    TransRowToEnity(entityObj, rows) {
+        let resultList = [];
+        let meta = dataDefine_1.Define.DataDefine.Current.GetMetedata(entityObj);
+        let pramariyKeyName;
+        for (let item of meta) {
+            if (item.MappingTable) {
+                let mappingEntity = this.ctx.GetEntityInstance(item.MappingTable);
+                entityObj[item.ColumnName] = this.TransRowToEnity(mappingEntity, rows);
+            }
+            if (item.IsPrimaryKey)
+                pramariyKeyName = item.ColumnName;
+        }
+        let className = entityObj.ClassName();
+        for (let row of rows) {
+            let pvalue = row[className + "_" + pramariyKeyName];
+            if (resultList.find(x => x[pramariyKeyName] === pvalue))
+                continue;
+            for (let key in row) {
+                let kv = key.split("_");
+                if (kv[0] != className)
+                    continue;
+                entityObj[kv[1]] = row[key];
+            }
+            resultList.push(entityObj);
+        }
+        return resultList;
+    }
+    Disposed() {
+        this.interpreter = new interpreter_1.Interpreter(mysql.escape);
+        this.joinEntities = [];
     }
 }
 exports.EntityObjectMysql = EntityObjectMysql;

@@ -18,7 +18,7 @@ This is a ORM framework spport Mysql IndexedDB.
 
 ## Define
 
-you can define entity like this:
+you can define an entity model like this:
 ``` ts
 @Define.Table({ TableName: "person" })
 export class Person extends EntityObjectMysql<Person> {

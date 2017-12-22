@@ -1,5 +1,6 @@
 import { DeskTable } from './models/table';
 import { TableParty } from './models/tableParty';
+import { Account } from "./models/account";
 import { Order } from './models/order';
 import { TestDataContext } from './testDataContext';
 import { Guid } from './guid';
@@ -67,19 +68,44 @@ describe("query data", () => {
 
     after(async () => {
         // clean person table from database;
-        let list = await ctx.Person.ToList();
-        for (let item of list) {
-            await ctx.Delete(item);
-        }
+        await ctx.Delete<Person>(x => x.id != null, ctx.Person);
     })
 })
 
 describe("using left join key work query multi tables ", () => {
     let ctx = new TestDataContext();
-    
+
+    let person = new Person();
+    person.id = Guid.GetGuid();
+    person.name = "jack lee";
+    person.age = 25;
+
+    let accountRecord: Account[] = [];
+
     before(async () => {
         // init data to database
+        await ctx.Create(person);
+        for (let i = 0; i < 10; i++) {
+            let account = new Account();
+            account.id = Guid.GetGuid();
+            account.personId = person.id;
+            account.amount = 100 + i / 2;
+
+            await ctx.Create(account);
+            accountRecord.push(account);
+        }
     });
+
+    it("query person left join accounts", async () => {
+        let list = await ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).ToList();
+        assert.equal(list.length, 1);
+    })
+
+    after(async () => {
+        // clean person table from database;
+        await ctx.Delete<Person>(x => x.id != null, ctx.Person);
+        await ctx.Delete<Account>(x => x.id != null, ctx.Account);
+    })
 })
 
 
