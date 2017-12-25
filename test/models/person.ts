@@ -19,6 +19,6 @@ export class Person extends EntityObjectMysql<Person> {
     @Define.Column({ DataType: Define.DataType.BIGINT })
     birth: number;
 
-    @Define.Mapping({ MappingTable: "Account" })
+    // @Define.Mapping({ MappingTable: "Account" })
     accounts: Account[];
 }

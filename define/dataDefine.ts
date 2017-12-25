@@ -161,7 +161,7 @@ export namespace Define {
         TableName: string;
     }
 
-    interface MappingOption extends PropertyDefineOption {
-        MappingTable: string;
-    }
+    // interface MappingOption extends PropertyDefineOption {
+    //     MappingTable: string;
+    // }
 }

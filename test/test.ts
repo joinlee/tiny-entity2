@@ -56,7 +56,7 @@ describe("query data", () => {
         let age = 35;
         let list = await ctx.Person.Where(x => x.age > age, { age }).Select(x => x.name).ToList();
 
-        assert.equal(list.filter(x => x.name != null).length, 10);
+        assert.equal(list.filter(x => x.name != null).length, 4);
         assert.equal(list.filter(x => x.id != null).length, 0);
     })
 
@@ -80,11 +80,17 @@ describe("using left join key work query multi tables ", () => {
     person.name = "jack lee";
     person.age = 25;
 
+    let person2 = new Person();
+    person2.id = Guid.GetGuid();
+    person2.name = "dong fang bu bai";
+    person2.age = 20;
+
     let accountRecord: Account[] = [];
 
     before(async () => {
         // init data to database
         await ctx.Create(person);
+        await ctx.Create(person2);
         for (let i = 0; i < 10; i++) {
             let account = new Account();
             account.id = Guid.GetGuid();
@@ -93,12 +99,24 @@ describe("using left join key work query multi tables ", () => {
 
             await ctx.Create(account);
             accountRecord.push(account);
+
+            let ac = new Account();
+            ac.id = Guid.GetGuid();
+            ac.personId = person2.id;
+            ac.amount = 100 - i / 2;
+
+            await ctx.Create(ac);
+            accountRecord.push(ac);
         }
     });
 
     it("query person left join accounts", async () => {
         let list = await ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).ToList();
-        assert.equal(list.length, 1);
+        assert.equal(list.length, 20);
+    })
+    it("query person left join accounts select id", async () => {
+        let list = await ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Select(x => x.id).ToList();
+        assert.equal(list.length, 20);
     })
 
     after(async () => {

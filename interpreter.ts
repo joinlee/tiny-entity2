@@ -39,7 +39,7 @@ export class Interpreter {
         let keyList = [], valueList = [];
 
         entityMetadata.forEach(item => {
-            if(item.MappingTable) return;
+            // if(item.MappingTable) return;
             keyList.push("`" + item.ColumnName + "`");
             if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null) {
                 valueList.push("NULL");
@@ -91,7 +91,20 @@ export class Interpreter {
         else if (arguments.length == 2) {
             let r = this.TransToSQL(p1, p2);
             // add to sql part of select
-            this.partOfSelect = r.split('AND').join(',');
+            let tempList = [];
+            if (this.partOfSelect && this.partOfSelect != "*") {
+                let fList = this.partOfSelect.split(",");
+                for (let i of r.split("AND")) {
+                    let item = fList.find(x => x.indexOf(i) > -1);
+                    if (item) {
+                        tempList.push(item);
+                    }
+                }
+                this.partOfSelect = tempList.join(",")
+            }
+            else {
+                this.partOfSelect = r.split('AND').join(',');
+            }
         }
 
         return this.partOfSelect;
@@ -294,7 +307,7 @@ export class Interpreter {
         let entityClassName = entity.ClassName();
         let pList = Define.DataDefine.Current.GetMetedata(entity);
         for (let p of pList) {
-            if(p.MappingTable) continue;
+            // if(p.MappingTable) continue;
             feildList.push(tableName + ".`" + p.ColumnName + "` AS " + entityClassName + "_" + p.ColumnName);
         }
         return feildList;

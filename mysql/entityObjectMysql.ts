@@ -56,8 +56,7 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         let resultList = [];
 
         if (this.joinEntities.length > 0) {
-            let obj = this.ctx.GetEntityInstance(this.ClassName());
-            resultList = this.TransRowToEnity(obj, rows);
+            resultList = this.TransRowToEnity(rows);
         }
         else {
             for (let row of rows) {
@@ -71,30 +70,21 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         return resultList;
     }
 
-    private TransRowToEnity(entityObj: IEntityObject, rows: any): IEntityObject[] {
-        let resultList: IEntityObject[] = [];
-        let meta = Define.DataDefine.Current.GetMetedata(entityObj);
-        let pramariyKeyName;
-        for (let item of meta) {
-            if (item.MappingTable) {
-                let mappingEntity = this.ctx.GetEntityInstance(item.MappingTable);
-                entityObj[item.ColumnName] = this.TransRowToEnity(mappingEntity, rows);
-            }
+    private TransRowToEnity(rows: any[]) {
+        let resultList = [];
 
-            if (item.IsPrimaryKey) pramariyKeyName = item.ColumnName;
-        }
-
-        let className = entityObj.ClassName();
         for (let row of rows) {
-            let pvalue = row[className + "_" + pramariyKeyName];
-            if (resultList.find(x => x[pramariyKeyName] === pvalue)) continue;
+            let obj = {};
             for (let key in row) {
                 let kv = key.split("_");
-                if (kv[0] != className) continue;
-                entityObj[kv[1]] = row[key];
+                if (!obj[kv[0]]) {
+                    obj[kv[0]] = this.ctx.GetEntityInstance(kv[0]);
+                }
+
+                obj[kv[0]][kv[1]] = row[key];
             }
 
-            resultList.push(entityObj);
+            resultList.push(obj);
         }
 
         return resultList;

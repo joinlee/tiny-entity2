@@ -11,7 +11,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const entityObject_1 = require("./../entityObject");
 const interpreter_1 = require("../interpreter");
 const mysql = require("mysql");
-const dataDefine_1 = require("../define/dataDefine");
 class EntityObjectMysql extends entityObject_1.EntityObject {
     constructor(ctx) {
         super();
@@ -53,8 +52,7 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
             let rows = yield this.ctx.Query(sql);
             let resultList = [];
             if (this.joinEntities.length > 0) {
-                let obj = this.ctx.GetEntityInstance(this.ClassName());
-                resultList = this.TransRowToEnity(obj, rows);
+                resultList = this.TransRowToEnity(rows);
             }
             else {
                 for (let row of rows) {
@@ -66,30 +64,18 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
             return resultList;
         });
     }
-    TransRowToEnity(entityObj, rows) {
+    TransRowToEnity(rows) {
         let resultList = [];
-        let meta = dataDefine_1.Define.DataDefine.Current.GetMetedata(entityObj);
-        let pramariyKeyName;
-        for (let item of meta) {
-            if (item.MappingTable) {
-                let mappingEntity = this.ctx.GetEntityInstance(item.MappingTable);
-                entityObj[item.ColumnName] = this.TransRowToEnity(mappingEntity, rows);
-            }
-            if (item.IsPrimaryKey)
-                pramariyKeyName = item.ColumnName;
-        }
-        let className = entityObj.ClassName();
         for (let row of rows) {
-            let pvalue = row[className + "_" + pramariyKeyName];
-            if (resultList.find(x => x[pramariyKeyName] === pvalue))
-                continue;
+            let obj = {};
             for (let key in row) {
                 let kv = key.split("_");
-                if (kv[0] != className)
-                    continue;
-                entityObj[kv[1]] = row[key];
+                if (!obj[kv[0]]) {
+                    obj[kv[0]] = this.ctx.GetEntityInstance(kv[0]);
+                }
+                obj[kv[0]][kv[1]] = row[key];
             }
-            resultList.push(entityObj);
+            resultList.push(obj);
         }
         return resultList;
     }

@@ -47,7 +47,7 @@ describe("query data", () => {
     it("select part of feilds", () => __awaiter(this, void 0, void 0, function* () {
         let age = 35;
         let list = yield ctx.Person.Where(x => x.age > age, { age }).Select(x => x.name).ToList();
-        assert.equal(list.filter(x => x.name != null).length, 10);
+        assert.equal(list.filter(x => x.name != null).length, 4);
         assert.equal(list.filter(x => x.id != null).length, 0);
     }));
     it("no data", () => __awaiter(this, void 0, void 0, function* () {
@@ -65,9 +65,14 @@ describe("using left join key work query multi tables ", () => {
     person.id = guid_1.Guid.GetGuid();
     person.name = "jack lee";
     person.age = 25;
+    let person2 = new person_1.Person();
+    person2.id = guid_1.Guid.GetGuid();
+    person2.name = "dong fang bu bai";
+    person2.age = 20;
     let accountRecord = [];
     before(() => __awaiter(this, void 0, void 0, function* () {
         yield ctx.Create(person);
+        yield ctx.Create(person2);
         for (let i = 0; i < 10; i++) {
             let account = new account_1.Account();
             account.id = guid_1.Guid.GetGuid();
@@ -75,11 +80,21 @@ describe("using left join key work query multi tables ", () => {
             account.amount = 100 + i / 2;
             yield ctx.Create(account);
             accountRecord.push(account);
+            let ac = new account_1.Account();
+            ac.id = guid_1.Guid.GetGuid();
+            ac.personId = person2.id;
+            ac.amount = 100 - i / 2;
+            yield ctx.Create(ac);
+            accountRecord.push(ac);
         }
     }));
     it("query person left join accounts", () => __awaiter(this, void 0, void 0, function* () {
         let list = yield ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).ToList();
-        assert.equal(list.length, 1);
+        assert.equal(list.length, 20);
+    }));
+    it("query person left join accounts select id", () => __awaiter(this, void 0, void 0, function* () {
+        let list = yield ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Select(x => x.id).ToList();
+        assert.equal(list.length, 20);
     }));
     after(() => __awaiter(this, void 0, void 0, function* () {
         yield ctx.Delete(x => x.id != null, ctx.Person);
