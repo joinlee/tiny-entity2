@@ -79,9 +79,19 @@ export class Interpreter {
 
     TransToSQLOfWhere(func: Function, tableName?: string, params?: IQueryParameter): string {
         // add to sql part of where;
-        this.partOfWhere.push("(" + this.TransToSQL(func, tableName, params) + ")");
-        return this.TransToSQL(func, tableName, params);
+        let sql = this.TransFuncToSQL(func, tableName, params);
+        this.partOfWhere.push("(" + sql + ")");
+        return sql;
     }
+    TransToSQLOfContains(func: Function, values: any[], tableName: string) {
+        let sql = "";
+        let r = this.TransFuncToSQL(func, tableName);
+        sql = "(" + r + " IN (" + values.join(",") + "))";
+        this.partOfWhere.push(sql);
+        return sql;
+    }
+
+
     TransToSQLOfSelect(entity: any);
     TransToSQLOfSelect(func: Function, tableName: string);
     TransToSQLOfSelect(p1: any, p2?: any) {
@@ -89,22 +99,9 @@ export class Interpreter {
             this.partOfSelect = this.GetSelectFieldList(p1).join(",");
         }
         else if (arguments.length == 2) {
-            let r = this.TransToSQL(p1, p2);
+            let r = this.TransFuncToSQL(p1, p2);
             // add to sql part of select
-            let tempList = [];
-            if (this.partOfSelect && this.partOfSelect != "*") {
-                let fList = this.partOfSelect.split(",");
-                for (let i of r.split("AND")) {
-                    let item = fList.find(x => x.indexOf(i) > -1);
-                    if (item) {
-                        tempList.push(item);
-                    }
-                }
-                this.partOfSelect = tempList.join(",")
-            }
-            else {
-                this.partOfSelect = r.split('AND').join(',');
-            }
+            this.partOfSelect = r.split('AND').join(',');
         }
 
         return this.partOfSelect;
@@ -156,7 +153,7 @@ export class Interpreter {
         return this.partOfJoin;
     }
 
-    TransToSQL(func: Function, tableName?: string, param?: any): string {
+    TransFuncToSQL(func: Function, tableName?: string, param?: any): string {
         let funcStr = func.toString();
         let funcCharList = funcStr.split(" ");
         funcCharList = this.ReplaceParam(funcCharList, param);

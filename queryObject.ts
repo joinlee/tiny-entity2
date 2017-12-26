@@ -8,7 +8,8 @@ export interface IQueryObject<T> extends IResultQueryObject<T>, IAssembleResultQ
     OrderBy(func: IQueryEnumerable<T>): IResultQueryObject<T>
     OrderByDesc(func: IQueryEnumerable<T>): IResultQueryObject<T>;
     GroupBy(func: IQueryEnumerable<T>): IResultQueryObject<T>;
-    Contains(func: IQueryEnumerable<T>, values: any[]): IResultQueryObject<T>
+    Contains(func: IQueryEnumerable<T>, values: any[]): IResultQueryObject<T>;
+    Contains<K extends IEntityObject>(func: IQueryEnumerable<K>, values: any[], entity: K): IResultQueryObject<T>;
     Take(count: number): ITakeChildQueryObject<T>;
     Join<F extends IEntityObject>(fEntity: F): IJoinChildQueryObject<T, F>;
     IndexOf(func: IQuerySelector<T>): IQueryObject<T>;
@@ -38,7 +39,7 @@ export interface IAssembleResultQuery<T> {
 }
 
 export interface IQueryParameter {
-
+    
 }
 
 export interface IQuerySelector<T> {

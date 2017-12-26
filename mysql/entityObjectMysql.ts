@@ -15,9 +15,9 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         this.ctx = arguments[0][0];
     }
 
-    Where(func: IQuerySelector<T>): IQueryObject<T>;
-    Where(func: IQuerySelector<T>, params: IQueryParameter): IQueryObject<T>;
-    Where<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): IQueryObject<T>;
+    // Where(func: IQuerySelector<T>): IQueryObject<T>;
+    // Where(func: IQuerySelector<T>, params: IQueryParameter): IQueryObject<T>;
+    // Where<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): IQueryObject<T>;
     Where(func: any, params?: any, entityObj?: any) {
         let tableName;
         if (entityObj && !(entityObj instanceof Array)) tableName = entityObj.TableName();
@@ -26,8 +26,18 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         return this;
     }
 
+    Contains(func: any, values: any, entity?: any) {
+        if (values && values.length == 0) throw new Error("values can not be null or length equals 0!");
+        let tbaleName;
+        if (entity) tbaleName = entity.TableName();
+        else tbaleName = this.TableName();
+        this.interpreter.TransToSQLOfContains(func, values, tbaleName);
+        return this;
+    }
+
     Select(func: IQueryEnumerable<T>): IResultQueryObject<T> {
         this.interpreter.TransToSQLOfSelect(func, this.TableName());
+        this.joinEntities = [];
         return this;
     }
 
@@ -37,8 +47,8 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         this.joinEntities.push(fEntity);
         return this;
     }
-    On<F extends IEntityObject>(func: (m: T, f: F) => void): IQueryObject<T>;
-    On<M extends IEntityObject, F extends IEntityObject>(func: (m: M, f: F) => void, mEntity: M): IQueryObject<T>;
+    // On<F extends IEntityObject>(func: (m: T, f: F) => void): IQueryObject<T>;
+    // On<M extends IEntityObject, F extends IEntityObject>(func: (m: M, f: F) => void, mEntity: M): IQueryObject<T>;
     On(func: any, mEntity?: any) {
         let mTableName;
         if (mEntity) mTableName = mEntity.toString();

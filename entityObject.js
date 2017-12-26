@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class EntityObjectBase {
+    Contains(func, values, entity) {
+        return this;
+    }
     IndexOf(func, entityObj) {
         return this;
     }
@@ -35,9 +38,6 @@ class EntityObjectBase {
         throw new Error("Method not implemented.");
     }
     GroupBy(func) {
-        throw new Error("Method not implemented.");
-    }
-    Contains(func, values) {
         throw new Error("Method not implemented.");
     }
     Take(count) {

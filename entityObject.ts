@@ -1,6 +1,11 @@
 import { IQueryObject, IResultQueryObject, ITakeChildQueryObject, IJoinChildQueryObject, IQueryParameter, IQuerySelector, IQueryEnumerable } from './queryObject';
 
 export abstract class EntityObjectBase<T extends IEntityObject, R> implements IEntityObject, IQueryObject<T>, IJoinChildQueryObject<T, R>{
+    Contains(func: IQueryEnumerable<T>, values: any[]): IResultQueryObject<T>;
+    Contains<K extends IEntityObject>(func: IQueryEnumerable<K>, values: any[], entity: K): IResultQueryObject<T>;
+    Contains(func: any, values: any, entity?: any) {
+        return this;
+    }
     IndexOf(func: IQuerySelector<T>): IQueryObject<T>;
     IndexOf<K extends IEntityObject>(func: IQuerySelector<T>, entityObj: K): IQueryObject<T>;
     IndexOf(func: any, entityObj?: any) {
@@ -44,9 +49,6 @@ export abstract class EntityObjectBase<T extends IEntityObject, R> implements IE
         throw new Error("Method not implemented.");
     }
     GroupBy(func: IQueryEnumerable<T>): IResultQueryObject<T> {
-        throw new Error("Method not implemented.");
-    }
-    Contains(func: IQueryEnumerable<T>, values: any[]): IResultQueryObject<T> {
         throw new Error("Method not implemented.");
     }
     Take(count: number): ITakeChildQueryObject<T> {

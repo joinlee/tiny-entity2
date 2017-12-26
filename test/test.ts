@@ -15,6 +15,8 @@ import { Person } from './models/person';
 //     })
 // });
 
+process.env.tinyLog = "on";
+
 describe("query data", () => {
     let ctx = new TestDataContext();
     let personList: Person[] = [];
@@ -110,13 +112,22 @@ describe("using left join key work query multi tables ", () => {
         }
     });
 
-    it("query person left join accounts", async () => {
+    it("left join one table,account and ToList()", async () => {
         let list = await ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).ToList();
         assert.equal(list.length, 20);
     })
-    it("query person left join accounts select id", async () => {
+    it("using Select() ", async () => {
         let list = await ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Select(x => x.id).ToList();
         assert.equal(list.length, 20);
+    })
+    it("using Contains() ", async () => {
+        let values = [30, 31, 32, 20];
+        let list = await ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Contains(x => x.age, values).ToList();
+        assert.equal(list.length, 1);
+
+        let values2 = [100 - 1 / 2, 100 + 1 / 2];
+        let list2 = await ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Contains<Account>(x => x.amount, values2, ctx.Account).ToList();
+        assert.equal(list2.length, 2);
     })
 
     after(async () => {

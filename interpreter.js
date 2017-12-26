@@ -67,29 +67,24 @@ class Interpreter {
         return sqlStr;
     }
     TransToSQLOfWhere(func, tableName, params) {
-        this.partOfWhere.push("(" + this.TransToSQL(func, tableName, params) + ")");
-        return this.TransToSQL(func, tableName, params);
+        let sql = this.TransFuncToSQL(func, tableName, params);
+        this.partOfWhere.push("(" + sql + ")");
+        return sql;
+    }
+    TransToSQLOfContains(func, values, tableName) {
+        let sql = "";
+        let r = this.TransFuncToSQL(func, tableName);
+        sql = "(" + r + " IN (" + values.join(",") + "))";
+        this.partOfWhere.push(sql);
+        return sql;
     }
     TransToSQLOfSelect(p1, p2) {
         if (arguments.length == 1) {
             this.partOfSelect = this.GetSelectFieldList(p1).join(",");
         }
         else if (arguments.length == 2) {
-            let r = this.TransToSQL(p1, p2);
-            let tempList = [];
-            if (this.partOfSelect && this.partOfSelect != "*") {
-                let fList = this.partOfSelect.split(",");
-                for (let i of r.split("AND")) {
-                    let item = fList.find(x => x.indexOf(i) > -1);
-                    if (item) {
-                        tempList.push(item);
-                    }
-                }
-                this.partOfSelect = tempList.join(",");
-            }
-            else {
-                this.partOfSelect = r.split('AND').join(',');
-            }
+            let r = this.TransFuncToSQL(p1, p2);
+            this.partOfSelect = r.split('AND').join(',');
         }
         return this.partOfSelect;
     }
@@ -134,7 +129,7 @@ class Interpreter {
         this.partOfJoin.push(sql);
         return this.partOfJoin;
     }
-    TransToSQL(func, tableName, param) {
+    TransFuncToSQL(func, tableName, param) {
         let funcStr = func.toString();
         let funcCharList = funcStr.split(" ");
         funcCharList = this.ReplaceParam(funcCharList, param);

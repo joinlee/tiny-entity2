@@ -67,14 +67,6 @@ var Define;
         };
     }
     Define.Column = Column;
-    function Mapping(opt) {
-        return (target, propertyName, propertyDescriptor) => {
-            opt.ColumnName = propertyName;
-            DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
-            SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
-        };
-    }
-    Define.Mapping = Mapping;
     function SetPropertyDefineOptionValue(opt) {
         if (!opt.DataType) {
             opt.DataType = DataType.VARCHAR;

@@ -27,8 +27,20 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
         this.interpreter.TransToSQLOfWhere(func, tableName, params);
         return this;
     }
+    Contains(func, values, entity) {
+        if (values && values.length == 0)
+            throw new Error("values can not be null or length equals 0!");
+        let tbaleName;
+        if (entity)
+            tbaleName = entity.TableName();
+        else
+            tbaleName = this.TableName();
+        this.interpreter.TransToSQLOfContains(func, values, tbaleName);
+        return this;
+    }
     Select(func) {
         this.interpreter.TransToSQLOfSelect(func, this.TableName());
+        this.joinEntities = [];
         return this;
     }
     Join(fEntity) {

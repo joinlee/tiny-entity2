@@ -71,13 +71,13 @@ export namespace Define {
             SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
         };
     }
-    export function Mapping(opt: MappingOption) {
-        return (target: any, propertyName: string, propertyDescriptor?: PropertyDescriptor) => {
-            opt.ColumnName = propertyName;
-            DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
-            SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
-        };
-    }
+    // export function Mapping(opt: MappingOption) {
+    //     return (target: any, propertyName: string, propertyDescriptor?: PropertyDescriptor) => {
+    //         opt.ColumnName = propertyName;
+    //         DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
+    //         SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
+    //     };
+    // }
 
     function SetPropertyDefineOptionValue(opt: PropertyDefineOption) {
         if (!opt.DataType) {
@@ -110,7 +110,7 @@ export namespace Define {
         GetMetedata(entity: any) {
             let tableName = entity.ClassName().toLocaleLowerCase();
             let target = this.GetTargetByTableName(tableName);
-            let list: MappingOption[] = [];
+            let list: PropertyDefineOption[] = [];
             for (let key in entity) {
                 if (typeof (entity[key]) == "function" || key === "interpreter" || key === "ctx" || key === "joinEntities") continue;
                 let s = Reflect.getMetadata(tableName + "_metadataKey", target, key);
