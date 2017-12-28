@@ -54,18 +54,30 @@ describe("query data", () => {
         let list = await ctx.Person.Where(x => x.name.indexOf(params.name), { "params.name": params.name }).ToList();
         assert.equal(list.length, 10);
     })
-    it("select part of feilds", async () => {
+    it("using Select()", async () => {
         let age = 35;
         let list = await ctx.Person.Where(x => x.age > age, { age }).Select(x => x.name).ToList();
 
         assert.equal(list.filter(x => x.name != null).length, 4);
         assert.equal(list.filter(x => x.id != null).length, 0);
     })
+    it("using Contains() ", async () => {
+        let values = [30, 31, 32, 20];
+        let list = await ctx.Person.Contains(x => x.age, values).ToList();
+        assert.equal(list.length, 3);
+    })
 
     it("no data", async () => {
         await ctx.Delete<Person>(x => x.id != null, ctx.Person);
         let result = await ctx.Person.ToList();
         assert.equal(result.length, 0);
+    })
+
+    it("using Contanins() ", async ()=> {
+        let values2 = [100 - 1 / 2, 100 + 1 / 2];
+        let list2 = await ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Contains<Account>(x => x.amount, values2, ctx.Account).ToList();
+        assert.equal(list2.length, 2);
+        // ctx.Person.Contains()
     })
 
     after(async () => {
@@ -119,15 +131,6 @@ describe("using left join key work query multi tables ", () => {
     it("using Select() ", async () => {
         let list = await ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Select(x => x.id).ToList();
         assert.equal(list.length, 20);
-    })
-    it("using Contains() ", async () => {
-        let values = [30, 31, 32, 20];
-        let list = await ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Contains(x => x.age, values).ToList();
-        assert.equal(list.length, 1);
-
-        let values2 = [100 - 1 / 2, 100 + 1 / 2];
-        let list2 = await ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Contains<Account>(x => x.amount, values2, ctx.Account).ToList();
-        assert.equal(list2.length, 2);
     })
 
     after(async () => {

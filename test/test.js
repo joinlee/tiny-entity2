@@ -45,16 +45,26 @@ describe("query data", () => {
         let list = yield ctx.Person.Where(x => x.name.indexOf(params.name), { "params.name": params.name }).ToList();
         assert.equal(list.length, 10);
     }));
-    it("select part of feilds", () => __awaiter(this, void 0, void 0, function* () {
+    it("using Select()", () => __awaiter(this, void 0, void 0, function* () {
         let age = 35;
         let list = yield ctx.Person.Where(x => x.age > age, { age }).Select(x => x.name).ToList();
         assert.equal(list.filter(x => x.name != null).length, 4);
         assert.equal(list.filter(x => x.id != null).length, 0);
     }));
+    it("using Contains() ", () => __awaiter(this, void 0, void 0, function* () {
+        let values = [30, 31, 32, 20];
+        let list = yield ctx.Person.Contains(x => x.age, values).ToList();
+        assert.equal(list.length, 3);
+    }));
     it("no data", () => __awaiter(this, void 0, void 0, function* () {
         yield ctx.Delete(x => x.id != null, ctx.Person);
         let result = yield ctx.Person.ToList();
         assert.equal(result.length, 0);
+    }));
+    it("using Contanins() ", () => __awaiter(this, void 0, void 0, function* () {
+        let values2 = [100 - 1 / 2, 100 + 1 / 2];
+        let list2 = yield ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Contains(x => x.amount, values2, ctx.Account).ToList();
+        assert.equal(list2.length, 2);
     }));
     after(() => __awaiter(this, void 0, void 0, function* () {
         yield ctx.Delete(x => x.id != null, ctx.Person);
@@ -96,14 +106,6 @@ describe("using left join key work query multi tables ", () => {
     it("using Select() ", () => __awaiter(this, void 0, void 0, function* () {
         let list = yield ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Select(x => x.id).ToList();
         assert.equal(list.length, 20);
-    }));
-    it("using Contains() ", () => __awaiter(this, void 0, void 0, function* () {
-        let values = [30, 31, 32, 20];
-        let list = yield ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Contains(x => x.age, values).ToList();
-        assert.equal(list.length, 1);
-        let values2 = [100 - 1 / 2, 100 + 1 / 2];
-        let list2 = yield ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Contains(x => x.amount, values2, ctx.Account).ToList();
-        assert.equal(list2.length, 2);
     }));
     after(() => __awaiter(this, void 0, void 0, function* () {
         yield ctx.Delete(x => x.id != null, ctx.Person);
