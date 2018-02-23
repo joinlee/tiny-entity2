@@ -29,38 +29,39 @@ class CodeGenerator {
         });
     }
     generateCtxFile() {
-        let importList = [];
-        let baseCtx = "";
-        importList.push('const config = require("' + this.options.configFilePath + '");');
-        if (this.options.databaseType == "mysql") {
-            baseCtx = "MysqlDataContext";
-            importList.push('import { ' + baseCtx + ' } from "tiny-entity2"');
-        }
-        this.modelList.forEach(item => {
-            importList.push('import { ' + item.className + ' } from "' + item.filePath + '"');
-        });
-        let context = importList.join('\n');
-        let fileName = this.upperFirstLetter(this.options.outFileName.split('.')[0]);
-        context += "\n export class " + fileName + " extends " + baseCtx + "{\n";
-        let tempList = [];
-        this.modelList.forEach(item => {
-            tempList.push({
-                feild: "private " + this.lowerFirstLetter(item.className) + ": " + item.className + ";",
-                property: "get " + item.className + "() { return this." + this.lowerFirstLetter(item.className) + "; }",
-                constructorMethod: "this." + this.lowerFirstLetter(item.className) + " = new " + item.className + "(this);",
-                createDatabaseMethod: "await super.CreateTable(this." + this.lowerFirstLetter(item.className) + ");"
+        this.loadEntityModels(() => {
+            let importList = [];
+            let baseCtx = "";
+            importList.push('const config = require("' + this.options.configFilePath + '");');
+            if (this.options.databaseType == "mysql") {
+                baseCtx = "MysqlDataContext";
+                importList.push('import { ' + baseCtx + ' } from "tiny-entity2"');
+            }
+            this.modelList.forEach(item => {
+                importList.push('import { ' + item.className + ' } from "' + item.filePath + '"');
             });
+            let context = importList.join('\n');
+            let fileName = this.upperFirstLetter(this.options.outFileName.split('.')[0]);
+            context += "\n export class " + fileName + " extends " + baseCtx + "{\n";
+            let tempList = [];
+            this.modelList.forEach(item => {
+                tempList.push({
+                    feild: "private " + this.lowerFirstLetter(item.className) + ": " + item.className + ";",
+                    property: "get " + item.className + "() { return this." + this.lowerFirstLetter(item.className) + "; }",
+                    constructorMethod: "this." + this.lowerFirstLetter(item.className) + " = new " + item.className + "(this);",
+                    createDatabaseMethod: "await super.CreateTable(this." + this.lowerFirstLetter(item.className) + ");"
+                });
+            });
+            context += tempList.map(x => x.feild).join('\n');
+            context += "\n constructor() { \n super(config);\n";
+            context += tempList.map(x => x.constructorMethod).join('\n');
+            context += "}\n";
+            context += tempList.map(x => x.property).join('\n');
+            context += "\n async CreateDatabase() { \n await super.CreateDatabase(); \n";
+            context += tempList.map(x => x.createDatabaseMethod).join('\n');
+            context += "\n return true; \n} \n}";
+            this.writeFile(context);
         });
-        context += tempList.map(x => x.feild).join('\n');
-        context += "\n constructor() { \n super(config);\n";
-        context += tempList.map(x => x.constructorMethod).join('\n');
-        context += "}\n";
-        context += tempList.map(x => x.property).join('\n');
-        context += "\n async CreateDatabase() { \n await super.CreateDatabase(); \n";
-        context += tempList.map(x => x.createDatabaseMethod).join('\n');
-        context += "\n return true; \n} \n}";
-        this.writeFile(context);
-        return context;
     }
     writeFile(data) {
         let filePath = this.options.outDir + "/" + this.options.outFileName;
