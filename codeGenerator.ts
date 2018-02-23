@@ -133,6 +133,7 @@ export class CodeGenerator {
         context += tempList.map(x => x.createDatabaseMethod).join('\n');
         context += "\n return true; \n} \n}";
 
+        this.writeFile(context);
         return context;
     }
 

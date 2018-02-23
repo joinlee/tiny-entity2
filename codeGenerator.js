@@ -59,6 +59,7 @@ class CodeGenerator {
         context += "\n async CreateDatabase() { \n await super.CreateDatabase(); \n";
         context += tempList.map(x => x.createDatabaseMethod).join('\n');
         context += "\n return true; \n} \n}";
+        this.writeFile(context);
         return context;
     }
     writeFile(data) {
