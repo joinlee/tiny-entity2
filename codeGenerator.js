@@ -30,7 +30,7 @@ class CodeGenerator {
         });
     }
     generateCtxFile() {
-        this.loadEntityModels(() => {
+        this.loadEntityModels((() => {
             let importList = [];
             let baseCtx = "";
             importList.push('const config = require("' + this.options.configFilePath + '");');
@@ -62,7 +62,7 @@ class CodeGenerator {
             context += tempList.map(x => x.createDatabaseMethod).join('\n');
             context += "\n return true; \n} \n}";
             this.writeFile(context);
-        });
+        }).bind(this));
     }
     writeFile(data) {
         let filePath = this.options.outDir + "/" + this.options.outFileName;

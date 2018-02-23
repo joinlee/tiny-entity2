@@ -100,7 +100,7 @@ export class CodeGenerator {
      * @memberof CodeGenerator
      */
     generateCtxFile() {
-        this.loadEntityModels(() => {
+        this.loadEntityModels((() => {
             let importList = [];
             let baseCtx = "";
             importList.push('const config = require("' + this.options.configFilePath + '");');
@@ -136,7 +136,7 @@ export class CodeGenerator {
             context += "\n return true; \n} \n}";
 
             this.writeFile(context);
-        });
+        }).bind(this));
     }
 
     private writeFile(data) {
