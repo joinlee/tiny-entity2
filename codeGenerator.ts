@@ -72,6 +72,7 @@ export class CodeGenerator {
 
     }
     private loadEntityModels(callback) {
+        let that = this;
         fs.readdir(this.options.modelLoadPath, function (err, files) {
             if (err) {
                 console.log(err);
@@ -80,12 +81,12 @@ export class CodeGenerator {
             for (let file of files) {
                 if (file.indexOf(".map") > -1) continue;
                 if (file.indexOf(".ts") > -1) continue;
-                let model = require(this.options.modelLoadPath + "/" + file);
+                let model = require(that.options.modelLoadPath + "/" + file);
                 let keys = Object.keys(model);
                 let modelClassName = keys[0];
-                this.options.modelList.push({
+                that.modelList.push({
                     className: modelClassName,
-                    filePath: this.options.modelExportPath + "/" + file.split(".")[0]
+                    filePath: that.options.modelExportPath + "/" + file.split(".")[0]
                 });
             }
 
