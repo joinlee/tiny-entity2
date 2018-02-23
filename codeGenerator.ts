@@ -104,7 +104,7 @@ export class CodeGenerator {
         importList.push('const config = require("' + this.options.configFilePath + '");');
         if (this.options.databaseType == "mysql") {
             baseCtx = "MysqlDataContext";
-            importList.push('import { ' + baseCtx + ' } from "' + this.options.ctxExportPath + '/dataContextMysql";');
+            importList.push('import { ' + baseCtx + ' } from "tiny-entity2"');
         }
         this.modelList.forEach(item => {
             importList.push('import { ' + item.className + ' } from "' + item.filePath + '"');
