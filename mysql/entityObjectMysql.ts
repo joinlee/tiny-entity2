@@ -1,4 +1,4 @@
-import { IQueryObject, IJoinChildQueryObject, IQueryParameter, IQuerySelector, IQueryEnumerable, IResultQueryObject } from './../queryObject';
+import { IQueryObject, IJoinChildQueryObject, IQueryParameter, IQuerySelector, IQueryEnumerable, IResultQueryObject, ITakeChildQueryObject, IAssembleResultQuery } from './../queryObject';
 import { IEntityObject, EntityObject } from './../entityObject';
 import { Interpreter } from '../interpreter';
 import mysql = require("mysql");
@@ -15,15 +15,30 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         this.ctx = arguments[0][0];
     }
 
+    Take(count: number): ITakeChildQueryObject<T> {
+        this.interpreter.TransToSQLOfLimt(count);
+        return this;
+    }
+    Skip(count: number): IAssembleResultQuery<T> {
+        this.interpreter.TransToSQLOfLimt(count, true);
+        return this;
+    }
+
     Where(func: IQuerySelector<T>): IQueryObject<T>;
     Where(func: IQuerySelector<T>, params: IQueryParameter): IQueryObject<T>;
     Where<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): IQueryObject<T>;
     Where(func: any, params?: any, entityObj?: any) {
-        let tableName;
-        if (entityObj && !(entityObj instanceof Array)) tableName = entityObj.TableName();
-        else tableName = this.TableName();
-        this.interpreter.TransToSQLOfWhere(func, tableName, params);
+        this.interpreter.TransToSQLOfWhere(func, this.GetTableName(entityObj), params);
         return this;
+    }
+
+    First(func: IQuerySelector<T>): Promise<T>;
+    First(func: IQuerySelector<T>, params: IQueryParameter): Promise<T>;
+    First<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): Promise<T>;
+    async First(func: any, params?: any, entityObj?: any) {
+        let r = await this.Where(func, params, entityObj).Take(1).ToList();
+        if (!r) return null;
+        return r[0];
     }
 
     Contains(func: IQueryEnumerable<T>, values: any[]): IResultQueryObject<T>;
@@ -49,7 +64,7 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         this.joinEntities.push(fEntity);
         return this;
     }
-    
+
     On<F extends IEntityObject>(func: (m: T, f: F) => void): IQueryObject<T>;
     On<M extends IEntityObject, F extends IEntityObject>(func: (m: M, f: F) => void, mEntity: M): IQueryObject<T>;
     On(func: any, mEntity?: any) {
@@ -101,6 +116,13 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         }
 
         return resultList;
+    }
+    private GetTableName(entityObj) {
+        let tableName;
+        if (entityObj && !(entityObj instanceof Array)) tableName = entityObj.TableName();
+        else tableName = this.TableName();
+
+        return tableName;
     }
 
     private Disposed() {

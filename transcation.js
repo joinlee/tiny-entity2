@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 function Transaction(ctx) {
     return (target, propertyName, descriptor) => {
         let method = descriptor.value;
-        descriptor.value = function () {
+        descriptor.value = function (...args) {
             return __awaiter(this, void 0, void 0, function* () {
                 if (!this.ctx) {
                     this.ctx = ctx;

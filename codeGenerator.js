@@ -81,7 +81,7 @@ class CodeGenerator {
     }
     entityToDatabase() {
         let ctxName = this.options.outFileName.split(".")[0];
-        let filePath = __dirname + '/' + this.options.outDir + "/" + ctxName;
+        let filePath = __dirname + '/../../' + this.options.outDir + "/" + ctxName;
         let ctxModule = require(filePath);
         let ctxClassName = Object.keys(ctxModule)[0];
         let newCtxInstance = new ctxModule[ctxClassName];

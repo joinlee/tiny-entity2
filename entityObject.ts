@@ -1,6 +1,12 @@
-import { IQueryObject, IResultQueryObject, ITakeChildQueryObject, IJoinChildQueryObject, IQueryParameter, IQuerySelector, IQueryEnumerable } from './queryObject';
+import { IQueryObject, IResultQueryObject, ITakeChildQueryObject, IJoinChildQueryObject, IQueryParameter, IQuerySelector, IQueryEnumerable, IAssembleResultQuery } from './queryObject';
 
-export abstract class EntityObjectBase<T extends IEntityObject, R> implements IEntityObject, IQueryObject<T>, IJoinChildQueryObject<T, R>{
+export abstract class EntityObjectBase<T extends IEntityObject, R> implements IEntityObject, IQueryObject<T>, IJoinChildQueryObject<T, R>, ITakeChildQueryObject<T>{
+    First(func: IQuerySelector<T>): Promise<T>;
+    First(func: IQuerySelector<T>, params: IQueryParameter): Promise<T>;
+    First<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): Promise<T>;
+    First(func: any, params?: any, entityObj?: any) {
+        return null;
+    }
     Contains(func: IQueryEnumerable<T>, values: any[]): IResultQueryObject<T>;
     Contains<K extends IEntityObject>(func: IQueryEnumerable<K>, values: any[], entity: K): IResultQueryObject<T>;
     Contains(func: any, values: any, entity?: any) {
@@ -12,9 +18,6 @@ export abstract class EntityObjectBase<T extends IEntityObject, R> implements IE
         return this;
     }
     Any(func: IQuerySelector<T>): Promise<number> {
-        throw new Error("Method not implemented.");
-    }
-    First(func: IQuerySelector<T>): Promise<number> {
         throw new Error("Method not implemented.");
     }
     Where(func: IQuerySelector<T>): IQueryObject<T>;
@@ -52,6 +55,9 @@ export abstract class EntityObjectBase<T extends IEntityObject, R> implements IE
         throw new Error("Method not implemented.");
     }
     Take(count: number): ITakeChildQueryObject<T> {
+        throw new Error("Method not implemented.");
+    }
+    Skip(count: number): IAssembleResultQuery<T> {
         throw new Error("Method not implemented.");
     }
     Join<F extends IEntityObject>(fEntity: F): IJoinChildQueryObject<T, F> {

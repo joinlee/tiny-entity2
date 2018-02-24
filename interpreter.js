@@ -24,6 +24,14 @@ class Interpreter {
             sqlCharts.push("WHERE");
             sqlCharts.push(this.partOfWhere.join(" AND "));
         }
+        if (this.partOfLimt) {
+            if (this.partOfLimt.skip) {
+                sqlCharts.push(`LIMIT ${this.partOfLimt.skip},${this.partOfLimt.take}`);
+            }
+            else {
+                sqlCharts.push(`LIMIT ${this.partOfLimt.take}`);
+            }
+        }
         sqlCharts.push(";");
         return sqlCharts.join(" ");
     }
@@ -128,6 +136,14 @@ class Interpreter {
         let sql = "LEFT JOIN `" + fTableName + "` ON " + funcCharList.join("");
         this.partOfJoin.push(sql);
         return this.partOfJoin;
+    }
+    TransToSQLOfLimt(count, isSkip) {
+        if (isSkip) {
+            this.partOfLimt.skip = count;
+        }
+        else {
+            this.partOfLimt = { take: count, skip: 0 };
+        }
     }
     TransFuncToSQL(func, tableName, param) {
         let funcStr = func.toString();

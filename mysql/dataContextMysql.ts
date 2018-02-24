@@ -16,7 +16,7 @@ const logger: (...args) => void = log;
 
 export class MysqlDataContext implements IDataContext {
     private querySentence: any[];
-    private transStatus: any;
+    private transStatus: any = [];
     private transactionOn: string;
     private interpreter: Interpreter;
     private option: IPoolConfig;
@@ -26,7 +26,7 @@ export class MysqlDataContext implements IDataContext {
         this.option = option;
     }
 
-    async Create(obj: any) {
+    async Create<T>(obj: T): Promise<T> {
         let sqlStr = this.interpreter.TransToInsertSql(obj);
         if (this.transactionOn) {
             this.querySentence.push(sqlStr);

@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class EntityObjectBase {
+    First(func, params, entityObj) {
+        return null;
+    }
     Contains(func, values, entity) {
         return this;
     }
@@ -8,9 +11,6 @@ class EntityObjectBase {
         return this;
     }
     Any(func) {
-        throw new Error("Method not implemented.");
-    }
-    First(func) {
         throw new Error("Method not implemented.");
     }
     Where(func, params, entityObj) {
@@ -41,6 +41,9 @@ class EntityObjectBase {
         throw new Error("Method not implemented.");
     }
     Take(count) {
+        throw new Error("Method not implemented.");
+    }
+    Skip(count) {
         throw new Error("Method not implemented.");
     }
     Join(fEntity) {

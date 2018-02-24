@@ -2,7 +2,7 @@ import { IEntityObject } from './entityObject';
 import { IQueryParameter, IQuerySelector } from './queryObject';
 
 export interface IDataContext {
-    Create(obj: IEntityObject);
+    Create<T extends IEntityObject>(obj: T): Promise<T>
     Update(obj: IEntityObject);
     Delete(obj: IEntityObject);
     Delete<T extends IEntityObject>(func: IQuerySelector<T>, entity: T, params?: IQueryParameter);

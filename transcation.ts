@@ -11,7 +11,7 @@ import { IDataContext } from ".";
 export function Transaction(ctx: IDataContext) {
     return (target: any, propertyName: string, descriptor: TypedPropertyDescriptor<Function>) => {
         let method = descriptor.value;
-        descriptor.value = async function () {
+        descriptor.value = async function (...args) {
             if (!this.ctx) {
                 this.ctx = ctx;
             }

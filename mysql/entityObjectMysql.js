@@ -18,14 +18,25 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
         this.interpreter = new interpreter_1.Interpreter(mysql.escape);
         this.ctx = arguments[0][0];
     }
-    Where(func, params, entityObj) {
-        let tableName;
-        if (entityObj && !(entityObj instanceof Array))
-            tableName = entityObj.TableName();
-        else
-            tableName = this.TableName();
-        this.interpreter.TransToSQLOfWhere(func, tableName, params);
+    Take(count) {
+        this.interpreter.TransToSQLOfLimt(count);
         return this;
+    }
+    Skip(count) {
+        this.interpreter.TransToSQLOfLimt(count, true);
+        return this;
+    }
+    Where(func, params, entityObj) {
+        this.interpreter.TransToSQLOfWhere(func, this.GetTableName(entityObj), params);
+        return this;
+    }
+    First(func, params, entityObj) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let r = yield this.Where(func, params, entityObj).Take(1).ToList();
+            if (!r)
+                return null;
+            return r[0];
+        });
     }
     Contains(func, values, entity) {
         if (values && values.length == 0)
@@ -90,6 +101,14 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
             resultList.push(obj);
         }
         return resultList;
+    }
+    GetTableName(entityObj) {
+        let tableName;
+        if (entityObj && !(entityObj instanceof Array))
+            tableName = entityObj.TableName();
+        else
+            tableName = this.TableName();
+        return tableName;
     }
     Disposed() {
         this.interpreter = new interpreter_1.Interpreter(mysql.escape);

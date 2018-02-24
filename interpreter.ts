@@ -5,6 +5,7 @@ export class Interpreter {
     private partOfWhere: string[] = [];
     private partOfSelect: string = "*";
     private partOfJoin: string[] = [];
+    private partOfLimt;
     private joinTeamp;
     constructor(escape?) {
         if (escape)
@@ -25,6 +26,14 @@ export class Interpreter {
         if (this.partOfWhere.length > 0) {
             sqlCharts.push("WHERE");
             sqlCharts.push(this.partOfWhere.join(" AND "));
+        }
+        if (this.partOfLimt) {
+            if (this.partOfLimt.skip) {
+                sqlCharts.push(`LIMIT ${this.partOfLimt.skip},${this.partOfLimt.take}`);
+            }
+            else {
+                sqlCharts.push(`LIMIT ${this.partOfLimt.take}`);
+            }
         }
 
         sqlCharts.push(";");
@@ -91,7 +100,6 @@ export class Interpreter {
         return sql;
     }
 
-
     TransToSQLOfSelect(entity: any);
     TransToSQLOfSelect(func: Function, tableName: string);
     TransToSQLOfSelect(p1: any, p2?: any) {
@@ -151,6 +159,14 @@ export class Interpreter {
         this.partOfJoin.push(sql);
 
         return this.partOfJoin;
+    }
+    TransToSQLOfLimt(count: number, isSkip?: boolean) {
+        if(isSkip){
+            this.partOfLimt.skip = count;
+        }
+        else{
+            this.partOfLimt = { take: count, skip: 0 };
+        }
     }
 
     TransFuncToSQL(func: Function, tableName?: string, param?: any): string {

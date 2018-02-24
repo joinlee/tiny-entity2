@@ -20,6 +20,7 @@ function log() {
 const logger = log;
 class MysqlDataContext {
     constructor(option) {
+        this.transStatus = [];
         if (!mysqlPool)
             mysqlPool = mysql.createPool(option);
         this.interpreter = new interpreter_1.Interpreter(mysql.escape);
