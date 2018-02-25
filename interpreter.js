@@ -35,11 +35,13 @@ class Interpreter {
         sqlCharts.push(";");
         return sqlCharts.join(" ");
     }
-    TransToInsertSql(entity) {
+    TransToInsertSql(entity, excludeFields) {
         let sqlStr = "INSERT INTO `" + entity.toString() + "`";
         let entityMetadata = dataDefine_1.Define.DataDefine.Current.GetMetedata(entity);
         let keyList = [], valueList = [];
         entityMetadata.forEach(item => {
+            if (excludeFields && excludeFields.indexOf(item.ColumnName) > -1)
+                return;
             keyList.push("`" + item.ColumnName + "`");
             if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null) {
                 valueList.push("NULL");
@@ -51,9 +53,9 @@ class Interpreter {
         sqlStr += " (" + keyList.join(',') + ") VALUES (" + valueList.join(',') + ");";
         return sqlStr;
     }
-    TransToUpdateSql(entity) {
+    TransToUpdateSql(entity, excludeFields) {
         let sqlStr = "UPDATE `" + entity.TableName() + "` SET ";
-        let qList = this.UpdatePropertyFormat(entity);
+        let qList = this.UpdatePropertyFormat(entity, excludeFields);
         let primaryKeyObj = this.GetPrimaryKeyObj(entity);
         sqlStr += qList.join(',') + " WHERE " + primaryKeyObj.key + "=" + this.escape(primaryKeyObj.value) + ";";
         return sqlStr;
@@ -157,7 +159,7 @@ class Interpreter {
             for (let key in param) {
                 let index = funcCharList.findIndex(x => x.indexOf(key) > -1 && x.indexOf("." + key) <= -1);
                 if (index) {
-                    funcCharList[index] = funcCharList[index].replace(new RegExp(key, "gm"), this.escape(param[key]));
+                    funcCharList[index] = this.escape(param[key]);
                 }
             }
         }
@@ -238,10 +240,12 @@ class Interpreter {
         }
         return { PropertyNameList: propertyNameList, PropertyValueList: propertyValueList };
     }
-    UpdatePropertyFormat(obj) {
+    UpdatePropertyFormat(obj, excludeFields) {
         let qList = [];
-        for (var key in obj) {
+        for (let key in obj) {
             if (key == "sqlTemp" || key == "queryParam" || key == "ctx" || key == "joinParms")
+                continue;
+            if (excludeFields && excludeFields.indexOf(key) > -1)
                 continue;
             if (this.IsAvailableValue(obj[key]) && key != "id") {
                 if (obj[key] == undefined || obj[key] == null || obj[key] === "") {

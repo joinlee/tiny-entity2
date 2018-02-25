@@ -14,40 +14,41 @@ const dataDefine_1 = require("../define/dataDefine");
 let mysqlPool;
 function log() {
     if (process.env.tinyLog == "on") {
-        console.log(arguments);
+        console.log.apply(this, arguments);
     }
 }
 const logger = log;
 class MysqlDataContext {
     constructor(option) {
+        this.querySentence = [];
         this.transStatus = [];
         if (!mysqlPool)
             mysqlPool = mysql.createPool(option);
         this.interpreter = new interpreter_1.Interpreter(mysql.escape);
         this.option = option;
     }
-    Create(obj) {
+    Create(entity, excludeFields) {
         return __awaiter(this, void 0, void 0, function* () {
-            let sqlStr = this.interpreter.TransToInsertSql(obj);
+            let sqlStr = this.interpreter.TransToInsertSql(entity);
             if (this.transactionOn) {
                 this.querySentence.push(sqlStr);
             }
             else {
                 yield this.onSubmit(sqlStr);
             }
-            return obj;
+            return entity.ConverToEntity(entity);
         });
     }
-    Update(obj) {
+    Update(entity, excludeFields) {
         return __awaiter(this, void 0, void 0, function* () {
-            let sqlStr = this.interpreter.TransToUpdateSql(obj);
+            let sqlStr = this.interpreter.TransToUpdateSql(entity, excludeFields);
             if (this.transactionOn) {
                 this.querySentence.push(sqlStr);
             }
             else {
                 yield this.onSubmit(sqlStr);
             }
-            return obj;
+            return entity.ConverToEntity(entity);
         });
     }
     Delete(func, entity, params) {
@@ -80,12 +81,12 @@ class MysqlDataContext {
         return new Promise((resolve, reject) => {
             mysqlPool.getConnection((err, conn) => __awaiter(this, void 0, void 0, function* () {
                 if (err) {
-                    conn.release();
+                    conn.destroy();
                     reject(err);
                 }
                 conn.beginTransaction(err => {
                     if (err) {
-                        conn.release();
+                        conn.destroy();
                         reject(err);
                     }
                 });
@@ -97,7 +98,7 @@ class MysqlDataContext {
                     conn.commit(err => {
                         if (err)
                             conn.rollback(() => {
-                                conn.release();
+                                conn.destroy();
                                 reject(err);
                             });
                         this.CleanTransactionStatus();
@@ -108,7 +109,7 @@ class MysqlDataContext {
                 }
                 catch (error) {
                     this.CleanTransactionStatus();
-                    conn.release();
+                    conn.destroy();
                     reject(error);
                 }
             }));

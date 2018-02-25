@@ -41,14 +41,14 @@ export class Interpreter {
         return sqlCharts.join(" ");
     }
 
-    TransToInsertSql(entity: any): string {
+    TransToInsertSql(entity: any, excludeFields?: string[]): string {
         let sqlStr = "INSERT INTO `" + entity.toString() + "`";
 
         let entityMetadata = Define.DataDefine.Current.GetMetedata(entity);
         let keyList = [], valueList = [];
 
         entityMetadata.forEach(item => {
-            // if(item.MappingTable) return;
+            if (excludeFields && excludeFields.indexOf(item.ColumnName) > -1) return;
             keyList.push("`" + item.ColumnName + "`");
             if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null) {
                 valueList.push("NULL");
@@ -61,9 +61,9 @@ export class Interpreter {
         return sqlStr;
     }
 
-    TransToUpdateSql(entity: any): string {
+    TransToUpdateSql(entity: any, excludeFields?: string[]): string {
         let sqlStr = "UPDATE `" + entity.TableName() + "` SET ";
-        let qList = this.UpdatePropertyFormat(entity);
+        let qList = this.UpdatePropertyFormat(entity, excludeFields);
 
         let primaryKeyObj = this.GetPrimaryKeyObj(entity);
         sqlStr += qList.join(',') + " WHERE " + primaryKeyObj.key + "=" + this.escape(primaryKeyObj.value) + ";";
@@ -161,10 +161,10 @@ export class Interpreter {
         return this.partOfJoin;
     }
     TransToSQLOfLimt(count: number, isSkip?: boolean) {
-        if(isSkip){
+        if (isSkip) {
             this.partOfLimt.skip = count;
         }
-        else{
+        else {
             this.partOfLimt = { take: count, skip: 0 };
         }
     }
@@ -183,7 +183,8 @@ export class Interpreter {
             for (let key in param) {
                 let index = funcCharList.findIndex(x => x.indexOf(key) > -1 && x.indexOf("." + key) <= -1);
                 if (index) {
-                    funcCharList[index] = funcCharList[index].replace(new RegExp(key, "gm"), this.escape(param[key]));
+                    //funcCharList[index] = funcCharList[index].replace(new RegExp(key, "gm"), this.escape(param[key]));
+                    funcCharList[index] = this.escape(param[key]);
                 }
             }
         }
@@ -263,10 +264,11 @@ export class Interpreter {
 
         return { PropertyNameList: propertyNameList, PropertyValueList: propertyValueList };
     }
-    private UpdatePropertyFormat(obj: any) {
+    private UpdatePropertyFormat(obj: any, excludeFields?: string[]) {
         let qList = [];
-        for (var key in obj) {
+        for (let key in obj) {
             if (key == "sqlTemp" || key == "queryParam" || key == "ctx" || key == "joinParms") continue;
+            if (excludeFields && excludeFields.indexOf(key) > -1) continue;
             if (this.IsAvailableValue(obj[key]) && key != "id") {
                 if (obj[key] == undefined || obj[key] == null || obj[key] === "") {
                     qList.push("`" + key + "`=NULL");

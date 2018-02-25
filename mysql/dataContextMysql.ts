@@ -9,13 +9,13 @@ import { IQueryParameter, IQuerySelector } from '../queryObject';
 let mysqlPool: IPool;
 function log() {
     if (process.env.tinyLog == "on") {
-        console.log(arguments);
+        console.log.apply(this, arguments);
     }
 }
 const logger: (...args) => void = log;
 
 export class MysqlDataContext implements IDataContext {
-    private querySentence: any[];
+    private querySentence: any[] = [];
     private transStatus: any = [];
     private transactionOn: string;
     private interpreter: Interpreter;
@@ -26,26 +26,30 @@ export class MysqlDataContext implements IDataContext {
         this.option = option;
     }
 
-    async Create<T>(obj: T): Promise<T> {
-        let sqlStr = this.interpreter.TransToInsertSql(obj);
+    Create<T extends IEntityObject>(entity: T): Promise<T>;
+    Create<T extends IEntityObject>(entity: T, excludeFields: string[]): Promise<T>;
+    async Create(entity: any, excludeFields?: any) {
+        let sqlStr = this.interpreter.TransToInsertSql(entity);
         if (this.transactionOn) {
             this.querySentence.push(sqlStr);
         }
         else {
             await this.onSubmit(sqlStr);
         }
-        return obj;
+        return (<any>entity).ConverToEntity(entity);
     }
 
-    async Update(obj: IEntityObject) {
-        let sqlStr = this.interpreter.TransToUpdateSql(obj);
+    Update<T extends IEntityObject>(entity: T): Promise<T>;
+    Update<T extends IEntityObject>(entity: T, excludeFields: string[]): Promise<T>;
+    async Update(entity: any, excludeFields?: any) {
+        let sqlStr = this.interpreter.TransToUpdateSql(entity, excludeFields);
         if (this.transactionOn) {
             this.querySentence.push(sqlStr);
         }
         else {
             await this.onSubmit(sqlStr);
         }
-        return obj;
+        return (<any>entity).ConverToEntity(entity);
     }
 
     Delete(obj: IEntityObject);
@@ -83,12 +87,14 @@ export class MysqlDataContext implements IDataContext {
         return new Promise((resolve, reject) => {
             mysqlPool.getConnection(async (err, conn) => {
                 if (err) {
-                    conn.release();
+                    // conn.release();
+                    conn.destroy();
                     reject(err);
                 }
                 conn.beginTransaction(err => {
                     if (err) {
-                        conn.release();
+                        // conn.release();
+                        conn.destroy();
                         reject(err);
                     }
                 });
@@ -99,17 +105,20 @@ export class MysqlDataContext implements IDataContext {
                     }
                     conn.commit(err => {
                         if (err) conn.rollback(() => {
-                            conn.release();
+                            // conn.release();
+                            conn.destroy();
                             reject(err);
                         });
                         this.CleanTransactionStatus();
                         conn.release();
+                        // conn.destroy();
                         resolve(true);
                         logger("Transcation successful!");
                     });
                 } catch (error) {
                     this.CleanTransactionStatus();
-                    conn.release();
+                    //conn.release();
+                    conn.destroy();
                     reject(error);
                 }
             });
