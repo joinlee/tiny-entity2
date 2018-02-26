@@ -24,6 +24,9 @@ class Interpreter {
             sqlCharts.push("WHERE");
             sqlCharts.push(this.partOfWhere.join(" AND "));
         }
+        if (this.partOfOrderBy) {
+            sqlCharts.push(this.partOfOrderBy);
+        }
         if (this.partOfLimt) {
             if (this.partOfLimt.skip) {
                 sqlCharts.push(`LIMIT ${this.partOfLimt.skip},${this.partOfLimt.take}`);
@@ -88,6 +91,11 @@ class Interpreter {
         this.partOfWhere.push(sql);
         return sql;
     }
+    TransToSQLCount(entity) {
+        let k = this.GetPrimaryKeyObj(entity);
+        this.partOfSelect = `COUNT(${k.key})`;
+        return this.partOfSelect;
+    }
     TransToSQLOfSelect(p1, p2) {
         if (arguments.length == 1) {
             this.partOfSelect = this.GetSelectFieldList(p1).join(",");
@@ -146,6 +154,12 @@ class Interpreter {
         else {
             this.partOfLimt = { take: count, skip: 0 };
         }
+    }
+    TransTOSQLOfGroup(func, tableName, isDesc = false) {
+        let sql = this.TransFuncToSQL(func, tableName);
+        let descStr = isDesc ? 'DESC' : '';
+        this.partOfOrderBy = `ORDER BY ${sql} ${descStr}`;
+        return this.partOfOrderBy;
     }
     TransFuncToSQL(func, tableName, param) {
         let funcStr = func.toString();

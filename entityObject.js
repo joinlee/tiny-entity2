@@ -1,6 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class EntityObjectBase {
+    Any(func, params) {
+        return null;
+    }
+    Count(func, params) {
+        return null;
+    }
     First(func, params, entityObj) {
         return null;
     }
@@ -9,9 +15,6 @@ class EntityObjectBase {
     }
     IndexOf(func, entityObj) {
         return this;
-    }
-    Any(func) {
-        throw new Error("Method not implemented.");
     }
     Where(func, params, entityObj) {
         return this;
@@ -53,9 +56,6 @@ class EntityObjectBase {
         throw new Error("Method not implemented.");
     }
     Min(func) {
-        throw new Error("Method not implemented.");
-    }
-    Count(func) {
         throw new Error("Method not implemented.");
     }
     ToList() {

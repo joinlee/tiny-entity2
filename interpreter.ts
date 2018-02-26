@@ -6,6 +6,7 @@ export class Interpreter {
     private partOfSelect: string = "*";
     private partOfJoin: string[] = [];
     private partOfLimt;
+    private partOfOrderBy: string;
     private joinTeamp;
     constructor(escape?) {
         if (escape)
@@ -26,6 +27,9 @@ export class Interpreter {
         if (this.partOfWhere.length > 0) {
             sqlCharts.push("WHERE");
             sqlCharts.push(this.partOfWhere.join(" AND "));
+        }
+        if(this.partOfOrderBy){
+            sqlCharts.push(this.partOfOrderBy);
         }
         if (this.partOfLimt) {
             if (this.partOfLimt.skip) {
@@ -99,9 +103,9 @@ export class Interpreter {
         this.partOfWhere.push(sql);
         return sql;
     }
-    TransToSQLAny(entity) {
+    TransToSQLCount(entity) {
         let k = this.GetPrimaryKeyObj(entity);
-        this.partOfSelect = k.key;
+        this.partOfSelect = `COUNT(${k.key})`;
         return this.partOfSelect;
     }
 
@@ -172,6 +176,13 @@ export class Interpreter {
         else {
             this.partOfLimt = { take: count, skip: 0 };
         }
+    }
+    TransTOSQLOfGroup(func: Function, tableName: string, isDesc: boolean = false) {
+        let sql = this.TransFuncToSQL(func, tableName);
+        let descStr = isDesc ? 'DESC' : '';
+        this.partOfOrderBy = `ORDER BY ${sql} ${descStr}`;
+
+        return this.partOfOrderBy;
     }
 
     TransFuncToSQL(func: Function, tableName?: string, param?: any): string {

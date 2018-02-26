@@ -37,17 +37,30 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
     First<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): Promise<T>;
     async First(func: any, params?: any, entityObj?: any) {
         let r = await this.Where(func, params, entityObj).Take(1).ToList();
-        if (!r) return null;
+        if (r.length === 0) return null;
         return r[0];
     }
 
+    Count(): Promise<number>;
+    Count(func: IQuerySelector<T>): Promise<number>;
+    Count(func: IQuerySelector<T>, params: IQueryParameter): Promise<number>;
+    async Count(func?: any, params?: any) {
+        this.Where(func, params);
+        this.interpreter.TransToSQLCount(this.TableName());
+        let sql = this.interpreter.GetFinalSql(this.TableName());
+        let r = await this.ctx.Query(sql);
+        let result = r ? r[0][0] : 0;
+
+        this.Disposed();
+        return result;
+    }
+
+    Any(): Promise<boolean>;
     Any(func: IQuerySelector<T>): Promise<boolean>;
     Any(func: IQuerySelector<T>, params: IQueryParameter): Promise<boolean>;
-    Any<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): Promise<boolean>;
-    async Any(func: any, params?: any, entityObj?: any) {
-        this.interpreter.TransToSQLAny(entityObj ? entityObj : this);
-        let r = await this.Where(func, params, entityObj).ToList();
-        return true;
+    async Any(func?: any, params?: any) {
+        let count = await this.Count(func, params);
+        return count > 0;
     }
 
     Contains(func: IQueryEnumerable<T>, values: any[]): IResultQueryObject<T>;
@@ -64,6 +77,15 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
     Select(func: IQueryEnumerable<T>): IResultQueryObject<T> {
         this.interpreter.TransToSQLOfSelect(func, this.TableName());
         this.joinEntities = [];
+        return this;
+    }
+
+    OrderBy(func: IQueryEnumerable<T>): IResultQueryObject<T> {
+        this.interpreter.TransTOSQLOfGroup(func, this.TableName());
+        return this;
+    }
+    OrderByDesc(func: IQueryEnumerable<T>): IResultQueryObject<T> {
+        this.interpreter.TransTOSQLOfGroup(func, this.TableName(), true);
         return this;
     }
 
@@ -88,7 +110,7 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
     ToList(): Promise<T[]>;
     ToList<R>(): Promise<R[]>;
     async ToList() {
-        let sql = this.interpreter.GetFinalSql(this.toString());
+        let sql = this.interpreter.GetFinalSql(this.TableName());
         let rows = await this.ctx.Query(sql);
         let resultList = [];
 

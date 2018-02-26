@@ -1,12 +1,19 @@
 import { IQueryObject, IResultQueryObject, ITakeChildQueryObject, IJoinChildQueryObject, IQueryParameter, IQuerySelector, IQueryEnumerable, IAssembleResultQuery } from './queryObject';
 
 export abstract class EntityObjectBase<T extends IEntityObject, R> implements IEntityObject, IQueryObject<T>, IJoinChildQueryObject<T, R>, ITakeChildQueryObject<T>{
+    Any(): Promise<boolean>;
     Any(func: IQuerySelector<T>): Promise<boolean>;
     Any(func: IQuerySelector<T>, params: IQueryParameter): Promise<boolean>;
-    Any<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): Promise<boolean>;
-    Any(func: any, params?: any, entityObj?: any) {
+    Any(func?: any, params?: any) {
         return null;
     }
+    Count(): Promise<number>;
+    Count(func: IQuerySelector<T>): Promise<number>;
+    Count(func: IQuerySelector<T>, params: IQueryParameter): Promise<number>;
+    Count(func?: any, params?: any) {
+        return null;
+    }
+
     First(func: IQuerySelector<T>): Promise<T>;
     First(func: IQuerySelector<T>, params: IQueryParameter): Promise<T>;
     First<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): Promise<T>;
@@ -72,9 +79,6 @@ export abstract class EntityObjectBase<T extends IEntityObject, R> implements IE
         throw new Error("Method not implemented.");
     }
     Min(func: IQueryEnumerable<T>): Promise<number> {
-        throw new Error("Method not implemented.");
-    }
-    Count(func: IQueryEnumerable<T>): Promise<number> {
         throw new Error("Method not implemented.");
     }
 

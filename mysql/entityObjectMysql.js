@@ -33,9 +33,26 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
     First(func, params, entityObj) {
         return __awaiter(this, void 0, void 0, function* () {
             let r = yield this.Where(func, params, entityObj).Take(1).ToList();
-            if (!r)
+            if (r.length === 0)
                 return null;
             return r[0];
+        });
+    }
+    Count(func, params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.Where(func, params);
+            this.interpreter.TransToSQLCount(this.TableName());
+            let sql = this.interpreter.GetFinalSql(this.TableName());
+            let r = yield this.ctx.Query(sql);
+            let result = r ? r[0][0] : 0;
+            this.Disposed();
+            return result;
+        });
+    }
+    Any(func, params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let count = yield this.Count(func, params);
+            return count > 0;
         });
     }
     Contains(func, values, entity) {
@@ -52,6 +69,14 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
     Select(func) {
         this.interpreter.TransToSQLOfSelect(func, this.TableName());
         this.joinEntities = [];
+        return this;
+    }
+    OrderBy(func) {
+        this.interpreter.TransTOSQLOfGroup(func, this.TableName());
+        return this;
+    }
+    OrderByDesc(func) {
+        this.interpreter.TransTOSQLOfGroup(func, this.TableName(), true);
         return this;
     }
     Join(fEntity) {
@@ -71,7 +96,7 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
     }
     ToList() {
         return __awaiter(this, void 0, void 0, function* () {
-            let sql = this.interpreter.GetFinalSql(this.toString());
+            let sql = this.interpreter.GetFinalSql(this.TableName());
             let rows = yield this.ctx.Query(sql);
             let resultList = [];
             if (this.joinEntities.length > 0) {
