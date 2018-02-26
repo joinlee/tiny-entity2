@@ -1,6 +1,12 @@
 import { IQueryObject, IResultQueryObject, ITakeChildQueryObject, IJoinChildQueryObject, IQueryParameter, IQuerySelector, IQueryEnumerable, IAssembleResultQuery } from './queryObject';
 
 export abstract class EntityObjectBase<T extends IEntityObject, R> implements IEntityObject, IQueryObject<T>, IJoinChildQueryObject<T, R>, ITakeChildQueryObject<T>{
+    Any(func: IQuerySelector<T>): Promise<boolean>;
+    Any(func: IQuerySelector<T>, params: IQueryParameter): Promise<boolean>;
+    Any<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): Promise<boolean>;
+    Any(func: any, params?: any, entityObj?: any) {
+        return null;
+    }
     First(func: IQuerySelector<T>): Promise<T>;
     First(func: IQuerySelector<T>, params: IQueryParameter): Promise<T>;
     First<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): Promise<T>;
@@ -16,9 +22,6 @@ export abstract class EntityObjectBase<T extends IEntityObject, R> implements IE
     IndexOf<K extends IEntityObject>(func: IQuerySelector<T>, entityObj: K): IQueryObject<T>;
     IndexOf(func: any, entityObj?: any) {
         return this;
-    }
-    Any(func: IQuerySelector<T>): Promise<number> {
-        throw new Error("Method not implemented.");
     }
     Where(func: IQuerySelector<T>): IQueryObject<T>;
     Where(func: IQuerySelector<T>, params: IQueryParameter): IQueryObject<T>;

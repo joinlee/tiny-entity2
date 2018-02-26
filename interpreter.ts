@@ -99,6 +99,11 @@ export class Interpreter {
         this.partOfWhere.push(sql);
         return sql;
     }
+    TransToSQLAny(entity) {
+        let k = this.GetPrimaryKeyObj(entity);
+        this.partOfSelect = k.key;
+        return this.partOfSelect;
+    }
 
     TransToSQLOfSelect(entity: any);
     TransToSQLOfSelect(func: Function, tableName: string);

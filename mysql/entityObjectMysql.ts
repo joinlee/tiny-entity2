@@ -41,6 +41,15 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         return r[0];
     }
 
+    Any(func: IQuerySelector<T>): Promise<boolean>;
+    Any(func: IQuerySelector<T>, params: IQueryParameter): Promise<boolean>;
+    Any<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): Promise<boolean>;
+    async Any(func: any, params?: any, entityObj?: any) {
+        this.interpreter.TransToSQLAny(entityObj ? entityObj : this);
+        let r = await this.Where(func, params, entityObj).ToList();
+        return true;
+    }
+
     Contains(func: IQueryEnumerable<T>, values: any[]): IResultQueryObject<T>;
     Contains<K extends IEntityObject>(func: IQueryEnumerable<K>, values: any[], entity: K): IResultQueryObject<T>;
     Contains(func: any, values: any, entity?: any) {

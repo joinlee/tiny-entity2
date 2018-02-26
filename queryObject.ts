@@ -29,7 +29,9 @@ export interface IResultQueryObject<T> extends IAssembleResultQuery<T> {
     Max(func: IQueryEnumerable<T>): Promise<number>;
     Min(func: IQueryEnumerable<T>): Promise<number>;
     Count(func: IQueryEnumerable<T>): Promise<number>;
-    Any(func: IQuerySelector<T>): Promise<number>;
+    Any(func: IQuerySelector<T>): Promise<boolean>;
+    Any(func: IQuerySelector<T>, params: IQueryParameter): Promise<boolean>;
+    Any<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): Promise<boolean>;
     First(func: IQuerySelector<T>): Promise<T>;
     First(func: IQuerySelector<T>, params: IQueryParameter): Promise<T>;
     First<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): Promise<T>;
