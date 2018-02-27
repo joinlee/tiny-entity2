@@ -27,13 +27,14 @@
   },
   "homepage": "https://github.com/joinlee/tiny-entity#readme",
   "dependencies": {
-    "@types/lodash": "^4.14.52",
     "@types/mocha": "^2.2.39",
     "@types/mysql": "0.0.34",
-    "mocha": "^3.2.0",
+    "reflect-metadata": "^0.1.10"
+  },
+  "devDependencies": {
     "mysql": "^2.14.1",
-    "reflect-metadata": "^0.1.10",
     "sqlite-sync": "^0.3.5",
+    "mocha": "^3.2.0",
     "gulp": "*"
   }
 }
