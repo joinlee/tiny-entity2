@@ -46,11 +46,14 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
     Count(func: IQuerySelector<T>, params: IQueryParameter): Promise<number>;
     async Count(func?: any, params?: any) {
         this.Where(func, params);
-        this.interpreter.TransToSQLCount(this.TableName());
+        this.interpreter.TransToSQLCount(this);
         let sql = this.interpreter.GetFinalSql(this.TableName());
         let r = await this.ctx.Query(sql);
-        let result = r ? r[0][0] : 0;
-
+        let result = 0;
+        for (let key of Object.keys(r[0])) {
+            result = r[0][key];
+        }
+        
         this.Disposed();
         return result;
     }

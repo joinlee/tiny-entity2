@@ -41,10 +41,13 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
     Count(func, params) {
         return __awaiter(this, void 0, void 0, function* () {
             this.Where(func, params);
-            this.interpreter.TransToSQLCount(this.TableName());
+            this.interpreter.TransToSQLCount(this);
             let sql = this.interpreter.GetFinalSql(this.TableName());
             let r = yield this.ctx.Query(sql);
-            let result = r ? r[0][0] : 0;
+            let result = 0;
+            for (let key of Object.keys(r[0])) {
+                result = r[0][key];
+            }
             this.Disposed();
             return result;
         });
