@@ -67,6 +67,15 @@ var Define;
         };
     }
     Define.Column = Column;
+    function Mapping(opt) {
+        return (target, propertyName, propertyDescriptor) => {
+            opt.ColumnName = propertyName;
+            opt.MappingType || (opt.MappingType = MappingType.Many);
+            DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
+            SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
+        };
+    }
+    Define.Mapping = Mapping;
     function SetPropertyDefineOptionValue(opt) {
         if (!opt.DataType) {
             opt.DataType = DataType.VARCHAR;
@@ -130,5 +139,10 @@ var Define;
     }
     DataDefine.Current = new DataDefine();
     Define.DataDefine = DataDefine;
+    let MappingType;
+    (function (MappingType) {
+        MappingType[MappingType["Many"] = 0] = "Many";
+        MappingType[MappingType["One"] = 1] = "One";
+    })(MappingType = Define.MappingType || (Define.MappingType = {}));
 })(Define = exports.Define || (exports.Define = {}));
 //# sourceMappingURL=dataDefine.js.map

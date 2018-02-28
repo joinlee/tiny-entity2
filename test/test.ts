@@ -7,15 +7,7 @@ import { Guid } from './guid';
 import * as assert from "assert";
 import { Person } from './models/person';
 
-// describe("CreateDatabase and Tables", () => {
-//     let ctx = new TestDataContext();
-//     it("when database exist", async () => {
-//         let r = await ctx.CreateDatabase();
-//         console.log(r);
-//     })
-// });
-
-process.env.tinyLog = "on";
+process.env.tinyLog = "off";
 
 describe("query data", () => {
     let ctx = new TestDataContext();
@@ -51,7 +43,7 @@ describe("query data", () => {
         let params = {
             name: "likecheng"
         };
-        let list = await ctx.Person.Where(x => x.name.indexOf(params.name), { "params.name": params.name }).ToList();
+        let list = await ctx.Person.Where(x => x.name.indexOf($args1), { $args1: params.name }).ToList();
         assert.equal(list.length, 10);
     })
     it("using Select()", async () => {
@@ -71,13 +63,6 @@ describe("query data", () => {
         await ctx.Delete<Person>(x => x.id != null, ctx.Person);
         let result = await ctx.Person.ToList();
         assert.equal(result.length, 0);
-    })
-
-    it("using Contanins() ", async ()=> {
-        let values2 = [100 - 1 / 2, 100 + 1 / 2];
-        let list2 = await ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Contains<Account>(x => x.amount, values2, ctx.Account).ToList();
-        assert.equal(list2.length, 2);
-        // ctx.Person.Contains()
     })
 
     after(async () => {
@@ -125,8 +110,21 @@ describe("using left join key work query multi tables ", () => {
     });
 
     it("left join one table,account and ToList()", async () => {
-        let list = await ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).ToList();
-        assert.equal(list.length, 20);
+        let list = await ctx.Person
+            .Join(ctx.Account).On((m, f) => m.id == f.personId)
+            .Where(x => x.id == $args1, { $args1: person.id })
+            .ToList();
+        assert.equal(list.length, 1);
+        assert.equal(list[0].accounts.length, 10);
+
+        let values2 = [100 - 1 / 2, 100 + 1 / 2];
+        let list2 = await ctx.Person
+            .Join(ctx.Account)
+            .On((m, f) => m.id == f.personId)
+            .Contains<Account>(x => x.amount, values2, ctx.Account)
+            .ToList();
+
+        assert.equal(list2.length, 2);
     })
     it("using Select() ", async () => {
         let list = await ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Select(x => x.id).ToList();

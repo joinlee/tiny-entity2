@@ -18,7 +18,11 @@ __decorate([
     __metadata("design:type", String)
 ], Account.prototype, "id", void 0);
 __decorate([
-    dataDefine_1.Define.Column({ DataType: dataDefine_1.Define.DataType.VARCHAR, IsIndex: true }),
+    dataDefine_1.Define.Column({
+        DataType: dataDefine_1.Define.DataType.VARCHAR,
+        IsIndex: true,
+        ForeignKey: { ForeignTable: 'person', ForeignColumn: 'id' }
+    }),
     __metadata("design:type", String)
 ], Account.prototype, "personId", void 0);
 __decorate([

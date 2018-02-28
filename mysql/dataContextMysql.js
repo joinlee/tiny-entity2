@@ -138,6 +138,8 @@ class MysqlDataContext {
             let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
             let columnSqlList = [];
             for (let item of tableDefine) {
+                if (item.Mapping)
+                    continue;
                 let valueStr = item.NotAllowNULL ? "NOT NULL" : "DEFAULT NULL";
                 let lengthStr = "";
                 if (item.DataLength != undefined) {
@@ -157,7 +159,7 @@ class MysqlDataContext {
                     columnSqlList.push("PRIMARY KEY (`" + item.ColumnName + "`)");
                 }
                 let indexType = "USING BTREE";
-                if (item.ForeignKey) {
+                if (item.ForeignKey && item.ForeignKey.IsPhysics) {
                     indexType = "";
                     columnSqlList.push("CONSTRAINT `fk_" + item.ColumnName + "` FOREIGN KEY (`" + item.ColumnName + "`) REFERENCES `" + item.ForeignKey.ForeignTable + "` (`" + item.ForeignKey.ForeignColumn + "`)");
                 }

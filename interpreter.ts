@@ -28,7 +28,7 @@ export class Interpreter {
             sqlCharts.push("WHERE");
             sqlCharts.push(this.partOfWhere.join(" AND "));
         }
-        if(this.partOfOrderBy){
+        if (this.partOfOrderBy) {
             sqlCharts.push(this.partOfOrderBy);
         }
         if (this.partOfLimt) {
@@ -53,6 +53,7 @@ export class Interpreter {
 
         entityMetadata.forEach(item => {
             if (excludeFields && excludeFields.indexOf(item.ColumnName) > -1) return;
+            if (item.Mapping) return;
             keyList.push("`" + item.ColumnName + "`");
             if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null) {
                 valueList.push("NULL");
@@ -199,8 +200,9 @@ export class Interpreter {
             for (let key in param) {
                 let index = funcCharList.findIndex(x => x.indexOf(key) > -1 && x.indexOf("." + key) <= -1);
                 if (index) {
-                    //funcCharList[index] = funcCharList[index].replace(new RegExp(key, "gm"), this.escape(param[key]));
-                    funcCharList[index] = this.escape(param[key]);
+                    let tKey = key.replace(new RegExp('[$]', 'gm'), '');
+                    funcCharList[index] = funcCharList[index].replace(new RegExp('[$]', "gm"), '');
+                    funcCharList[index] = funcCharList[index].replace(new RegExp(tKey, "gm"), this.escape(param[key]));
                 }
             }
         }
@@ -321,7 +323,7 @@ export class Interpreter {
             if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
         return fmt;
     }
-    private GetPrimaryKeyObj(entity: any) {
+    GetPrimaryKeyObj(entity: any) {
         let result: { key: string; value: any } = <any>{};
         for (let item of Define.DataDefine.Current.GetMetedata(entity)) {
             if (item.IsPrimaryKey) {
@@ -338,7 +340,7 @@ export class Interpreter {
         let entityClassName = entity.ClassName();
         let pList = Define.DataDefine.Current.GetMetedata(entity);
         for (let p of pList) {
-            // if(p.MappingTable) continue;
+            if (p.Mapping) continue;
             feildList.push(tableName + ".`" + p.ColumnName + "` AS " + entityClassName + "_" + p.ColumnName);
         }
         return feildList;

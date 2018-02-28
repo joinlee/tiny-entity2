@@ -6,7 +6,11 @@ export class Account extends EntityObjectMysql<Account>{
     @Define.PrimaryKey()
     id: string;
 
-    @Define.Column({ DataType: Define.DataType.VARCHAR, IsIndex: true })
+    @Define.Column({
+        DataType: Define.DataType.VARCHAR,
+        IsIndex: true,
+        ForeignKey: { ForeignTable: 'person', ForeignColumn: 'id' }
+    })
     personId: string;
 
     @Define.Column({ DataType: Define.DataType.Decimal, DataLength: 11, DecimalPoint: 3 })

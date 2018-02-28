@@ -45,6 +45,8 @@ class Interpreter {
         entityMetadata.forEach(item => {
             if (excludeFields && excludeFields.indexOf(item.ColumnName) > -1)
                 return;
+            if (item.Mapping)
+                return;
             keyList.push("`" + item.ColumnName + "`");
             if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null) {
                 valueList.push("NULL");
@@ -173,7 +175,9 @@ class Interpreter {
             for (let key in param) {
                 let index = funcCharList.findIndex(x => x.indexOf(key) > -1 && x.indexOf("." + key) <= -1);
                 if (index) {
-                    funcCharList[index] = this.escape(param[key]);
+                    let tKey = key.replace(new RegExp('[$]', 'gm'), '');
+                    funcCharList[index] = funcCharList[index].replace(new RegExp('[$]', "gm"), '');
+                    funcCharList[index] = funcCharList[index].replace(new RegExp(tKey, "gm"), this.escape(param[key]));
                 }
             }
         }
@@ -314,6 +318,8 @@ class Interpreter {
         let entityClassName = entity.ClassName();
         let pList = dataDefine_1.Define.DataDefine.Current.GetMetedata(entity);
         for (let p of pList) {
+            if (p.Mapping)
+                continue;
             feildList.push(tableName + ".`" + p.ColumnName + "` AS " + entityClassName + "_" + p.ColumnName);
         }
         return feildList;

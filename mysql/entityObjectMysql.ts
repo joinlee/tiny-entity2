@@ -53,7 +53,7 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         for (let key of Object.keys(r[0])) {
             result = r[0][key];
         }
-        
+
         this.Disposed();
         return result;
     }
@@ -93,7 +93,9 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
     }
 
     Join<F extends IEntityObject>(fEntity: F): IJoinChildQueryObject<T, F> {
-        this.interpreter.TransToSQLOfSelect(this);
+        if (this.joinEntities.length == 0) {
+            this.interpreter.TransToSQLOfSelect(this);
+        }
         this.interpreter.TransToSQLOfJoin(fEntity);
         this.joinEntities.push(fEntity);
         return this;
@@ -118,7 +120,8 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         let resultList = [];
 
         if (this.joinEntities.length > 0) {
-            resultList = this.TransRowToEnity(rows);
+            let r = this.TransRowToEnity(rows);
+            resultList = this.SplitColumnList(r);
         }
         else {
             for (let row of rows) {
@@ -130,6 +133,50 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         this.Disposed();
 
         return resultList;
+    }
+
+    private SplitColumnList(dataList: any[]) {
+        let objectNameList: string[] = [];
+        let resultValue = {};
+        if (dataList.length > 0) {
+            let dataItem = dataList[0];
+            objectNameList = Object.keys(dataItem);
+
+            dataList.map(item => {
+                for (let key of objectNameList) {
+                    resultValue[key] || (resultValue[key] = { list: [], mapping: null, pKey: null, fkey: null });
+                    let mdata = Define.DataDefine.Current.GetMetedata(item[key]);
+                    let pKey = mdata.find(x => x.IsPrimaryKey);
+                    let mapping = mdata.find(x => x.Mapping != null || x.Mapping != undefined);
+                    let fkey = mdata.find(x => x.ForeignKey != null || x.ForeignKey != undefined);
+                    if (resultValue[key].list.findIndex(x => x[pKey.ColumnName] === item[key][pKey.ColumnName])) {
+                        resultValue[key].pKey = pKey;
+                        resultValue[key].mapping = mapping ? mapping : null;
+                        resultValue[key].fkey = fkey;
+                        resultValue[key].list.push(item[key]);
+                    }
+                }
+            })
+        }
+
+        for (let key in resultValue) {
+            let obj = resultValue[key];
+            if (obj.mapping) {
+                let mapping: Define.PropertyDefineOption = obj.mapping;
+                let list = obj.list;
+                for (let item of list) {
+                    if (mapping.MappingType == Define.MappingType.Many) {
+                        item[mapping.ColumnName] = resultValue[mapping.Mapping].list.filter(x => x[resultValue[mapping.Mapping].fkey.ColumnName] == item[obj.pKey.ColumnName]);
+                    }
+                    else if (mapping.MappingType == Define.MappingType.One) {
+                        item[mapping.ColumnName] = resultValue[mapping.Mapping].list[0];
+                    }
+
+                }
+            }
+        }
+
+        return resultValue[this.ClassName()].list;
     }
 
     private TransRowToEnity(rows: any[]) {

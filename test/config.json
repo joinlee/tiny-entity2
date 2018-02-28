@@ -1,9 +1,9 @@
 {
     "connectionLimit": 50,
-    "host": "172.16.254.127",
+    "host": "localhost",
     "user": "root",
-    "password": "onetwo",
-    "database": "fbs_db",
+    "password": "123456",
+    "database": "tiny",
     "charset": "utf8",
     "collate": "utf8_unicode_ci"
 }

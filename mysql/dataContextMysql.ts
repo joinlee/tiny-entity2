@@ -87,13 +87,11 @@ export class MysqlDataContext implements IDataContext {
         return new Promise((resolve, reject) => {
             mysqlPool.getConnection(async (err, conn) => {
                 if (err) {
-                    // conn.release();
                     conn.destroy();
                     reject(err);
                 }
                 conn.beginTransaction(err => {
                     if (err) {
-                        // conn.release();
                         conn.destroy();
                         reject(err);
                     }
@@ -105,19 +103,16 @@ export class MysqlDataContext implements IDataContext {
                     }
                     conn.commit(err => {
                         if (err) conn.rollback(() => {
-                            // conn.release();
                             conn.destroy();
                             reject(err);
                         });
                         this.CleanTransactionStatus();
                         conn.release();
-                        // conn.destroy();
                         resolve(true);
                         logger("Transcation successful!");
                     });
                 } catch (error) {
                     this.CleanTransactionStatus();
-                    //conn.release();
                     conn.destroy();
                     reject(error);
                 }
@@ -146,6 +141,7 @@ export class MysqlDataContext implements IDataContext {
         let columnSqlList = [];
 
         for (let item of tableDefine) {
+            if (item.Mapping) continue;
             let valueStr = item.NotAllowNULL ? "NOT NULL" : "DEFAULT NULL";
 
             let lengthStr = "";
@@ -171,7 +167,7 @@ export class MysqlDataContext implements IDataContext {
             }
 
             let indexType = "USING BTREE";
-            if (item.ForeignKey) {
+            if (item.ForeignKey && item.ForeignKey.IsPhysics) {
                 indexType = "";
                 columnSqlList.push("CONSTRAINT `fk_" + item.ColumnName + "` FOREIGN KEY (`" + item.ColumnName + "`) REFERENCES `" + item.ForeignKey.ForeignTable + "` (`" + item.ForeignKey.ForeignColumn + "`)");
             }

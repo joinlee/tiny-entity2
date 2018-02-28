@@ -29,6 +29,7 @@ export namespace Define {
                     this.ConverToEntity = function (obj) {
                         let medateData = DataDefine.Current.GetMetedata(this);
                         for (let item of medateData) {
+                            // if(item.MappingTable) continue;
                             this[item.ColumnName] = obj[item.ColumnName];
                         }
 
@@ -71,13 +72,15 @@ export namespace Define {
             SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
         };
     }
-    // export function Mapping(opt: MappingOption) {
-    //     return (target: any, propertyName: string, propertyDescriptor?: PropertyDescriptor) => {
-    //         opt.ColumnName = propertyName;
-    //         DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
-    //         SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
-    //     };
-    // }
+
+    export function Mapping(opt: PropertyDefineOption) {
+        return (target: any, propertyName: string, propertyDescriptor?: PropertyDescriptor) => {
+            opt.ColumnName = propertyName;
+            opt.MappingType || (opt.MappingType = MappingType.Many);
+            DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
+            SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
+        };
+    }
 
     function SetPropertyDefineOptionValue(opt: PropertyDefineOption) {
         if (!opt.DataType) {
@@ -145,14 +148,14 @@ export namespace Define {
     }
 
 
-    interface PropertyDefineOption {
+    export interface PropertyDefineOption extends MappingOption {
         DataType?: DataType;
         DefualtValue?: any;
         NotAllowNULL?: boolean;
         DataLength?: number;
         ColumnName?: string;
         IsPrimaryKey?: boolean;
-        ForeignKey?: { ForeignTable: string; ForeignColumn: string; };
+        ForeignKey?: { ForeignTable: string; ForeignColumn: string; IsPhysics?: boolean; };
         DecimalPoint?: number;
         IsIndex?: boolean;
     }
@@ -161,7 +164,13 @@ export namespace Define {
         TableName: string;
     }
 
-    // interface MappingOption extends PropertyDefineOption {
-    //     MappingTable: string;
-    // }
+    interface MappingOption {
+        Mapping?: string;
+        MappingType?: MappingType;
+    }
+
+    export enum MappingType {
+        Many = 0,
+        One = 1
+    }
 }

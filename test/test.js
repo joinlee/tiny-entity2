@@ -13,7 +13,7 @@ const testDataContext_1 = require("./testDataContext");
 const guid_1 = require("./guid");
 const assert = require("assert");
 const person_1 = require("./models/person");
-process.env.tinyLog = "on";
+process.env.tinyLog = "off";
 describe("query data", () => {
     let ctx = new testDataContext_1.TestDataContext();
     let personList = [];
@@ -42,7 +42,7 @@ describe("query data", () => {
         let params = {
             name: "likecheng"
         };
-        let list = yield ctx.Person.Where(x => x.name.indexOf(params.name), { "params.name": params.name }).ToList();
+        let list = yield ctx.Person.Where(x => x.name.indexOf($args1), { $args1: params.name }).ToList();
         assert.equal(list.length, 10);
     }));
     it("using Select()", () => __awaiter(this, void 0, void 0, function* () {
@@ -60,11 +60,6 @@ describe("query data", () => {
         yield ctx.Delete(x => x.id != null, ctx.Person);
         let result = yield ctx.Person.ToList();
         assert.equal(result.length, 0);
-    }));
-    it("using Contanins() ", () => __awaiter(this, void 0, void 0, function* () {
-        let values2 = [100 - 1 / 2, 100 + 1 / 2];
-        let list2 = yield ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Contains(x => x.amount, values2, ctx.Account).ToList();
-        assert.equal(list2.length, 2);
     }));
     after(() => __awaiter(this, void 0, void 0, function* () {
         yield ctx.Delete(x => x.id != null, ctx.Person);
@@ -100,8 +95,19 @@ describe("using left join key work query multi tables ", () => {
         }
     }));
     it("left join one table,account and ToList()", () => __awaiter(this, void 0, void 0, function* () {
-        let list = yield ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).ToList();
-        assert.equal(list.length, 20);
+        let list = yield ctx.Person
+            .Join(ctx.Account).On((m, f) => m.id == f.personId)
+            .Where(x => x.id == $args1, { $args1: person.id })
+            .ToList();
+        assert.equal(list.length, 1);
+        assert.equal(list[0].accounts.length, 10);
+        let values2 = [100 - 1 / 2, 100 + 1 / 2];
+        let list2 = yield ctx.Person
+            .Join(ctx.Account)
+            .On((m, f) => m.id == f.personId)
+            .Contains(x => x.amount, values2, ctx.Account)
+            .ToList();
+        assert.equal(list2.length, 2);
     }));
     it("using Select() ", () => __awaiter(this, void 0, void 0, function* () {
         let list = yield ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Select(x => x.id).ToList();
