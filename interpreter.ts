@@ -46,7 +46,7 @@ export class Interpreter {
     }
 
     TransToInsertSql(entity: any, excludeFields?: string[]): string {
-        let sqlStr = "INSERT INTO `" + entity.toString() + "`";
+        let sqlStr = "INSERT INTO `" + entity.TableName() + "`";
 
         let entityMetadata = Define.DataDefine.Current.GetMetedata(entity);
         let keyList = [], valueList = [];
@@ -68,10 +68,22 @@ export class Interpreter {
 
     TransToUpdateSql(entity: any, excludeFields?: string[]): string {
         let sqlStr = "UPDATE `" + entity.TableName() + "` SET ";
-        let qList = this.UpdatePropertyFormat(entity, excludeFields);
+        
+        let entityMetadata = Define.DataDefine.Current.GetMetedata(entity);
+        let valueList = [];
+        entityMetadata.forEach(item => {
+            if (excludeFields && excludeFields.indexOf(item.ColumnName) > -1) return;
+            if (item.Mapping) return;
+            if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null) {
+                valueList.push(`\`${item.ColumnName}\`=NULL`);
+            }
+            else {
+                valueList.push(`\`${item.ColumnName}\`=${this.escape(entity[item.ColumnName])}`);
+            }
+        });
 
         let primaryKeyObj = this.GetPrimaryKeyObj(entity);
-        sqlStr += qList.join(',') + " WHERE " + primaryKeyObj.key + "=" + this.escape(primaryKeyObj.value) + ";";
+        sqlStr += valueList.join(',') + " WHERE " + primaryKeyObj.key + "=" + this.escape(primaryKeyObj.value) + ";";
 
         return sqlStr;
     }
@@ -254,60 +266,7 @@ export class Interpreter {
         }
         else return null;
     }
-    private IsAvailableValue(value): boolean {
-        return typeof (value) == "object" || typeof (value) == "string" || typeof (value) == "number" || typeof (value) == "boolean";
-    }
-    private InsertPropertyFormat(obj: any) {
-        const propertyNameList: string[] = [];
-        const propertyValueList = [];
-        for (var key in obj) {
-            //数组转换
-            if (this.IsAvailableValue(obj[key])) {
-                if (obj[key] == undefined || obj[key] == null || obj[key] === "") continue;
-                propertyNameList.push("`" + key + "`");
-                if (Array.isArray(obj[key]) || Object.prototype.toString.call(obj[key]) === '[object Object]') {
-                    propertyValueList.push(this.escape(JSON.stringify(obj[key])));
-                } else if (isNaN(obj[key]) || typeof (obj[key]) == "string") {
-                    propertyValueList.push(this.escape(obj[key]));
-                }
-                else if (obj[key] instanceof Date) {
-                    propertyValueList.push(this.escape(this.dateFormat(obj[key], "yyyy-MM-dd HH:mm:ss")));
-                }
-                else {
-                    propertyValueList.push(this.escape(obj[key]));
-                }
 
-            }
-        }
-
-        return { PropertyNameList: propertyNameList, PropertyValueList: propertyValueList };
-    }
-    private UpdatePropertyFormat(obj: any, excludeFields?: string[]) {
-        let qList = [];
-        for (let key in obj) {
-            if (key == "sqlTemp" || key == "queryParam" || key == "ctx" || key == "joinParms") continue;
-            if (excludeFields && excludeFields.indexOf(key) > -1) continue;
-            if (this.IsAvailableValue(obj[key]) && key != "id") {
-                if (obj[key] == undefined || obj[key] == null || obj[key] === "") {
-                    qList.push("`" + key + "`=NULL");
-                }
-                else if (Array.isArray(obj[key]) || Object.prototype.toString.call(obj[key]) === '[object Object]') {
-                    qList.push("`" + key + "`=" + this.escape(JSON.stringify(obj[key])));
-                }
-                else if (isNaN(obj[key]) || typeof (obj[key]) == "string") {
-                    qList.push("`" + key + "`=" + this.escape(obj[key]));
-                }
-                else if (obj[key] instanceof Date) {
-                    qList.push("`" + key + "`=" + this.escape(this.dateFormat(obj[key], "yyyy-MM-dd HH:mm:ss")));
-                }
-                else {
-                    qList.push("`" + key + "`=" + this.escape(obj[key]));
-                }
-            }
-        }
-
-        return qList;
-    }
     private dateFormat(d: Date, fmt: string) {
         let o = {
             "M+": d.getMonth() + 1, //月份 

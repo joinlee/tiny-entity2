@@ -18,6 +18,8 @@ class CodeGenerator {
                     continue;
                 if (file.indexOf(".ts") > -1)
                     continue;
+                if (file.indexOf("index") > -1)
+                    continue;
                 let model = require(that.options.modelLoadPath + "/" + file);
                 let keys = Object.keys(model);
                 let modelClassName = keys[0];
