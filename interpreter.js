@@ -49,7 +49,12 @@ class Interpreter {
                 return;
             keyList.push("`" + item.ColumnName + "`");
             if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null) {
-                valueList.push("NULL");
+                if (item.DefualtValue != undefined && item.DefualtValue != null) {
+                    valueList.push(this.escape(item.DefualtValue));
+                }
+                else {
+                    valueList.push("NULL");
+                }
             }
             else {
                 valueList.push(this.escape(entity[item.ColumnName]));
@@ -68,7 +73,12 @@ class Interpreter {
             if (item.Mapping)
                 return;
             if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null) {
-                valueList.push(`\`${item.ColumnName}\`=NULL`);
+                if (item.DefualtValue != undefined && item.DefualtValue != null) {
+                    valueList.push(`\`${item.ColumnName}\`=${this.escape(item.DefualtValue)}`);
+                }
+                else {
+                    valueList.push(`\`${item.ColumnName}\`=NULL`);
+                }
             }
             else {
                 valueList.push(`\`${item.ColumnName}\`=${this.escape(entity[item.ColumnName])}`);

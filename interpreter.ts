@@ -56,7 +56,12 @@ export class Interpreter {
             if (item.Mapping) return;
             keyList.push("`" + item.ColumnName + "`");
             if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null) {
-                valueList.push("NULL");
+                if (item.DefualtValue != undefined && item.DefualtValue != null) {
+                    valueList.push(this.escape(item.DefualtValue));
+                }
+                else {
+                    valueList.push("NULL");
+                }
             }
             else {
                 valueList.push(this.escape(entity[item.ColumnName]));
@@ -68,14 +73,19 @@ export class Interpreter {
 
     TransToUpdateSql(entity: any, excludeFields?: string[]): string {
         let sqlStr = "UPDATE `" + entity.TableName() + "` SET ";
-        
+
         let entityMetadata = Define.DataDefine.Current.GetMetedata(entity);
         let valueList = [];
         entityMetadata.forEach(item => {
             if (excludeFields && excludeFields.indexOf(item.ColumnName) > -1) return;
             if (item.Mapping) return;
             if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null) {
-                valueList.push(`\`${item.ColumnName}\`=NULL`);
+                if (item.DefualtValue != undefined && item.DefualtValue != null) {
+                    valueList.push(`\`${item.ColumnName}\`=${this.escape(item.DefualtValue)}`);
+                }
+                else {
+                    valueList.push(`\`${item.ColumnName}\`=NULL`);
+                }
             }
             else {
                 valueList.push(`\`${item.ColumnName}\`=${this.escape(entity[item.ColumnName])}`);
