@@ -3,7 +3,7 @@ import { IEntityObject } from './entityObject';
 export interface IQueryObject<T> extends IResultQueryObject<T>, IAssembleResultQuery<T> {
     Where(func: IQuerySelector<T>): IQueryObject<T>;
     Where(func: IQuerySelector<T>, params: IQueryParameter): IQueryObject<T>;
-    Where<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): IQueryObject<T>;
+    Where<K extends IEntityObject>(func: IQuerySelector<K>, params: IQueryParameter, entityObj: K): IQueryObject<T>;
     Select(func: IQueryEnumerable<T>): IResultQueryObject<T>;
     OrderBy(func: IQueryEnumerable<T>): IResultQueryObject<T>
     OrderByDesc(func: IQueryEnumerable<T>): IResultQueryObject<T>;

@@ -29,13 +29,13 @@ export namespace Define {
                     this.ConverToEntity = function (obj) {
                         let medateData = DataDefine.Current.GetMetedata(this);
                         for (let item of medateData) {
-                            // if(item.MappingTable) continue;
                             this[item.ColumnName] = obj[item.ColumnName];
                         }
 
                         let resultObj: any = {};
                         for (let key in this) {
-                            if (key === "interpreter" || key === "ctx" || key === "ConverToEntity" || key === "joinEntities") continue;
+                            //|| key === "ConverToEntity"
+                            if (key === "interpreter" || key === "ctx" || key === "joinEntities") continue;
                             resultObj[key] = this[key];
                         }
                         return resultObj;

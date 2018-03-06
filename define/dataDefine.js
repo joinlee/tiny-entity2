@@ -30,7 +30,7 @@ var Define;
                         }
                         let resultObj = {};
                         for (let key in this) {
-                            if (key === "interpreter" || key === "ctx" || key === "ConverToEntity" || key === "joinEntities")
+                            if (key === "interpreter" || key === "ctx" || key === "joinEntities")
                                 continue;
                             resultObj[key] = this[key];
                         }

@@ -26,7 +26,7 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
 
     Where(func: IQuerySelector<T>): IQueryObject<T>;
     Where(func: IQuerySelector<T>, params: IQueryParameter): IQueryObject<T>;
-    Where<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): IQueryObject<T>;
+    Where<K extends IEntityObject>(func: IQuerySelector<K>, params: IQueryParameter, entityObj: K): IQueryObject<T>;
     Where(func: any, params?: any, entityObj?: any) {
         this.interpreter.TransToSQLOfWhere(func, this.GetTableName(entityObj), params);
         return this;
@@ -120,8 +120,10 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         let resultList = [];
 
         if (this.joinEntities.length > 0) {
-            let r = this.TransRowToEnity(rows);
-            resultList = this.SplitColumnList(r);
+            if (rows.length > 0) {
+                let r = this.TransRowToEnity(rows);
+                resultList = this.SplitColumnList(r);
+            }
         }
         else {
             for (let row of rows) {
@@ -169,9 +171,10 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
                         item[mapping.ColumnName] = resultValue[mapping.Mapping].list.filter(x => x[resultValue[mapping.Mapping].fkey.ColumnName] == item[obj.pKey.ColumnName]);
                     }
                     else if (mapping.MappingType == Define.MappingType.One) {
-                        item[mapping.ColumnName] = resultValue[mapping.Mapping].list[0];
+                        if (resultValue[mapping.Mapping]) {
+                            item[mapping.ColumnName] = resultValue[mapping.Mapping].list[0];
+                        }
                     }
-
                 }
             }
         }

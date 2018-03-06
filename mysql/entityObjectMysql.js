@@ -106,8 +106,10 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
             let rows = yield this.ctx.Query(sql);
             let resultList = [];
             if (this.joinEntities.length > 0) {
-                let r = this.TransRowToEnity(rows);
-                resultList = this.SplitColumnList(r);
+                if (rows.length > 0) {
+                    let r = this.TransRowToEnity(rows);
+                    resultList = this.SplitColumnList(r);
+                }
             }
             else {
                 for (let row of rows) {
@@ -151,7 +153,9 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
                         item[mapping.ColumnName] = resultValue[mapping.Mapping].list.filter(x => x[resultValue[mapping.Mapping].fkey.ColumnName] == item[obj.pKey.ColumnName]);
                     }
                     else if (mapping.MappingType == dataDefine_1.Define.MappingType.One) {
-                        item[mapping.ColumnName] = resultValue[mapping.Mapping].list[0];
+                        if (resultValue[mapping.Mapping]) {
+                            item[mapping.ColumnName] = resultValue[mapping.Mapping].list[0];
+                        }
                     }
                 }
             }

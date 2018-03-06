@@ -32,7 +32,7 @@ export abstract class EntityObjectBase<T extends IEntityObject, R> implements IE
     }
     Where(func: IQuerySelector<T>): IQueryObject<T>;
     Where(func: IQuerySelector<T>, params: IQueryParameter): IQueryObject<T>;
-    Where<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): IQueryObject<T>;
+    Where<K extends IEntityObject>(func: IQuerySelector<K>, params: IQueryParameter, entityObj: K): IQueryObject<T>;
     Where(func: IQuerySelector<T>, params?: any, entityObj?: any) {
         return this;
     }
