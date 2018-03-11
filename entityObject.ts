@@ -1,6 +1,13 @@
 import { IQueryObject, IResultQueryObject, ITakeChildQueryObject, IJoinChildQueryObject, IQueryParameter, IQuerySelector, IQueryEnumerable, IAssembleResultQuery } from './queryObject';
 
 export abstract class EntityObjectBase<T extends IEntityObject, R> implements IEntityObject, IQueryObject<T>, IJoinChildQueryObject<T, R>, ITakeChildQueryObject<T>{
+    First(): Promise<T>;
+    First(func: IQuerySelector<T>): Promise<T>;
+    First(func: IQuerySelector<T>, params: IQueryParameter): Promise<T>;
+    First<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): Promise<T>;
+    First(func?: any, params?: any, entityObj?: any) {
+        return null;
+    }
     Any(): Promise<boolean>;
     Any(func: IQuerySelector<T>): Promise<boolean>;
     Any(func: IQuerySelector<T>, params: IQueryParameter): Promise<boolean>;
@@ -14,12 +21,6 @@ export abstract class EntityObjectBase<T extends IEntityObject, R> implements IE
         return null;
     }
 
-    First(func: IQuerySelector<T>): Promise<T>;
-    First(func: IQuerySelector<T>, params: IQueryParameter): Promise<T>;
-    First<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): Promise<T>;
-    First(func: any, params?: any, entityObj?: any) {
-        return null;
-    }
     Contains(func: IQueryEnumerable<T>, values: any[]): IResultQueryObject<T>;
     Contains<K extends IEntityObject>(func: IQueryEnumerable<K>, values: any[], entity: K): IResultQueryObject<T>;
     Contains(func: any, values: any, entity?: any) {

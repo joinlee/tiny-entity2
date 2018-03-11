@@ -36,7 +36,8 @@ export interface IResultQueryObject<T> extends IAssembleResultQuery<T> {
     Any(): Promise<boolean>;
     Any(func: IQuerySelector<T>): Promise<boolean>;
     Any(func: IQuerySelector<T>, params: IQueryParameter): Promise<boolean>;
-   
+
+    First(): Promise<T>;
     First(func: IQuerySelector<T>): Promise<T>;
     First(func: IQuerySelector<T>, params: IQueryParameter): Promise<T>;
     First<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): Promise<T>;

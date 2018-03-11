@@ -32,11 +32,18 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         return this;
     }
 
+
+    First(): Promise<T>;
     First(func: IQuerySelector<T>): Promise<T>;
     First(func: IQuerySelector<T>, params: IQueryParameter): Promise<T>;
     First<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): Promise<T>;
-    async First(func: any, params?: any, entityObj?: any) {
-        let r = await this.Where(func, params, entityObj).Take(1).ToList();
+    async First(func?: any, params?: any, entityObj?: any) {
+        if(func){
+            this.Where(func, params, entityObj);
+        }
+        this.Take(1);
+
+        let r = await this.ToList();
         if (r.length === 0) return null;
         return r[0];
     }

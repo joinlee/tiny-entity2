@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class EntityObjectBase {
+    First(func, params, entityObj) {
+        return null;
+    }
     Any(func, params) {
         return null;
     }
     Count(func, params) {
-        return null;
-    }
-    First(func, params, entityObj) {
         return null;
     }
     Contains(func, values, entity) {

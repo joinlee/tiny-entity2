@@ -33,7 +33,11 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
     }
     First(func, params, entityObj) {
         return __awaiter(this, void 0, void 0, function* () {
-            let r = yield this.Where(func, params, entityObj).Take(1).ToList();
+            if (func) {
+                this.Where(func, params, entityObj);
+            }
+            this.Take(1);
+            let r = yield this.ToList();
             if (r.length === 0)
                 return null;
             return r[0];
