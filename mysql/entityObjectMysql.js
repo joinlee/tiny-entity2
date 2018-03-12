@@ -136,12 +136,10 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
                     resultValue[key] || (resultValue[key] = { list: [], mapping: null, pKey: null, fkey: null });
                     let mdata = dataDefine_1.Define.DataDefine.Current.GetMetedata(item[key]);
                     let pKey = mdata.find(x => x.IsPrimaryKey);
-                    let mapping = mdata.find(x => x.Mapping != null || x.Mapping != undefined);
-                    let fkey = mdata.find(x => x.ForeignKey != null || x.ForeignKey != undefined);
+                    let mapping = mdata.filter(x => x.Mapping != null || x.Mapping != undefined);
                     if (resultValue[key].list.findIndex(x => x[pKey.ColumnName] === item[key][pKey.ColumnName])) {
                         resultValue[key].pKey = pKey;
                         resultValue[key].mapping = mapping ? mapping : null;
-                        resultValue[key].fkey = fkey;
                         resultValue[key].list.push(item[key]);
                     }
                 }
@@ -151,20 +149,31 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
             let obj = resultValue[key];
             if (obj.mapping) {
                 let mapping = obj.mapping;
-                let list = obj.list;
+                let list = this.RemoveDuplicate(obj.list, obj.pKey.ColumnName);
                 for (let item of list) {
-                    if (mapping.MappingType == dataDefine_1.Define.MappingType.Many) {
-                        item[mapping.ColumnName] = resultValue[mapping.Mapping].list.filter(x => x[resultValue[mapping.Mapping].fkey.ColumnName] == item[obj.pKey.ColumnName]);
-                    }
-                    else if (mapping.MappingType == dataDefine_1.Define.MappingType.One) {
-                        if (resultValue[mapping.Mapping]) {
-                            item[mapping.ColumnName] = resultValue[mapping.Mapping].list[0];
+                    for (let mappingItem of mapping) {
+                        if (!resultValue[mappingItem.Mapping])
+                            continue;
+                        if (mappingItem.MappingType == dataDefine_1.Define.MappingType.Many) {
+                            item[mappingItem.ColumnName] = this.RemoveDuplicate(resultValue[mappingItem.Mapping].list.filter(x => x[mappingItem.MappingKey] == item[obj.pKey.ColumnName]), obj.pKey.ColumnName);
+                        }
+                        else if (mappingItem.MappingType == dataDefine_1.Define.MappingType.One) {
+                            item[mappingItem.ColumnName] = resultValue[mappingItem.Mapping].list[0];
                         }
                     }
                 }
             }
         }
         return resultValue[this.ClassName()].list;
+    }
+    RemoveDuplicate(list, key) {
+        let rList = [];
+        for (let item of list) {
+            if (rList.findIndex(x => x[key] == item[key]) == -1) {
+                rList.push(item);
+            }
+        }
+        return rList;
     }
     TransRowToEnity(rows) {
         let resultList = [];

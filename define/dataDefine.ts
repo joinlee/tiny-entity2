@@ -167,6 +167,7 @@ export namespace Define {
     interface MappingOption {
         Mapping?: string;
         MappingType?: MappingType;
+        MappingKey?: string
     }
 
     export enum MappingType {

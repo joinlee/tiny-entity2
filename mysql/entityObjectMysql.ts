@@ -38,7 +38,7 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
     First(func: IQuerySelector<T>, params: IQueryParameter): Promise<T>;
     First<K extends IEntityObject>(func: IQuerySelector<T>, params: IQueryParameter, entityObj: K): Promise<T>;
     async First(func?: any, params?: any, entityObj?: any) {
-        if(func){
+        if (func) {
             this.Where(func, params, entityObj);
         }
         this.Take(1);
@@ -156,12 +156,10 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
                     resultValue[key] || (resultValue[key] = { list: [], mapping: null, pKey: null, fkey: null });
                     let mdata = Define.DataDefine.Current.GetMetedata(item[key]);
                     let pKey = mdata.find(x => x.IsPrimaryKey);
-                    let mapping = mdata.find(x => x.Mapping != null || x.Mapping != undefined);
-                    let fkey = mdata.find(x => x.ForeignKey != null || x.ForeignKey != undefined);
+                    let mapping = mdata.filter(x => x.Mapping != null || x.Mapping != undefined);
                     if (resultValue[key].list.findIndex(x => x[pKey.ColumnName] === item[key][pKey.ColumnName])) {
                         resultValue[key].pKey = pKey;
                         resultValue[key].mapping = mapping ? mapping : null;
-                        resultValue[key].fkey = fkey;
                         resultValue[key].list.push(item[key]);
                     }
                 }
@@ -171,15 +169,16 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         for (let key in resultValue) {
             let obj = resultValue[key];
             if (obj.mapping) {
-                let mapping: Define.PropertyDefineOption = obj.mapping;
-                let list = obj.list;
+                let mapping: Define.PropertyDefineOption[] = obj.mapping;
+                let list = this.RemoveDuplicate(obj.list, obj.pKey.ColumnName);
                 for (let item of list) {
-                    if (mapping.MappingType == Define.MappingType.Many) {
-                        item[mapping.ColumnName] = resultValue[mapping.Mapping].list.filter(x => x[resultValue[mapping.Mapping].fkey.ColumnName] == item[obj.pKey.ColumnName]);
-                    }
-                    else if (mapping.MappingType == Define.MappingType.One) {
-                        if (resultValue[mapping.Mapping]) {
-                            item[mapping.ColumnName] = resultValue[mapping.Mapping].list[0];
+                    for (let mappingItem of mapping) {
+                        if (!resultValue[mappingItem.Mapping]) continue;
+                        if (mappingItem.MappingType == Define.MappingType.Many) {
+                            item[mappingItem.ColumnName] = this.RemoveDuplicate(resultValue[mappingItem.Mapping].list.filter(x => x[mappingItem.MappingKey] == item[obj.pKey.ColumnName]), obj.pKey.ColumnName);
+                        }
+                        else if (mappingItem.MappingType == Define.MappingType.One) {
+                            item[mappingItem.ColumnName] = resultValue[mappingItem.Mapping].list[0];
                         }
                     }
                 }
@@ -187,6 +186,17 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         }
 
         return resultValue[this.ClassName()].list;
+    }
+
+    private RemoveDuplicate(list: any[], key: string) {
+        let rList = [];
+        for (let item of list) {
+            if (rList.findIndex(x => x[key] == item[key]) == -1) {
+                rList.push(item);
+            }
+        }
+
+        return rList;
     }
 
     private TransRowToEnity(rows: any[]) {
