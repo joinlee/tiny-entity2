@@ -191,7 +191,7 @@ export class MysqlDataContext implements IDataContext {
         let r = new this[entityName].constructor();
         delete r.ctx;
         delete r.interpreter;
-        delete r.ConverToEntity;
+        // delete r.ConverToEntity;
         delete r.joinEntities;
         return r;
     }
