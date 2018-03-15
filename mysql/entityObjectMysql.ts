@@ -52,7 +52,9 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
     Count(func: IQuerySelector<T>): Promise<number>;
     Count(func: IQuerySelector<T>, params: IQueryParameter): Promise<number>;
     async Count(func?: any, params?: any) {
-        this.Where(func, params);
+        if (func) {
+            this.Where(func, params);
+        }
         this.interpreter.TransToSQLCount(this);
         let sql = this.interpreter.GetFinalSql(this.TableName());
         let r = await this.ctx.Query(sql);
