@@ -8,34 +8,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-function Transaction(ctx) {
-    return (target, propertyName, descriptor) => {
-        let method = descriptor.value;
-        descriptor.value = function () {
-            return __awaiter(this, arguments, void 0, function* () {
-                if (!this.ctx) {
-                    this.ctx = ctx;
-                }
-                this.ctx.BeginTranscation();
-                let result;
-                try {
-                    result = yield method.apply(this, arguments);
-                    let r = yield this.ctx.Commit();
-                    if (r === true) {
-                        this.ctx = null;
-                    }
-                    return result;
-                }
-                catch (error) {
-                    if (this.ctx) {
-                        yield this.ctx.RollBack();
-                        this.ctx = null;
-                    }
-                    throw error;
-                }
-            });
-        };
-    };
+function Transaction(ctx, action) {
+    return __awaiter(this, void 0, void 0, function* () {
+        ctx.BeginTranscation();
+        try {
+            let r = yield action.call(this, ctx);
+            yield ctx.Commit();
+            return r;
+        }
+        catch (error) {
+            yield ctx.RollBack();
+            throw error;
+        }
+    });
 }
 exports.Transaction = Transaction;
 //# sourceMappingURL=transcation.js.map
