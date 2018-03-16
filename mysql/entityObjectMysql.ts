@@ -173,6 +173,7 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
             if (obj.mapping) {
                 let mapping: Define.PropertyDefineOption[] = obj.mapping;
                 let list = this.RemoveDuplicate(obj.list, obj.pKey.ColumnName);
+                obj.list = list;
                 for (let item of list) {
                     for (let mappingItem of mapping) {
                         if (!resultValue[mappingItem.Mapping]) continue;

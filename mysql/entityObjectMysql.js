@@ -152,6 +152,7 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
             if (obj.mapping) {
                 let mapping = obj.mapping;
                 let list = this.RemoveDuplicate(obj.list, obj.pKey.ColumnName);
+                obj.list = list;
                 for (let item of list) {
                     for (let mappingItem of mapping) {
                         if (!resultValue[mappingItem.Mapping])
