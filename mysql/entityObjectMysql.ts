@@ -177,7 +177,15 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
                     for (let mappingItem of mapping) {
                         if (!resultValue[mappingItem.Mapping]) continue;
                         if (mappingItem.MappingType == Define.MappingType.Many) {
-                            item[mappingItem.ColumnName] = this.RemoveDuplicate(resultValue[mappingItem.Mapping].list.filter(x => x[mappingItem.MappingKey] == item[obj.pKey.ColumnName]), obj.pKey.ColumnName);
+                            let mappingKey = mappingItem.MappingKey;
+                            let mkey = obj.pKey.ColumnName, fkey;
+                            if (typeof (mappingKey) == "string") fkey = mappingKey;
+                            else {
+                                fkey = mappingKey.FKey;
+                                if (mappingKey.MKey) mkey = mappingKey.MKey;
+                            }
+
+                            item[mappingItem.ColumnName] = this.RemoveDuplicate(resultValue[mappingItem.Mapping].list.filter(x => x[fkey] == item[mkey]), obj.pKey.ColumnName);
                         }
                         else if (mappingItem.MappingType == Define.MappingType.One) {
                             item[mappingItem.ColumnName] = resultValue[mappingItem.Mapping].list[0];
