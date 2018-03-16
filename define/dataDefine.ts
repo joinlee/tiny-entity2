@@ -34,7 +34,6 @@ export namespace Define {
 
                         let resultObj: any = {};
                         for (let key in this) {
-                            //|| key === "ConverToEntity"
                             if (key === "interpreter" || key === "ctx" || key === "joinEntities") continue;
                             resultObj[key] = this[key];
                         }
