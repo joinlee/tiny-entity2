@@ -131,7 +131,7 @@ class MysqlDataContext {
                 host: this.option.host,
                 user: this.option.user,
                 password: this.option.password,
-                database: "sys"
+                database: "mysql"
             });
             let sql = "CREATE DATABASE IF NOT EXISTS `" + this.option.database + "` DEFAULT CHARACTER SET " + this.option.charset + " COLLATE utf8_unicode_ci;";
             return new Promise((resolve, reject) => {
@@ -196,6 +196,45 @@ class MysqlDataContext {
             }
             return true;
         });
+    }
+    CreateTableSql(entity) {
+        let tableDefine = dataDefine_1.Define.DataDefine.Current.GetMetedata(entity);
+        let columnSqlList = [];
+        for (let item of tableDefine) {
+            if (item.Mapping)
+                continue;
+            let valueStr = item.NotAllowNULL ? "NOT NULL" : "DEFAULT NULL";
+            let lengthStr = "";
+            if (item.DataLength != undefined) {
+                let dcp = item.DecimalPoint != undefined ? "," + item.DecimalPoint : "";
+                lengthStr = "(" + item.DataLength + dcp + ")";
+            }
+            if (item.DefualtValue != undefined) {
+                if (item.DataType >= 0 && item.DataType <= 1) {
+                    valueStr = "DEFAULT '" + item.DefualtValue + "'";
+                }
+                else {
+                    valueStr = "DEFAULT " + item.DefualtValue;
+                }
+            }
+            let cs = "`" + item.ColumnName + "` " + dataDefine_1.Define.DataType[item.DataType] + lengthStr + " COLLATE " + this.option.collate + " " + valueStr;
+            if (item.IsPrimaryKey) {
+                columnSqlList.push("PRIMARY KEY (`" + item.ColumnName + "`)");
+            }
+            let indexType = "USING BTREE";
+            if (item.ForeignKey && item.ForeignKey.IsPhysics) {
+                indexType = "";
+                columnSqlList.push("CONSTRAINT `fk_" + item.ColumnName + "` FOREIGN KEY (`" + item.ColumnName + "`) REFERENCES `" + item.ForeignKey.ForeignTable + "` (`" + item.ForeignKey.ForeignColumn + "`)");
+            }
+            if (item.IsIndex) {
+                columnSqlList.push("KEY `idx_" + item.ColumnName + "` (`" + item.ColumnName + "`) " + indexType);
+            }
+            columnSqlList.push(cs);
+        }
+        return "CREATE TABLE `" + entity.TableName() + "` ( " + columnSqlList.join(",") + " ) ENGINE=InnoDB DEFAULT CHARSET=" + this.option.charset + " COLLATE=" + this.option.collate + ";";
+    }
+    DeleteTableSql(entity) {
+        return "DROP TABLE IF EXISTS `" + entity.TableName() + "`;";
     }
     CreateOperateLog(entity) {
         let tableDefine = dataDefine_1.Define.DataDefine.Current.GetMetedata(entity);

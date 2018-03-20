@@ -115,6 +115,7 @@ class CodeGenerator {
                 if (r.length > 0) {
                     hisData = hisData.concat(r);
                 }
+                this.writeFile(JSON.stringify(hisData), 'oplog.log');
             }
             else {
                 let oplogList = [];
@@ -164,6 +165,7 @@ class CodeGenerator {
                 diff.push(item);
             }
         }
+        return diff;
     }
     contrastTable(hisData) {
         let newCtxInstance = this.getCtxInstance();
@@ -186,20 +188,36 @@ class CodeGenerator {
             }
         }
         for (let cItem of currentTableList) {
-            let addCount = 0;
-            let dropCount = 0;
+            let lastHisItem;
+            let has = false;
             let cMeta = newCtxInstance.CreateOperateLog(cItem);
-            for (let item of hisData) {
-                if (item.content.tableName == cMeta.tableName) {
-                    if (item.action == 'init' || item.action == 'add') {
-                        addCount++;
-                    }
-                    if (item.action == 'drop') {
-                        dropCount++;
+            for (let hisItem of hisData) {
+                if (hisItem.content.tableName == cMeta.tableName) {
+                    lastHisItem = hisItem;
+                }
+            }
+            if (lastHisItem) {
+                if (lastHisItem.action == 'drop') {
+                    diff.push({
+                        action: 'add',
+                        content: cMeta
+                    });
+                }
+                else {
+                    let columnDiffList = this.contrastColumn(lastHisItem.content.column, cMeta.column);
+                    if (columnDiffList.length > 0) {
+                        diff.push({
+                            action: 'alter',
+                            content: cMeta,
+                            diffContent: {
+                                tableName: cItem.TableName(),
+                                column: columnDiffList
+                            }
+                        });
                     }
                 }
             }
-            if ((addCount - dropCount) <= 0) {
+            else {
                 diff.push({
                     action: 'add',
                     content: cMeta
@@ -208,16 +226,39 @@ class CodeGenerator {
         }
         return diff;
     }
+    transLogToSql() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let hisStr = yield this.readFile('oplog.log');
+            let newCtxInstance = this.getCtxInstance();
+            if (hisStr) {
+                let hisData = JSON.parse(hisStr);
+                let sqls = [];
+                for (let hisItem of hisData) {
+                    let tableList = newCtxInstance.GetEntityObjectList();
+                    let table;
+                    for (let tableItem of tableList) {
+                        if (tableItem.TableName() == hisItem.content.tableName) {
+                            table = tableItem;
+                        }
+                    }
+                    if (hisItem.action == 'init') {
+                        sqls.push(newCtxInstance.CreateTableSql(table));
+                    }
+                    else if (hisItem.action == 'drop') {
+                        sqls.push(newCtxInstance.DeleteTableSql(table));
+                    }
+                }
+            }
+        });
+    }
     readFile(outFileName) {
-        if (outFileName)
-            this.options.outFileName = outFileName;
-        let filePath = this.options.outDir + "/" + this.options.outFileName;
+        let filePath = this.options.outDir + "/" + outFileName;
         return new Promise((resolve, reject) => {
             fs.readFile(filePath, (err, data) => {
                 if (err)
                     return reject(err);
                 else {
-                    resolve(data.toString());
+                    return resolve(data.toString());
                 }
             });
         });

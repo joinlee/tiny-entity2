@@ -34,6 +34,10 @@ __decorate([
     __metadata("design:type", Number)
 ], Person.prototype, "birth", void 0);
 __decorate([
+    dataDefine_1.Define.Column({ DataType: dataDefine_1.Define.DataType.VARCHAR }),
+    __metadata("design:type", String)
+], Person.prototype, "phone", void 0);
+__decorate([
     dataDefine_1.Define.Mapping({ Mapping: "Account" }),
     __metadata("design:type", Array)
 ], Person.prototype, "accounts", void 0);

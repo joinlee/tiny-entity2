@@ -94,7 +94,7 @@ export class Interpreter {
 
         let primaryKeyObj = this.GetPrimaryKeyObj(entity);
         sqlStr += valueList.join(',') + " WHERE " + primaryKeyObj.key + "=" + this.escape(primaryKeyObj.value) + ";";
-
+        
         return sqlStr;
     }
 
