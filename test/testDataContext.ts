@@ -1,5 +1,5 @@
 const config = require("./config");
-import { MysqlDataContext } from "../mysql/dataContextMysql";
+import { MysqlDataContext } from "../mysql/dataContextMysql"
 import { Account } from "./models/account"
 import { Order } from "./models/order"
 import { Person } from "./models/person"
@@ -32,5 +32,8 @@ export class TestDataContext extends MysqlDataContext {
         await super.CreateTable(this.deskTable);
         await super.CreateTable(this.tableParty);
         return true;
+    }
+    GetEntityObjectList() {
+        return [this.account, this.order, this.person, this.deskTable, this.tableParty];
     }
 }

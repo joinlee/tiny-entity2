@@ -130,9 +130,33 @@ export class MysqlDataContext implements IDataContext {
         throw new Error("Method not implemented.");
     }
     async CreateDatabase() {
+        let conn = mysql.createConnection({
+            host: this.option.host,
+            user: this.option.user,
+            password: this.option.password,
+            database: "sys"
+        });
+
         let sql = "CREATE DATABASE IF NOT EXISTS `" + this.option.database + "` DEFAULT CHARACTER SET " + this.option.charset + " COLLATE utf8_unicode_ci;";
-        await this.onSubmit(sql);
-        return true;
+
+        return new Promise((resolve, reject) => {
+            conn.connect(function (err) {
+                if (err) {
+                    return reject(err);
+                }
+                else {
+                    conn.query(sql, function (err, result) {
+                        if (err) {
+                            return reject(err);
+                        }
+                        else {
+                            resolve(result);
+                            conn.end();
+                        }
+                    })
+                }
+            })
+        });
     }
 
     async CreateTable(entity: IEntityObject) {
@@ -185,6 +209,16 @@ export class MysqlDataContext implements IDataContext {
         }
 
         return true;
+    }
+
+    private CreateOperateLog(entity: IEntityObject) {
+        let tableDefine = Define.DataDefine.Current.GetMetedata(entity);
+        let opLog = {
+            tableName: entity.TableName(),
+            column: tableDefine,
+            version: Date.now()
+        };
+        return opLog;
     }
 
     GetEntityInstance(entityName: string) {

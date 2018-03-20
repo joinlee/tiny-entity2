@@ -41,6 +41,9 @@ class TestDataContext extends dataContextMysql_1.MysqlDataContext {
             return true;
         });
     }
+    GetEntityObjectList() {
+        return [this.account, this.order, this.person, this.deskTable, this.tableParty];
+    }
 }
 exports.TestDataContext = TestDataContext;
 //# sourceMappingURL=testDataContext.js.map

@@ -127,9 +127,31 @@ class MysqlDataContext {
     }
     CreateDatabase() {
         return __awaiter(this, void 0, void 0, function* () {
+            let conn = mysql.createConnection({
+                host: this.option.host,
+                user: this.option.user,
+                password: this.option.password,
+                database: "sys"
+            });
             let sql = "CREATE DATABASE IF NOT EXISTS `" + this.option.database + "` DEFAULT CHARACTER SET " + this.option.charset + " COLLATE utf8_unicode_ci;";
-            yield this.onSubmit(sql);
-            return true;
+            return new Promise((resolve, reject) => {
+                conn.connect(function (err) {
+                    if (err) {
+                        return reject(err);
+                    }
+                    else {
+                        conn.query(sql, function (err, result) {
+                            if (err) {
+                                return reject(err);
+                            }
+                            else {
+                                resolve(result);
+                                conn.end();
+                            }
+                        });
+                    }
+                });
+            });
         });
     }
     CreateTable(entity) {
@@ -174,6 +196,15 @@ class MysqlDataContext {
             }
             return true;
         });
+    }
+    CreateOperateLog(entity) {
+        let tableDefine = dataDefine_1.Define.DataDefine.Current.GetMetedata(entity);
+        let opLog = {
+            tableName: entity.TableName(),
+            column: tableDefine,
+            version: Date.now()
+        };
+        return opLog;
     }
     GetEntityInstance(entityName) {
         let r = new this[entityName].constructor();
