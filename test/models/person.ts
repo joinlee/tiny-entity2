@@ -19,8 +19,26 @@ export class Person extends EntityObjectMysql<Person> {
     @Define.Column({ DataType: Define.DataType.BIGINT })
     birth: number;
 
-    @Define.Column({ DataType: Define.DataType.VARCHAR })
+    @Define.Column({
+        DataType: Define.DataType.VARCHAR,
+        DefualtValue: '15928934970'
+    })
     phone: string;
+    
+    @Define.Column({
+        DataType: Define.DataType.BOOL
+    })
+    gender:Boolean;
+
+    @Define.Column({
+        DataType: Define.DataType.VARCHAR
+    })
+    email:string;
+
+    @Define.Column({
+        DataType: Define.DataType.BOOL
+    })
+    status:Boolean;
 
     @Define.Mapping({ Mapping: "Account" })
     accounts: Account[];

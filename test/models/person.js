@@ -34,9 +34,30 @@ __decorate([
     __metadata("design:type", Number)
 ], Person.prototype, "birth", void 0);
 __decorate([
-    dataDefine_1.Define.Column({ DataType: dataDefine_1.Define.DataType.VARCHAR }),
+    dataDefine_1.Define.Column({
+        DataType: dataDefine_1.Define.DataType.VARCHAR,
+        DefualtValue: '15928934970'
+    }),
     __metadata("design:type", String)
 ], Person.prototype, "phone", void 0);
+__decorate([
+    dataDefine_1.Define.Column({
+        DataType: dataDefine_1.Define.DataType.BOOL
+    }),
+    __metadata("design:type", Boolean)
+], Person.prototype, "gender", void 0);
+__decorate([
+    dataDefine_1.Define.Column({
+        DataType: dataDefine_1.Define.DataType.VARCHAR
+    }),
+    __metadata("design:type", String)
+], Person.prototype, "email", void 0);
+__decorate([
+    dataDefine_1.Define.Column({
+        DataType: dataDefine_1.Define.DataType.BOOL
+    }),
+    __metadata("design:type", Boolean)
+], Person.prototype, "status", void 0);
 __decorate([
     dataDefine_1.Define.Mapping({ Mapping: "Account" }),
     __metadata("design:type", Array)

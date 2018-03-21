@@ -4,7 +4,7 @@ const gulp = require('gulp');
 const m = require('./codeGenerator');
 let g = new m.CodeGenerator({
     outDir: './test',
-    modelLoadPath:'./test/models',
+    modelLoadPath: './test/models',
     modelExportPath: './models',
     ctxExportPath: '../mysql',
     configFilePath: './config',
@@ -39,5 +39,10 @@ gulp.task('gdb', () => {
 });
 
 gulp.task('gop', () => {
-    g.generateOpLogFile();
+    g.generateOpLogFile().then(() => {
+        g.sqlLogToDatabase();
+    }).catch(err => {
+        console.log(err);
+    });
+
 });

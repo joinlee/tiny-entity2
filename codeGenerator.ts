@@ -154,11 +154,15 @@ export class CodeGenerator {
     }
 
     private writeFile(data, outFileName?: string) {
-        if (outFileName) this.options.outFileName = outFileName;
-        let filePath = this.options.outDir + "/" + this.options.outFileName;
-        fs.writeFile(filePath, data, function (err) {
-            if (err) console.log(err);
-        })
+        let outfileName = this.options.outFileName;
+        if (outFileName) outfileName = outFileName;
+        let filePath = this.options.outDir + "/" + outfileName;
+        return new Promise((resolve, reject) => {
+            fs.writeFile(filePath, data, function (err) {
+                if (err) return reject(err);
+                else return resolve();
+            })
+        });
     }
 
     private lowerFirstLetter(word) {
@@ -186,26 +190,68 @@ export class CodeGenerator {
     }
 
     async generateOpLogFile() {
-        let newCtxInstance = this.getCtxInstance();
-        let hisStr: any = await this.readFile('oplog.log');
-        if (hisStr) {
-            let hisData: any[] = JSON.parse(hisStr);
-            let r = this.contrastTable(hisData);
-            if (r.length > 0) {
-                hisData = hisData.concat(r);
+        try {
+            let newCtxInstance = this.getCtxInstance();
+            let hisStr: any = await this.readFile('oplog.log');
+            if (hisStr) {
+                let hisData: any[] = JSON.parse(hisStr);
+                // get last one
+                let lastLogItem = hisData[hisData.length - 1];
+
+                let r = this.contrastTable(lastLogItem.logs);
+                if (r.length > 0) {
+                    //when changed then write log file.
+                    hisData.push({ version: Date.now(), logs: r });
+                    await this.writeFile(JSON.stringify(hisData), 'oplog.log');
+                }
             }
-            this.writeFile(JSON.stringify(hisData), 'oplog.log');
+            else {
+                let oplogList = [];
+                for (let item of newCtxInstance.GetEntityObjectList()) {
+                    let t = newCtxInstance.CreateOperateLog(item);
+                    oplogList.push({
+                        action: 'init',
+                        content: t
+                    });
+                }
+                await this.writeFile(JSON.stringify([{ version: Date.now(), logs: oplogList }]), 'oplog.log');
+            }
+
+            let sqls = await this.transLogToSqlList();
+            let sqlStr: any = await this.readFile('sqllogs.logq');
+
+            if (sqls.length > 0) {
+                if (sqlStr) {
+                    let sqlData = JSON.parse(sqlStr);
+                    sqlData.push({
+                        version: Date.now(),
+                        sql: sqls
+                    });
+
+                    await this.writeFile(JSON.stringify(sqlData), 'sqllogs.logq');
+                }
+                else {
+                    await this.writeFile(JSON.stringify([{ version: Date.now(), sql: sqls }]), 'sqllogs.logq');
+                }
+            }
+        } catch (error) {
+            console.log('generateOpLogFile', error);
         }
-        else {
-            let oplogList = [];
-            for (let item of newCtxInstance.GetEntityObjectList()) {
-                let t = newCtxInstance.CreateOperateLog(item);
-                oplogList.push({
-                    action: 'init',
-                    content: t
-                });
+    }
+
+    async sqlLogToDatabase() {
+        try {
+            let sqlStr: any = await this.readFile('sqllogs.logq');
+            if (sqlStr) {
+                let sqlData = JSON.parse(sqlStr);
+                let lastSql = sqlData[sqlData.length - 1];
+                let newCtxInstance = this.getCtxInstance();
+                for (let query of lastSql.sql) {
+                    await newCtxInstance.Query(query);
+                }
             }
-            this.writeFile(JSON.stringify(oplogList), 'oplog.log');
+        } catch (error) {
+            console.log(error);
         }
     }
 
@@ -215,24 +261,48 @@ export class CodeGenerator {
             let oldItem = oldC.find(x => x.ColumnName == item.ColumnName);
             if (oldItem) {
                 let isDiff = false;
-                if (oldItem.DataLength != item.DataLength) {
+                let tempColumn: Define.PropertyDefineOption = {};
+                tempColumn.DataType = item.DataType;
+                tempColumn.DataLength = item.DataLength;
+                if (oldItem.DecimalPoint != item.DecimalPoint) {
                     isDiff = true;
+                    tempColumn.DecimalPoint = item.DecimalPoint;
                 }
-                else if (oldItem.DataType != item.DataType) {
+                else if (oldItem.DefualtValue != item.DefualtValue) {
                     isDiff = true;
+                    tempColumn.DefualtValue = item.DefualtValue;
                 }
-                else if (oldItem.DecimalPoint != item.DecimalPoint) { isDiff = true; }
-                else if (oldItem.DefualtValue != item.DefualtValue) { isDiff = true; }
-                else if (oldItem.IsIndex != item.IsIndex) { isDiff = true; }
-                else if (oldItem.NotAllowNULL != item.NotAllowNULL) { isDiff = true; }
-                else if (oldItem.DataType != item.DataType) { isDiff = true; }
+                else if (oldItem.IsIndex != item.IsIndex) {
+                    isDiff = true;
+                    tempColumn.IsIndex = item.IsIndex;
+                }
+                else if (oldItem.NotAllowNULL != item.NotAllowNULL) {
+                    isDiff = true;
+                    tempColumn.NotAllowNULL = item.NotAllowNULL;
+                }
 
                 if (isDiff) {
-                    diff.push(item);
+                    diff.push({
+                        newItem: tempColumn,
+                        oldItem: oldItem
+                    });
                 }
             }
             else {
-                diff.push(item);
+                diff.push({
+                    newItem: item,
+                    oldItem: null
+                });
+            }
+        }
+
+        for (let item of oldC) {
+            let newItem = newC.find(x => x.ColumnName == item.ColumnName);
+            if (!newItem) {
+                diff.push({
+                    newItem: null,
+                    oldItem: item
+                });
             }
         }
 
@@ -292,6 +362,12 @@ export class CodeGenerator {
                             }
                         });
                     }
+                    else {
+                        diff.push({
+                            action: 'noChange',
+                            content: lastHisItem.content
+                        });
+                    }
                 }
             }
             else {
@@ -305,36 +381,114 @@ export class CodeGenerator {
         return diff;
     }
 
-    private async transLogToSql() {
+    private async transLogToSqlList() {
+        let sqls = [];
         let hisStr: any = await this.readFile('oplog.log');
         let newCtxInstance = this.getCtxInstance();
         if (hisStr) {
             let hisData = JSON.parse(hisStr);
-            let sqls = [];
-            for (let hisItem of hisData) {
+            let lastLogItem = hisData[hisData.length - 1];
+
+            for (let logItem of lastLogItem.logs) {
                 let tableList = newCtxInstance.GetEntityObjectList();
                 let table;
                 for (let tableItem of tableList) {
-                    if (tableItem.TableName() == hisItem.content.tableName) {
+                    if (tableItem.TableName() == logItem.content.tableName) {
                         table = tableItem;
                     }
                 }
-                if (hisItem.action == 'init') {
+                if (logItem.action == 'init') {
+                    sqls.push(newCtxInstance.DeleteTableSql(table));
                     sqls.push(newCtxInstance.CreateTableSql(table));
                 }
-                else if (hisItem.action == 'drop') {
+                else if (logItem.action == 'drop') {
                     sqls.push(newCtxInstance.DeleteTableSql(table));
                 }
-                
+                else if (logItem.action == 'alter') {
+                    for (let diffItem of logItem.diffContent.column) {
+                        if (diffItem.oldItem && !diffItem.newItem) {
+                            sqls.push('ALTER TABLE `' + logItem.diffContent.tableName + '` DROP `' + diffItem.oldItem.ColumnName + '`;');
+                        }
+
+                        if (!diffItem.oldItem && diffItem.newItem) {
+                            let columnDefineList = this.getColumnsSqlList(diffItem, 'add');
+
+                            sqls.push('ALTER TABLE `' + logItem.diffContent.tableName + '` ADD `' + diffItem.newItem.ColumnName + '` ' + columnDefineList.join(' ') + ';');
+                        }
+
+                        if (diffItem.oldItem && diffItem.newItem) {
+                            let columnDefineList = this.getColumnsSqlList(diffItem, 'alter');
+
+                            sqls.push('ALTER TABLE ' + logItem.diffContent.tableName + ' CHANGE `' + diffItem.oldItem.ColumnName + '` ' + columnDefineList.join(' ') + ';');
+                        }
+                    }
+                }
+
             }
         }
+
+        return sqls;
+    }
+
+    private getColumnsSqlList(diffItem, action: string) {
+        let columnDefineList = [];
+        let c: Define.PropertyDefineOption = diffItem.newItem;
+
+        let lengthStr = '';
+        if (c.DataLength != undefined) {
+            let dcp = c.DecimalPoint != undefined ? "," + c.DecimalPoint : "";
+            lengthStr = "(" + c.DataLength + dcp + ")";
+        }
+
+        columnDefineList.push(Define.DataType[c.DataType] + lengthStr);
+        columnDefineList.push(c.NotAllowNULL ? 'NOT NULL' : 'NULL');
+
+        let valueStr = '';
+        if (c.DefualtValue != undefined) {
+            if (c.DataType >= 0 && c.DataType <= 1) {
+                //string type
+                valueStr = "DEFAULT '" + c.DefualtValue + "'";
+            }
+            else {
+                //number type
+                valueStr = "DEFAULT " + c.DefualtValue;
+            }
+        }
+
+        columnDefineList.push(valueStr);
+
+        if (action == 'add') {
+            if (c.IsIndex) {
+                columnDefineList.push(', Add INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE');
+            }
+        }
+        else if (action == 'alter') {
+            if (c.IsIndex) {
+                let indexSql = '';
+                if (diffItem.oldItem && diffItem.oldItem.IsIndex) {
+                    indexSql = ',DROP INDEX `idx_' + diffItem.oldItem.ColumnName + '`,';
+                }
+                indexSql += 'ADD INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE';
+                columnDefineList.push(indexSql);
+            }
+            else {
+                if (diffItem.oldItem && diffItem.oldItem.IsIndex) {
+                    columnDefineList.push(',DROP INDEX `idx_' + diffItem.oldItem.ColumnName + '`');
+                }
+            }
+        }
+
+        return columnDefineList;
     }
 
     private readFile(outFileName: string) {
         let filePath = this.options.outDir + "/" + outFileName;
         return new Promise((resolve, reject) => {
             fs.readFile(filePath, (err, data) => {
-                if (err) return reject(err);
+                if (err) {
+                    if (err.errno == -4058) return resolve();
+                    return reject(err);
+                }
                 else {
                     return resolve(data.toString());
                 }

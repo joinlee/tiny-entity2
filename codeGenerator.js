@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
+const _1 = require(".");
 class CodeGenerator {
     constructor(options) {
         this.options = options;
@@ -81,12 +82,17 @@ class CodeGenerator {
         }).bind(this));
     }
     writeFile(data, outFileName) {
+        let outfileName = this.options.outFileName;
         if (outFileName)
-            this.options.outFileName = outFileName;
-        let filePath = this.options.outDir + "/" + this.options.outFileName;
-        fs.writeFile(filePath, data, function (err) {
-            if (err)
-                console.log(err);
+            outfileName = outFileName;
+        let filePath = this.options.outDir + "/" + outfileName;
+        return new Promise((resolve, reject) => {
+            fs.writeFile(filePath, data, function (err) {
+                if (err)
+                    return reject(err);
+                else
+                    return resolve();
+            });
         });
     }
     lowerFirstLetter(word) {
@@ -107,26 +113,65 @@ class CodeGenerator {
     }
     generateOpLogFile() {
         return __awaiter(this, void 0, void 0, function* () {
-            let newCtxInstance = this.getCtxInstance();
-            let hisStr = yield this.readFile('oplog.log');
-            if (hisStr) {
-                let hisData = JSON.parse(hisStr);
-                let r = this.contrastTable(hisData);
-                if (r.length > 0) {
-                    hisData = hisData.concat(r);
+            try {
+                let newCtxInstance = this.getCtxInstance();
+                let hisStr = yield this.readFile('oplog.log');
+                if (hisStr) {
+                    let hisData = JSON.parse(hisStr);
+                    let lastLogItem = hisData[hisData.length - 1];
+                    let r = this.contrastTable(lastLogItem.logs);
+                    if (r.length > 0) {
+                        hisData.push({ version: Date.now(), logs: r });
+                        yield this.writeFile(JSON.stringify(hisData), 'oplog.log');
+                    }
                 }
-                this.writeFile(JSON.stringify(hisData), 'oplog.log');
+                else {
+                    let oplogList = [];
+                    for (let item of newCtxInstance.GetEntityObjectList()) {
+                        let t = newCtxInstance.CreateOperateLog(item);
+                        oplogList.push({
+                            action: 'init',
+                            content: t
+                        });
+                    }
+                    yield this.writeFile(JSON.stringify([{ version: Date.now(), logs: oplogList }]), 'oplog.log');
+                }
+                let sqls = yield this.transLogToSqlList();
+                let sqlStr = yield this.readFile('sqllogs.logq');
+                if (sqls.length > 0) {
+                    if (sqlStr) {
+                        let sqlData = JSON.parse(sqlStr);
+                        sqlData.push({
+                            version: Date.now(),
+                            sql: sqls
+                        });
+                        yield this.writeFile(JSON.stringify(sqlData), 'sqllogs.logq');
+                    }
+                    else {
+                        yield this.writeFile(JSON.stringify([{ version: Date.now(), sql: sqls }]), 'sqllogs.logq');
+                    }
+                }
             }
-            else {
-                let oplogList = [];
-                for (let item of newCtxInstance.GetEntityObjectList()) {
-                    let t = newCtxInstance.CreateOperateLog(item);
-                    oplogList.push({
-                        action: 'init',
-                        content: t
-                    });
+            catch (error) {
+                console.log('generateOpLogFile', error);
+            }
+        });
+    }
+    sqlLogToDatabase() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let sqlStr = yield this.readFile('sqllogs.logq');
+                if (sqlStr) {
+                    let sqlData = JSON.parse(sqlStr);
+                    let lastSql = sqlData[sqlData.length - 1];
+                    let newCtxInstance = this.getCtxInstance();
+                    for (let query of lastSql.sql) {
+                        yield newCtxInstance.Query(query);
+                    }
                 }
-                this.writeFile(JSON.stringify(oplogList), 'oplog.log');
+            }
+            catch (error) {
+                console.log(error);
             }
         });
     }
@@ -136,33 +181,46 @@ class CodeGenerator {
             let oldItem = oldC.find(x => x.ColumnName == item.ColumnName);
             if (oldItem) {
                 let isDiff = false;
-                if (oldItem.DataLength != item.DataLength) {
+                let tempColumn = {};
+                tempColumn.DataType = item.DataType;
+                tempColumn.DataLength = item.DataLength;
+                if (oldItem.DecimalPoint != item.DecimalPoint) {
                     isDiff = true;
-                }
-                else if (oldItem.DataType != item.DataType) {
-                    isDiff = true;
-                }
-                else if (oldItem.DecimalPoint != item.DecimalPoint) {
-                    isDiff = true;
+                    tempColumn.DecimalPoint = item.DecimalPoint;
                 }
                 else if (oldItem.DefualtValue != item.DefualtValue) {
                     isDiff = true;
+                    tempColumn.DefualtValue = item.DefualtValue;
                 }
                 else if (oldItem.IsIndex != item.IsIndex) {
                     isDiff = true;
+                    tempColumn.IsIndex = item.IsIndex;
                 }
                 else if (oldItem.NotAllowNULL != item.NotAllowNULL) {
                     isDiff = true;
-                }
-                else if (oldItem.DataType != item.DataType) {
-                    isDiff = true;
+                    tempColumn.NotAllowNULL = item.NotAllowNULL;
                 }
                 if (isDiff) {
-                    diff.push(item);
+                    diff.push({
+                        newItem: tempColumn,
+                        oldItem: oldItem
+                    });
                 }
             }
             else {
-                diff.push(item);
+                diff.push({
+                    newItem: item,
+                    oldItem: null
+                });
+            }
+        }
+        for (let item of oldC) {
+            let newItem = newC.find(x => x.ColumnName == item.ColumnName);
+            if (!newItem) {
+                diff.push({
+                    newItem: null,
+                    oldItem: item
+                });
             }
         }
         return diff;
@@ -215,6 +273,12 @@ class CodeGenerator {
                             }
                         });
                     }
+                    else {
+                        diff.push({
+                            action: 'noChange',
+                            content: lastHisItem.content
+                        });
+                    }
                 }
             }
             else {
@@ -226,37 +290,100 @@ class CodeGenerator {
         }
         return diff;
     }
-    transLogToSql() {
+    transLogToSqlList() {
         return __awaiter(this, void 0, void 0, function* () {
+            let sqls = [];
             let hisStr = yield this.readFile('oplog.log');
             let newCtxInstance = this.getCtxInstance();
             if (hisStr) {
                 let hisData = JSON.parse(hisStr);
-                let sqls = [];
-                for (let hisItem of hisData) {
+                let lastLogItem = hisData[hisData.length - 1];
+                for (let logItem of lastLogItem.logs) {
                     let tableList = newCtxInstance.GetEntityObjectList();
                     let table;
                     for (let tableItem of tableList) {
-                        if (tableItem.TableName() == hisItem.content.tableName) {
+                        if (tableItem.TableName() == logItem.content.tableName) {
                             table = tableItem;
                         }
                     }
-                    if (hisItem.action == 'init') {
+                    if (logItem.action == 'init') {
+                        sqls.push(newCtxInstance.DeleteTableSql(table));
                         sqls.push(newCtxInstance.CreateTableSql(table));
                     }
-                    else if (hisItem.action == 'drop') {
+                    else if (logItem.action == 'drop') {
                         sqls.push(newCtxInstance.DeleteTableSql(table));
+                    }
+                    else if (logItem.action == 'alter') {
+                        for (let diffItem of logItem.diffContent.column) {
+                            if (diffItem.oldItem && !diffItem.newItem) {
+                                sqls.push('ALTER TABLE `' + logItem.diffContent.tableName + '` DROP `' + diffItem.oldItem.ColumnName + '`;');
+                            }
+                            if (!diffItem.oldItem && diffItem.newItem) {
+                                let columnDefineList = this.getColumnsSqlList(diffItem, 'add');
+                                sqls.push('ALTER TABLE `' + logItem.diffContent.tableName + '` ADD `' + diffItem.newItem.ColumnName + '` ' + columnDefineList.join(' ') + ';');
+                            }
+                            if (diffItem.oldItem && diffItem.newItem) {
+                                let columnDefineList = this.getColumnsSqlList(diffItem, 'alter');
+                                sqls.push('ALTER TABLE ' + logItem.diffContent.tableName + ' CHANGE `' + diffItem.oldItem.ColumnName + '` ' + columnDefineList.join(' ') + ';');
+                            }
+                        }
                     }
                 }
             }
+            return sqls;
         });
+    }
+    getColumnsSqlList(diffItem, action) {
+        let columnDefineList = [];
+        let c = diffItem.newItem;
+        let lengthStr = '';
+        if (c.DataLength != undefined) {
+            let dcp = c.DecimalPoint != undefined ? "," + c.DecimalPoint : "";
+            lengthStr = "(" + c.DataLength + dcp + ")";
+        }
+        columnDefineList.push(_1.Define.DataType[c.DataType] + lengthStr);
+        columnDefineList.push(c.NotAllowNULL ? 'NOT NULL' : 'NULL');
+        let valueStr = '';
+        if (c.DefualtValue != undefined) {
+            if (c.DataType >= 0 && c.DataType <= 1) {
+                valueStr = "DEFAULT '" + c.DefualtValue + "'";
+            }
+            else {
+                valueStr = "DEFAULT " + c.DefualtValue;
+            }
+        }
+        columnDefineList.push(valueStr);
+        if (action == 'add') {
+            if (c.IsIndex) {
+                columnDefineList.push(', Add INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE');
+            }
+        }
+        else if (action == 'alter') {
+            if (c.IsIndex) {
+                let indexSql = '';
+                if (diffItem.oldItem && diffItem.oldItem.IsIndex) {
+                    indexSql = ',DROP INDEX `idx_' + diffItem.oldItem.ColumnName + '`,';
+                }
+                indexSql += 'ADD INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE';
+                columnDefineList.push(indexSql);
+            }
+            else {
+                if (diffItem.oldItem && diffItem.oldItem.IsIndex) {
+                    columnDefineList.push(',DROP INDEX `idx_' + diffItem.oldItem.ColumnName + '`');
+                }
+            }
+        }
+        return columnDefineList;
     }
     readFile(outFileName) {
         let filePath = this.options.outDir + "/" + outFileName;
         return new Promise((resolve, reject) => {
             fs.readFile(filePath, (err, data) => {
-                if (err)
+                if (err) {
+                    if (err.errno == -4058)
+                        return resolve();
                     return reject(err);
+                }
                 else {
                     return resolve(data.toString());
                 }
