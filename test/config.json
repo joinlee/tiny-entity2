@@ -1,8 +1,8 @@
 {
     "connectionLimit": 50,
-    "host": "192.168.1.112",
+    "host": "localhost",
     "user": "root",
-    "password": "onetwo",
+    "password": "123456",
     "database": "tiny",
     "charset": "utf8",
     "collate": "utf8_unicode_ci"

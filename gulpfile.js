@@ -40,7 +40,9 @@ gulp.task('gdb', () => {
 
 gulp.task('gop', () => {
     g.generateOpLogFile().then(() => {
-        g.sqlLogToDatabase();
+        g.sqlLogToDatabase().then(()=>{
+            console.log('gop sucessful!');
+        });
     }).catch(err => {
         console.log(err);
     });

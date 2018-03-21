@@ -392,7 +392,7 @@ class CodeGenerator {
     }
     getCtxInstance() {
         let sp = '/../../';
-        if (this.options.packageName)
+        if (this.options.packageName != 'tiny-entity2')
             sp = '/';
         let ctxName = this.options.outFileName.split(".")[0];
         let filePath = __dirname + sp + this.options.outDir + "/" + ctxName;

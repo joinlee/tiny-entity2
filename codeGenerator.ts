@@ -71,7 +71,7 @@ export interface ICodeGeneratorOptions {
      * @type {string}
      * @memberof ICodeGeneratorOptions
      */
-    packageName: string;
+    packageName?: string;
 }
 
 export class CodeGenerator {
@@ -498,7 +498,7 @@ export class CodeGenerator {
 
     private getCtxInstance() {
         let sp = '/../../';
-        if (this.options.packageName) sp = '/';
+        if (this.options.packageName != 'tiny-entity2') sp = '/';
         let ctxName = this.options.outFileName.split(".")[0];
         let filePath = __dirname + sp + this.options.outDir + "/" + ctxName;
         let ctxModule = require(filePath);
