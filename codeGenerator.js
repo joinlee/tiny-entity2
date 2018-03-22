@@ -121,8 +121,7 @@ class CodeGenerator {
                     let lastLogItem = hisData[hisData.length - 1];
                     let r = this.contrastTable(lastLogItem.logs);
                     if (r.length > 0) {
-                        hisData.push({ version: Date.now(), logs: r });
-                        yield this.writeFile(JSON.stringify(hisData), 'oplog.log');
+                        yield this.writeFile(JSON.stringify([lastLogItem, { version: Date.now(), logs: r }]), 'oplog.log');
                     }
                 }
                 else {

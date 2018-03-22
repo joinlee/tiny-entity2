@@ -201,8 +201,7 @@ export class CodeGenerator {
                 let r = this.contrastTable(lastLogItem.logs);
                 if (r.length > 0) {
                     //when changed then write log file.
-                    hisData.push({ version: Date.now(), logs: r });
-                    await this.writeFile(JSON.stringify(hisData), 'oplog.log');
+                    await this.writeFile(JSON.stringify([lastLogItem, { version: Date.now(), logs: r }]), 'oplog.log');
                 }
             }
             else {
