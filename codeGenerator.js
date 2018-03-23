@@ -309,6 +309,9 @@ class CodeGenerator {
                         sqls.push(newCtxInstance.DeleteTableSql(table));
                         sqls.push(newCtxInstance.CreateTableSql(table));
                     }
+                    else if (logItem.action == 'add') {
+                        sqls.push(newCtxInstance.CreateTableSql(table));
+                    }
                     else if (logItem.action == 'drop') {
                         sqls.push(newCtxInstance.DeleteTableSql(table));
                     }
