@@ -244,10 +244,15 @@ export class CodeGenerator {
             if (sqlStr) {
                 let sqlData = JSON.parse(sqlStr);
                 let lastSql = sqlData[sqlData.length - 1];
-                let newCtxInstance = this.getCtxInstance();
-                for (let query of lastSql.sql) {
-                    await newCtxInstance.Query(query);
+                if (!lastSql.done) {
+                    let newCtxInstance = this.getCtxInstance();
+                    for (let query of lastSql.sql) {
+                        await newCtxInstance.Query(query);
+                    }
+                    lastSql.done = true;
+                    this.writeFile(JSON.stringify(sqlData), 'sqllogs.logq')
                 }
+                return;
             }
         } catch (error) {
             console.log(error);
@@ -257,7 +262,7 @@ export class CodeGenerator {
     private contrastColumn(oldC: Define.PropertyDefineOption[], newC: Define.PropertyDefineOption[]) {
         let diff = [];
         for (let item of newC) {
-            if(item.Mapping) continue;
+            if (item.Mapping) continue;
             let oldItem = oldC.find(x => x.ColumnName == item.ColumnName);
             if (oldItem) {
                 let isDiff = false;

@@ -163,10 +163,15 @@ class CodeGenerator {
                 if (sqlStr) {
                     let sqlData = JSON.parse(sqlStr);
                     let lastSql = sqlData[sqlData.length - 1];
-                    let newCtxInstance = this.getCtxInstance();
-                    for (let query of lastSql.sql) {
-                        yield newCtxInstance.Query(query);
+                    if (!lastSql.done) {
+                        let newCtxInstance = this.getCtxInstance();
+                        for (let query of lastSql.sql) {
+                            yield newCtxInstance.Query(query);
+                        }
+                        lastSql.done = true;
+                        this.writeFile(JSON.stringify(sqlData), 'sqllogs.logq');
                     }
+                    return;
                 }
             }
             catch (error) {
