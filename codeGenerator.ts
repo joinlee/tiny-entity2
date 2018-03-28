@@ -257,6 +257,7 @@ export class CodeGenerator {
     private contrastColumn(oldC: Define.PropertyDefineOption[], newC: Define.PropertyDefineOption[]) {
         let diff = [];
         for (let item of newC) {
+            if(item.Mapping) continue;
             let oldItem = oldC.find(x => x.ColumnName == item.ColumnName);
             if (oldItem) {
                 let isDiff = false;
