@@ -55,7 +55,7 @@ export class Interpreter {
             if (excludeFields && excludeFields.indexOf(item.ColumnName) > -1) return;
             if (item.Mapping) return;
             keyList.push("`" + item.ColumnName + "`");
-            if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null) {
+            if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null || entity[item.ColumnName] == '') {
                 if (item.DefualtValue != undefined && item.DefualtValue != null) {
                     valueList.push(this.escape(item.DefualtValue));
                 }
@@ -79,7 +79,7 @@ export class Interpreter {
         entityMetadata.forEach(item => {
             if (excludeFields && excludeFields.indexOf(item.ColumnName) > -1) return;
             if (item.Mapping) return;
-            if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null) {
+            if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null || entity[item.ColumnName] == '') {
                 if (item.DefualtValue != undefined && item.DefualtValue != null) {
                     valueList.push(`\`${item.ColumnName}\`=${this.escape(item.DefualtValue)}`);
                 }
@@ -94,7 +94,7 @@ export class Interpreter {
 
         let primaryKeyObj = this.GetPrimaryKeyObj(entity);
         sqlStr += valueList.join(',') + " WHERE " + primaryKeyObj.key + "=" + this.escape(primaryKeyObj.value) + ";";
-        
+
         return sqlStr;
     }
 
