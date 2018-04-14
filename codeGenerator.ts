@@ -427,7 +427,7 @@ export class CodeGenerator {
                         if (diffItem.oldItem && diffItem.newItem) {
                             let columnDefineList = this.getColumnsSqlList(diffItem, 'alter');
 
-                            sqls.push('ALTER TABLE ' + logItem.diffContent.tableName + ' CHANGE `' + diffItem.oldItem.ColumnName + '` ' + columnDefineList.join(' ') + ';');
+                            sqls.push(`ALTER TABLE \`${logItem.diffContent.tableName}\` CHANGE \`${diffItem.oldItem.ColumnName}\` \`${diffItem.oldItem.ColumnName}\` ${columnDefineList.join(' ')};`);
                         }
                     }
                 }
