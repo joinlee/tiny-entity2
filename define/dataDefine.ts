@@ -54,7 +54,7 @@ export namespace Define {
             opt = SetPropertyDefineOptionValue(opt);
 
             DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
-            SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
+            SetClassPropertyDefaultValue(target, propertyName, opt ? opt.DefaultValue : null);
         };
     }
     export function Column(opt?: PropertyDefineOption) {
@@ -68,7 +68,7 @@ export namespace Define {
             opt = SetPropertyDefineOptionValue(opt);
 
             DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
-            SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
+            SetClassPropertyDefaultValue(target, propertyName, opt ? opt.DefaultValue : null);
         };
     }
 
@@ -77,7 +77,7 @@ export namespace Define {
             opt.ColumnName = propertyName;
             opt.MappingType || (opt.MappingType = MappingType.Many);
             DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
-            SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
+            SetClassPropertyDefaultValue(target, propertyName, opt ? opt.DefaultValue : null);
         };
     }
 
@@ -90,9 +90,9 @@ export namespace Define {
         return opt;
     }
 
-    function SetClassPropertyDefualtValue(target, propertyName, defualtValue) {
+    function SetClassPropertyDefaultValue(target, propertyName, DefaultValue) {
         let propertyValue = null;
-        if (defualtValue) propertyValue = defualtValue;
+        if (DefaultValue) propertyValue = DefaultValue;
         target[propertyName] = propertyValue;
     }
 
@@ -149,7 +149,7 @@ export namespace Define {
 
     export interface PropertyDefineOption extends MappingOption {
         DataType?: DataType;
-        DefualtValue?: any;
+        DefaultValue?: any;
         NotAllowNULL?: boolean;
         DataLength?: number;
         ColumnName?: string;

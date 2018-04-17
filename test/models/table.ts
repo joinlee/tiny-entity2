@@ -10,6 +10,6 @@ export class DeskTable extends EntityObjectMysql<DeskTable> {
     @Define.Column()
     name: string;
 
-    @Define.Column({ DefualtValue: "opening", DataType: Define.DataType.VARCHAR })
+    @Define.Column({ DefaultValue: "opening", DataType: Define.DataType.VARCHAR })
     status: string;
 }

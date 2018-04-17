@@ -22,7 +22,7 @@ __decorate([
     __metadata("design:type", String)
 ], DeskTable.prototype, "name", void 0);
 __decorate([
-    dataDefine_1.Define.Column({ DefualtValue: "opening", DataType: dataDefine_1.Define.DataType.VARCHAR }),
+    dataDefine_1.Define.Column({ DefaultValue: "opening", DataType: dataDefine_1.Define.DataType.VARCHAR }),
     __metadata("design:type", String)
 ], DeskTable.prototype, "status", void 0);
 DeskTable = __decorate([

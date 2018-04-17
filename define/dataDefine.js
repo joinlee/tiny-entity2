@@ -49,7 +49,7 @@ var Define;
             opt.NotAllowNULL = true;
             opt = SetPropertyDefineOptionValue(opt);
             DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
-            SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
+            SetClassPropertyDefaultValue(target, propertyName, opt ? opt.DefaultValue : null);
         };
     }
     Define.PrimaryKey = PrimaryKey;
@@ -63,7 +63,7 @@ var Define;
             }
             opt = SetPropertyDefineOptionValue(opt);
             DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
-            SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
+            SetClassPropertyDefaultValue(target, propertyName, opt ? opt.DefaultValue : null);
         };
     }
     Define.Column = Column;
@@ -72,7 +72,7 @@ var Define;
             opt.ColumnName = propertyName;
             opt.MappingType || (opt.MappingType = MappingType.Many);
             DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
-            SetClassPropertyDefualtValue(target, propertyName, opt ? opt.DefualtValue : null);
+            SetClassPropertyDefaultValue(target, propertyName, opt ? opt.DefaultValue : null);
         };
     }
     Define.Mapping = Mapping;
@@ -83,10 +83,10 @@ var Define;
         }
         return opt;
     }
-    function SetClassPropertyDefualtValue(target, propertyName, defualtValue) {
+    function SetClassPropertyDefaultValue(target, propertyName, DefaultValue) {
         let propertyValue = null;
-        if (defualtValue)
-            propertyValue = defualtValue;
+        if (DefaultValue)
+            propertyValue = DefaultValue;
         target[propertyName] = propertyValue;
     }
     let DataType;

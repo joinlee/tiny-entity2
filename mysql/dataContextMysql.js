@@ -168,12 +168,12 @@ class MysqlDataContext {
                     let dcp = item.DecimalPoint != undefined ? "," + item.DecimalPoint : "";
                     lengthStr = "(" + item.DataLength + dcp + ")";
                 }
-                if (item.DefualtValue != undefined) {
+                if (item.DefaultValue != undefined) {
                     if (item.DataType >= 0 && item.DataType <= 1) {
-                        valueStr = "DEFAULT '" + item.DefualtValue + "'";
+                        valueStr = "DEFAULT '" + item.DefaultValue + "'";
                     }
                     else {
-                        valueStr = "DEFAULT " + item.DefualtValue;
+                        valueStr = "DEFAULT " + item.DefaultValue;
                     }
                 }
                 let cs = "`" + item.ColumnName + "` " + dataDefine_1.Define.DataType[item.DataType] + lengthStr + " COLLATE " + this.option.collate + " " + valueStr;
@@ -209,12 +209,12 @@ class MysqlDataContext {
                 let dcp = item.DecimalPoint != undefined ? "," + item.DecimalPoint : "";
                 lengthStr = "(" + item.DataLength + dcp + ")";
             }
-            if (item.DefualtValue != undefined) {
+            if (item.DefaultValue != undefined) {
                 if (item.DataType >= 0 && item.DataType <= 1) {
-                    valueStr = "DEFAULT '" + item.DefualtValue + "'";
+                    valueStr = "DEFAULT '" + item.DefaultValue + "'";
                 }
                 else {
-                    valueStr = "DEFAULT " + item.DefualtValue;
+                    valueStr = "DEFAULT " + item.DefaultValue;
                 }
             }
             let cs = "`" + item.ColumnName + "` " + dataDefine_1.Define.DataType[item.DataType] + lengthStr + " COLLATE " + this.option.collate + " " + valueStr;

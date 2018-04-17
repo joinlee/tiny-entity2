@@ -36,7 +36,7 @@ __decorate([
 __decorate([
     dataDefine_1.Define.Column({
         DataType: dataDefine_1.Define.DataType.VARCHAR,
-        DefualtValue: '15928934970'
+        DefaultValue: '15928934970'
     }),
     __metadata("design:type", String)
 ], Person.prototype, "phone", void 0);

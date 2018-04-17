@@ -194,9 +194,9 @@ class CodeGenerator {
                     isDiff = true;
                     tempColumn.DecimalPoint = item.DecimalPoint;
                 }
-                else if (oldItem.DefualtValue != item.DefualtValue) {
+                else if (oldItem.DefaultValue != item.DefaultValue) {
                     isDiff = true;
-                    tempColumn.DefualtValue = item.DefualtValue;
+                    tempColumn.DefaultValue = item.DefaultValue;
                 }
                 else if (oldItem.IsIndex != item.IsIndex) {
                     isDiff = true;
@@ -353,12 +353,12 @@ class CodeGenerator {
         columnDefineList.push(_1.Define.DataType[c.DataType] + lengthStr);
         columnDefineList.push(c.NotAllowNULL ? 'NOT NULL' : 'NULL');
         let valueStr = '';
-        if (c.DefualtValue != undefined) {
+        if (c.DefaultValue != undefined) {
             if (c.DataType >= 0 && c.DataType <= 1) {
-                valueStr = "DEFAULT '" + c.DefualtValue + "'";
+                valueStr = "DEFAULT '" + c.DefaultValue + "'";
             }
             else {
-                valueStr = "DEFAULT " + c.DefualtValue;
+                valueStr = "DEFAULT " + c.DefaultValue;
             }
         }
         columnDefineList.push(valueStr);

@@ -174,14 +174,14 @@ export class MysqlDataContext implements IDataContext {
                 lengthStr = "(" + item.DataLength + dcp + ")";
             }
 
-            if (item.DefualtValue != undefined) {
+            if (item.DefaultValue != undefined) {
                 if (item.DataType >= 0 && item.DataType <= 1) {
                     //string type
-                    valueStr = "DEFAULT '" + item.DefualtValue + "'";
+                    valueStr = "DEFAULT '" + item.DefaultValue + "'";
                 }
                 else {
                     //number type
-                    valueStr = "DEFAULT " + item.DefualtValue;
+                    valueStr = "DEFAULT " + item.DefaultValue;
                 }
             }
 
@@ -225,14 +225,14 @@ export class MysqlDataContext implements IDataContext {
                 lengthStr = "(" + item.DataLength + dcp + ")";
             }
 
-            if (item.DefualtValue != undefined) {
+            if (item.DefaultValue != undefined) {
                 if (item.DataType >= 0 && item.DataType <= 1) {
                     //string type
-                    valueStr = "DEFAULT '" + item.DefualtValue + "'";
+                    valueStr = "DEFAULT '" + item.DefaultValue + "'";
                 }
                 else {
                     //number type
-                    valueStr = "DEFAULT " + item.DefualtValue;
+                    valueStr = "DEFAULT " + item.DefaultValue;
                 }
             }
 
