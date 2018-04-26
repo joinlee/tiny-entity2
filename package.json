@@ -1,6 +1,6 @@
 {
   "name": "tiny-entity2",
-  "version": "0.2.0",
+  "version": "9.0.0",
   "description": "A simple and easy to use ORM framework, support NEDB, IndexedDB, MySQL and Sqlite and other commonly used database ",
   "main": "index.js",
   "scripts": {
@@ -27,11 +27,11 @@
   },
   "homepage": "https://github.com/joinlee/tiny-entity#readme",
   "dependencies": {
-    "@types/mocha": "^2.2.39",
-    "@types/mysql": "0.0.34",
     "reflect-metadata": "^0.1.10"
   },
   "devDependencies": {
+    "@types/mocha": "^2.2.39",
+    "@types/mysql": "0.0.34",
     "mysql": "^2.14.1",
     "sqlite-sync": "^0.3.5",
     "mocha": "^3.2.0",
