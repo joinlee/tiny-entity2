@@ -2,7 +2,7 @@ import { IDataContext } from '../dataContext';
 import { IEntityObject } from '../entityObject';
 import { IMySql, IPool, IPoolConfig, IConnection } from 'mysql';
 import { Interpreter } from '../interpreter';
-import mysql = require("mysql");
+import * as mysql from "mysql";
 import { Define } from '../define/dataDefine';
 import { IQueryParameter, IQuerySelector } from '../queryObject';
 

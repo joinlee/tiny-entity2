@@ -1,7 +1,7 @@
 import { IQueryObject, IJoinChildQueryObject, IQueryParameter, IQuerySelector, IQueryEnumerable, IResultQueryObject, ITakeChildQueryObject, IAssembleResultQuery } from './../queryObject';
 import { IEntityObject, EntityObject } from './../entityObject';
 import { Interpreter } from '../interpreter';
-import mysql = require("mysql");
+import * as mysql from "mysql";
 import { MysqlDataContext } from './dataContextMysql';
 import { Define } from '../define/dataDefine';
 
