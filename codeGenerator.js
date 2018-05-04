@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
-const _1 = require(".");
+const dataDefine_1 = require("./define/dataDefine");
 class CodeGenerator {
     constructor(options) {
         this.options = options;
@@ -350,7 +350,7 @@ class CodeGenerator {
             let dcp = c.DecimalPoint != undefined ? "," + c.DecimalPoint : "";
             lengthStr = "(" + c.DataLength + dcp + ")";
         }
-        columnDefineList.push(_1.Define.DataType[c.DataType] + lengthStr);
+        columnDefineList.push(dataDefine_1.Define.DataType[c.DataType] + lengthStr);
         columnDefineList.push(c.NotAllowNULL ? 'NOT NULL' : 'NULL');
         let valueStr = '';
         if (c.DefaultValue != undefined) {

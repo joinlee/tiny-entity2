@@ -1,6 +1,6 @@
 import fs = require('fs');
 import path = require('path');
-import { Define } from '.';
+import { Define } from './define/dataDefine';
 
 // const outDir = "./test";
 // //相对于项目路径
