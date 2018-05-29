@@ -247,10 +247,10 @@ export class CodeGenerator {
                 if (!lastSql.done) {
                     let newCtxInstance = this.getCtxInstance();
                     for (let query of lastSql.sql) {
-                        await newCtxInstance.Query(query);
+                        await newCtxInstance.Query(query, true);
                     }
                     lastSql.done = true;
-                    this.writeFile(JSON.stringify(sqlData), 'sqllogs.logq')
+                    await this.writeFile(JSON.stringify(sqlData), 'sqllogs.logq');
                 }
                 return;
             }

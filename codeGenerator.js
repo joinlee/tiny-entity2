@@ -166,10 +166,10 @@ class CodeGenerator {
                     if (!lastSql.done) {
                         let newCtxInstance = this.getCtxInstance();
                         for (let query of lastSql.sql) {
-                            yield newCtxInstance.Query(query);
+                            yield newCtxInstance.Query(query, true);
                         }
                         lastSql.done = true;
-                        this.writeFile(JSON.stringify(sqlData), 'sqllogs.logq');
+                        yield this.writeFile(JSON.stringify(sqlData), 'sqllogs.logq');
                     }
                     return;
                 }

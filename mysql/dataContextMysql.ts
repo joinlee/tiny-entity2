@@ -119,9 +119,21 @@ export class MysqlDataContext implements IDataContext {
             });
         });
     }
-    Query(...args: any[]): Promise<any> {
-        if (args.length >= 1)
+    async Query(...args: any[]): Promise<any> {
+        if (args.length == 1)
             return this.onSubmit(args[0]);
+        else if (args.length == 2) {
+            let sql = args[0];
+            try { 
+                this.BeginTranscation();
+                this.querySentence.push(sql);
+                await this.Commit();
+            }
+            catch (error) {
+                await this.RollBack();
+                throw error;
+            }
+        }
     }
     RollBack() {
         this.CleanTransactionStatus();
