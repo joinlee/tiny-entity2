@@ -112,7 +112,11 @@ class Interpreter {
     TransToSQLOfContains(func, values, tableName) {
         let sql = "";
         let r = this.TransFuncToSQL(func, tableName);
-        sql = "(" + r + " IN (" + values.join(",") + "))";
+        let fm = [];
+        for (let item of values) {
+            fm.push(this.escape(item));
+        }
+        sql = "(" + r + " IN (" + fm.join(",") + "))";
         this.partOfWhere.push(sql);
         return sql;
     }
