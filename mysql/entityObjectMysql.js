@@ -171,7 +171,13 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
                         }
                         else if (mappingItem.MappingType == dataDefine_1.Define.MappingType.One) {
                             let mappingKey = mappingItem.MappingKey;
-                            item[mappingItem.ColumnName] = resultValue[mappingItem.Mapping].list.find(x => x[mappingKey.FKey] == item[mappingKey.MKey]);
+                            if (mappingKey) {
+                                item[mappingItem.ColumnName] = resultValue[mappingItem.Mapping].list.find(x => x[mappingKey.FKey] == item[mappingKey.MKey]);
+                            }
+                            else {
+                                let mainTableName = item.ClassName().toLowerCase();
+                                item[mappingItem.ColumnName] = resultValue[mappingItem.Mapping].list.find(x => x[mainTableName] == item[obj.pKey.ColumnName]);
+                            }
                         }
                     }
                 }

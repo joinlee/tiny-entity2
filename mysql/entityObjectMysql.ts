@@ -190,7 +190,14 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
                         }
                         else if (mappingItem.MappingType == Define.MappingType.One) {
                             let mappingKey = mappingItem.MappingKey;
-                            item[mappingItem.ColumnName] = resultValue[mappingItem.Mapping].list.find(x => x[(<any>mappingKey).FKey] == item[(<any>mappingKey).MKey]);
+                            if (mappingKey) {
+                                item[mappingItem.ColumnName] = resultValue[mappingItem.Mapping].list.find(x => x[(<any>mappingKey).FKey] == item[(<any>mappingKey).MKey]);
+                            }
+                            else {
+                                let mainTableName = item.ClassName().toLowerCase();
+                                item[mappingItem.ColumnName] = resultValue[mappingItem.Mapping].list.find(x => x[mainTableName] == item[obj.pKey.ColumnName]);
+                            }
+
                         }
                     }
                 }
