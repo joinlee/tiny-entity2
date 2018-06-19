@@ -170,7 +170,8 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
                             item[mappingItem.ColumnName] = this.RemoveDuplicate(resultValue[mappingItem.Mapping].list.filter(x => x[fkey] == item[mkey]), obj.pKey.ColumnName);
                         }
                         else if (mappingItem.MappingType == dataDefine_1.Define.MappingType.One) {
-                            item[mappingItem.ColumnName] = resultValue[mappingItem.Mapping].list[0];
+                            let mappingKey = mappingItem.MappingKey;
+                            item[mappingItem.ColumnName] = resultValue[mappingItem.Mapping].list.find(x => x[mappingKey.FKey] == item[mappingKey.MKey]);
                         }
                     }
                 }
