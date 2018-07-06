@@ -33,7 +33,7 @@ export class Interpreter {
         }
         if (this.partOfLimt) {
             if (this.partOfLimt.skip) {
-                sqlCharts.push(`LIMIT ${this.partOfLimt.skip},${this.partOfLimt.take}`);
+                sqlCharts.push(`LIMIT ${this.partOfLimt.skip * this.partOfLimt.take},${this.partOfLimt.take}`);
             }
             else {
                 sqlCharts.push(`LIMIT ${this.partOfLimt.take}`);
@@ -123,7 +123,7 @@ export class Interpreter {
         let sql = "";
         let r = this.TransFuncToSQL(func, tableName);
         let fm = [];
-        for(let item of values){
+        for (let item of values) {
             fm.push(this.escape(item));
         }
         sql = "(" + r + " IN (" + fm.join(",") + "))";

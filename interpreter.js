@@ -29,7 +29,7 @@ class Interpreter {
         }
         if (this.partOfLimt) {
             if (this.partOfLimt.skip) {
-                sqlCharts.push(`LIMIT ${this.partOfLimt.skip},${this.partOfLimt.take}`);
+                sqlCharts.push(`LIMIT ${this.partOfLimt.skip * this.partOfLimt.take},${this.partOfLimt.take}`);
             }
             else {
                 sqlCharts.push(`LIMIT ${this.partOfLimt.take}`);
