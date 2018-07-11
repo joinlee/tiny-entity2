@@ -115,13 +115,13 @@ class CodeGenerator {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 let newCtxInstance = this.getCtxInstance();
-                let hisStr = yield this.readFile('oplog.log');
-                if (hisStr) {
-                    let hisData = JSON.parse(hisStr);
+                this.hisStr = yield this.readFile('oplog.log');
+                if (this.hisStr) {
+                    let hisData = JSON.parse(this.hisStr);
                     let lastLogItem = hisData[hisData.length - 1];
                     let r = this.contrastTable(lastLogItem.logs);
                     if (r.length > 0) {
-                        yield this.writeFile(JSON.stringify([lastLogItem, { version: Date.now(), logs: r }]), 'oplog.log');
+                        this.hisStr = JSON.stringify([lastLogItem, { version: Date.now(), logs: r }]);
                     }
                 }
                 else {
@@ -133,21 +133,20 @@ class CodeGenerator {
                             content: t
                         });
                     }
-                    yield this.writeFile(JSON.stringify([{ version: Date.now(), logs: oplogList }]), 'oplog.log');
+                    this.hisStr = JSON.stringify([{ version: Date.now(), logs: oplogList }]);
                 }
-                let sqls = yield this.transLogToSqlList();
+                let sqls = yield this.transLogToSqlList(this.hisStr);
                 let sqlStr = yield this.readFile('sqllogs.logq');
                 if (sqls.length > 0) {
                     if (sqlStr) {
-                        let sqlData = JSON.parse(sqlStr);
-                        sqlData.push({
+                        this.sqlData = JSON.parse(sqlStr);
+                        this.sqlData.push({
                             version: Date.now(),
                             sql: sqls
                         });
-                        yield this.writeFile(JSON.stringify(sqlData), 'sqllogs.logq');
                     }
                     else {
-                        yield this.writeFile(JSON.stringify([{ version: Date.now(), sql: sqls }]), 'sqllogs.logq');
+                        this.sqlData = [{ version: Date.now(), sql: sqls }];
                     }
                 }
             }
@@ -159,18 +158,19 @@ class CodeGenerator {
     sqlLogToDatabase() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                let sqlStr = yield this.readFile('sqllogs.logq');
-                if (sqlStr) {
-                    let sqlData = JSON.parse(sqlStr);
-                    let lastSql = sqlData[sqlData.length - 1];
+                if (this.sqlData) {
+                    let lastSql = this.sqlData[this.sqlData.length - 1];
                     if (!lastSql.done) {
                         let newCtxInstance = this.getCtxInstance();
                         for (let query of lastSql.sql) {
                             yield newCtxInstance.Query(query, true);
                         }
                         lastSql.done = true;
-                        yield this.writeFile(JSON.stringify(sqlData), 'sqllogs.logq');
+                        yield this.writeFile(JSON.stringify(this.sqlData), 'sqllogs.logq');
+                        yield this.writeFile(this.hisStr, 'oplog.log');
                     }
+                    this.sqlData = null;
+                    this.hisStr = null;
                     return;
                 }
             }
@@ -184,7 +184,7 @@ class CodeGenerator {
         for (let item of newC) {
             if (item.Mapping)
                 continue;
-            let oldItem = oldC.find(x => x.ColumnName == item.ColumnName);
+            let oldItem = oldC.find(x => x.ColumnName.toLocaleLowerCase() == item.ColumnName.toLocaleLowerCase());
             if (oldItem) {
                 let isDiff = false;
                 let tempColumn = {};
@@ -206,6 +206,10 @@ class CodeGenerator {
                     isDiff = true;
                     tempColumn.NotAllowNULL = item.NotAllowNULL;
                 }
+                else if (oldItem.ColumnName != item.ColumnName) {
+                    isDiff = true;
+                    tempColumn.ColumnName = item.ColumnName;
+                }
                 if (isDiff) {
                     diff.push({
                         newItem: tempColumn,
@@ -221,7 +225,7 @@ class CodeGenerator {
             }
         }
         for (let item of oldC) {
-            let newItem = newC.find(x => x.ColumnName == item.ColumnName);
+            let newItem = newC.find(x => x.ColumnName.toLocaleLowerCase() == item.ColumnName.toLocaleLowerCase());
             if (!newItem) {
                 diff.push({
                     newItem: null,
@@ -296,10 +300,9 @@ class CodeGenerator {
         }
         return diff;
     }
-    transLogToSqlList() {
+    transLogToSqlList(hisStr) {
         return __awaiter(this, void 0, void 0, function* () {
             let sqls = [];
-            let hisStr = yield this.readFile('oplog.log');
             let newCtxInstance = this.getCtxInstance();
             if (hisStr) {
                 let hisData = JSON.parse(hisStr);
@@ -333,12 +336,13 @@ class CodeGenerator {
                             }
                             if (diffItem.oldItem && diffItem.newItem) {
                                 let columnDefineList = this.getColumnsSqlList(diffItem, 'alter');
-                                sqls.push(`ALTER TABLE \`${logItem.diffContent.tableName}\` CHANGE \`${diffItem.oldItem.ColumnName}\` \`${diffItem.oldItem.ColumnName}\` ${columnDefineList.join(' ')};`);
+                                sqls.push(`ALTER TABLE \`${logItem.diffContent.tableName}\` CHANGE \`${diffItem.oldItem.ColumnName}\` \`${diffItem.newItem.ColumnName}\` ${columnDefineList.join(' ')};`);
                             }
                         }
                     }
                 }
             }
+            console.log(sqls);
             return sqls;
         });
     }

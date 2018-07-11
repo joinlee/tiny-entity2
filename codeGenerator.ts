@@ -76,6 +76,8 @@ export interface ICodeGeneratorOptions {
 
 export class CodeGenerator {
     private modelList = [];
+    private sqlData;
+    private hisStr;
     constructor(private options: ICodeGeneratorOptions) {
         if (!options.packageName) this.options.packageName = 'tiny-entity2';
     }
@@ -192,16 +194,16 @@ export class CodeGenerator {
     async generateOpLogFile() {
         try {
             let newCtxInstance = this.getCtxInstance();
-            let hisStr: any = await this.readFile('oplog.log');
-            if (hisStr) {
-                let hisData: any[] = JSON.parse(hisStr);
+            this.hisStr = await this.readFile('oplog.log');
+            if (this.hisStr) {
+                let hisData: any[] = JSON.parse(this.hisStr);
                 // get last one
                 let lastLogItem = hisData[hisData.length - 1];
 
                 let r = this.contrastTable(lastLogItem.logs);
                 if (r.length > 0) {
                     //when changed then write log file.
-                    await this.writeFile(JSON.stringify([lastLogItem, { version: Date.now(), logs: r }]), 'oplog.log');
+                    this.hisStr = JSON.stringify([lastLogItem, { version: Date.now(), logs: r }]);
                 }
             }
             else {
@@ -213,24 +215,22 @@ export class CodeGenerator {
                         content: t
                     });
                 }
-                await this.writeFile(JSON.stringify([{ version: Date.now(), logs: oplogList }]), 'oplog.log');
+                this.hisStr = JSON.stringify([{ version: Date.now(), logs: oplogList }]);
             }
 
-            let sqls = await this.transLogToSqlList();
+            let sqls = await this.transLogToSqlList(this.hisStr);
             let sqlStr: any = await this.readFile('sqllogs.logq');
 
             if (sqls.length > 0) {
                 if (sqlStr) {
-                    let sqlData = JSON.parse(sqlStr);
-                    sqlData.push({
+                    this.sqlData = JSON.parse(sqlStr);
+                    this.sqlData.push({
                         version: Date.now(),
                         sql: sqls
                     });
-
-                    await this.writeFile(JSON.stringify(sqlData), 'sqllogs.logq');
                 }
                 else {
-                    await this.writeFile(JSON.stringify([{ version: Date.now(), sql: sqls }]), 'sqllogs.logq');
+                    this.sqlData = [{ version: Date.now(), sql: sqls }];
                 }
             }
         } catch (error) {
@@ -240,18 +240,19 @@ export class CodeGenerator {
 
     async sqlLogToDatabase() {
         try {
-            let sqlStr: any = await this.readFile('sqllogs.logq');
-            if (sqlStr) {
-                let sqlData = JSON.parse(sqlStr);
-                let lastSql = sqlData[sqlData.length - 1];
+            if (this.sqlData) {
+                let lastSql = this.sqlData[this.sqlData.length - 1];
                 if (!lastSql.done) {
                     let newCtxInstance = this.getCtxInstance();
                     for (let query of lastSql.sql) {
                         await newCtxInstance.Query(query, true);
                     }
                     lastSql.done = true;
-                    await this.writeFile(JSON.stringify(sqlData), 'sqllogs.logq');
+                    await this.writeFile(JSON.stringify(this.sqlData), 'sqllogs.logq');
+                    await this.writeFile(this.hisStr, 'oplog.log');
                 }
+                this.sqlData = null;
+                this.hisStr = null;
                 return;
             }
         } catch (error) {
@@ -263,7 +264,7 @@ export class CodeGenerator {
         let diff = [];
         for (let item of newC) {
             if (item.Mapping) continue;
-            let oldItem = oldC.find(x => x.ColumnName == item.ColumnName);
+            let oldItem = oldC.find(x => x.ColumnName.toLocaleLowerCase() == item.ColumnName.toLocaleLowerCase());
             if (oldItem) {
                 let isDiff = false;
                 let tempColumn: Define.PropertyDefineOption = {};
@@ -285,6 +286,10 @@ export class CodeGenerator {
                     isDiff = true;
                     tempColumn.NotAllowNULL = item.NotAllowNULL;
                 }
+                else if (oldItem.ColumnName != item.ColumnName) {
+                    isDiff = true;
+                    tempColumn.ColumnName = item.ColumnName;
+                }
 
                 if (isDiff) {
                     diff.push({
@@ -302,7 +307,7 @@ export class CodeGenerator {
         }
 
         for (let item of oldC) {
-            let newItem = newC.find(x => x.ColumnName == item.ColumnName);
+            let newItem = newC.find(x => x.ColumnName.toLocaleLowerCase() == item.ColumnName.toLocaleLowerCase());
             if (!newItem) {
                 diff.push({
                     newItem: null,
@@ -386,9 +391,8 @@ export class CodeGenerator {
         return diff;
     }
 
-    private async transLogToSqlList() {
+    private async transLogToSqlList(hisStr) {
         let sqls = [];
-        let hisStr: any = await this.readFile('oplog.log');
         let newCtxInstance = this.getCtxInstance();
         if (hisStr) {
             let hisData = JSON.parse(hisStr);
@@ -427,7 +431,7 @@ export class CodeGenerator {
                         if (diffItem.oldItem && diffItem.newItem) {
                             let columnDefineList = this.getColumnsSqlList(diffItem, 'alter');
 
-                            sqls.push(`ALTER TABLE \`${logItem.diffContent.tableName}\` CHANGE \`${diffItem.oldItem.ColumnName}\` \`${diffItem.oldItem.ColumnName}\` ${columnDefineList.join(' ')};`);
+                            sqls.push(`ALTER TABLE \`${logItem.diffContent.tableName}\` CHANGE \`${diffItem.oldItem.ColumnName}\` \`${diffItem.newItem.ColumnName}\` ${columnDefineList.join(' ')};`);
                         }
                     }
                 }
@@ -435,6 +439,7 @@ export class CodeGenerator {
             }
         }
 
+        console.log(sqls);
         return sqls;
     }
 
