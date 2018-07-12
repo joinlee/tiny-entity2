@@ -64,7 +64,12 @@ export class Interpreter {
                 }
             }
             else {
-                valueList.push(this.escape(entity[item.ColumnName]));
+                let data = entity[item.ColumnName];
+                if (data instanceof Array) {
+                    data = data.join(',');
+                }
+
+                valueList.push(this.escape(data));
             }
         });
         sqlStr += " (" + keyList.join(',') + ") VALUES (" + valueList.join(',') + ");";
@@ -88,7 +93,11 @@ export class Interpreter {
                 }
             }
             else {
-                valueList.push(`\`${item.ColumnName}\`=${this.escape(entity[item.ColumnName])}`);
+                let data = entity[item.ColumnName];
+                if (data instanceof Array) {
+                    data = data.join(',');
+                }
+                valueList.push(`\`${item.ColumnName}\`=${this.escape(data)}`);
             }
         });
 
