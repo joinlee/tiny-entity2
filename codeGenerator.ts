@@ -307,6 +307,7 @@ export class CodeGenerator {
         }
 
         for (let item of oldC) {
+            if (item.Mapping) continue;
             let newItem = newC.find(x => x.ColumnName.toLocaleLowerCase() == item.ColumnName.toLocaleLowerCase());
             if (!newItem) {
                 diff.push({
