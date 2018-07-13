@@ -30,7 +30,7 @@ export namespace Define {
                         let medateData = DataDefine.Current.GetMetedata(this);
                         for (let item of medateData) {
                             let data = obj[item.ColumnName];
-                            if (item.DataType == DataType.Array && !(data instanceof Array)) {
+                            if (item.DataType == DataType.Array && !(data instanceof Array) && data) {
                                 this[item.ColumnName] = data.split(',');
                             }
                             else if (item.DataType == DataType.JSON && typeof(data) == 'string') {
