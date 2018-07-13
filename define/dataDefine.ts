@@ -29,7 +29,16 @@ export namespace Define {
                     this.ConverToEntity = function (obj) {
                         let medateData = DataDefine.Current.GetMetedata(this);
                         for (let item of medateData) {
-                            this[item.ColumnName] = obj[item.ColumnName];
+                            let data = obj[item.ColumnName];
+                            if (item.DataType == DataType.Array) {
+                                this[item.ColumnName] = data.split(',');
+                            }
+                            else if (item.DataType == DataType.JSON) {
+                                this[item.ColumnName] = JSON.parse(data);
+                            }
+                            else {
+                                this[item.ColumnName] = data;
+                            }
                         }
 
                         let resultObj: any = {};
@@ -103,6 +112,8 @@ export namespace Define {
         INT,
         BIGINT,
         BOOL,
+        Array,
+        JSON
     }
 
     export class DataDefine {

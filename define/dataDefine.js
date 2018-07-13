@@ -26,7 +26,16 @@ var Define;
                     this.ConverToEntity = function (obj) {
                         let medateData = DataDefine.Current.GetMetedata(this);
                         for (let item of medateData) {
-                            this[item.ColumnName] = obj[item.ColumnName];
+                            let data = obj[item.ColumnName];
+                            if (item.DataType == DataType.Array) {
+                                this[item.ColumnName] = data.split(',');
+                            }
+                            else if (item.DataType == DataType.JSON) {
+                                this[item.ColumnName] = JSON.parse(data);
+                            }
+                            else {
+                                this[item.ColumnName] = data;
+                            }
                         }
                         let resultObj = {};
                         for (let key in this) {
@@ -97,6 +106,8 @@ var Define;
         DataType[DataType["INT"] = 3] = "INT";
         DataType[DataType["BIGINT"] = 4] = "BIGINT";
         DataType[DataType["BOOL"] = 5] = "BOOL";
+        DataType[DataType["Array"] = 6] = "Array";
+        DataType[DataType["JSON"] = 7] = "JSON";
     })(DataType = Define.DataType || (Define.DataType = {}));
     class DataDefine {
         constructor() {

@@ -64,12 +64,16 @@ export class Interpreter {
                 }
             }
             else {
-                let data = entity[item.ColumnName];
-                if (data instanceof Array) {
-                    data = data.join(',');
+                let data = entity[item.ColumnName]
+                if (item.DataType == Define.DataType.Array) {
+                    valueList.push(this.escape(data.join(',')));
                 }
-
-                valueList.push(this.escape(data));
+                else if (item.DataType == Define.DataType.JSON) {
+                    valueList.push(this.escape(JSON.stringify(data)));
+                }
+                else {
+                    valueList.push(this.escape(data));
+                }
             }
         });
         sqlStr += " (" + keyList.join(',') + ") VALUES (" + valueList.join(',') + ");";
@@ -94,10 +98,16 @@ export class Interpreter {
             }
             else {
                 let data = entity[item.ColumnName];
-                if (data instanceof Array) {
-                    data = data.join(',');
+                if (item.DataType == Define.DataType.Array) {
+                    valueList.push(`\`${item.ColumnName}\`=${this.escape(data.join(','))}`);
                 }
-                valueList.push(`\`${item.ColumnName}\`=${this.escape(data)}`);
+                else if (item.DataType == Define.DataType.JSON) {
+                    valueList.push(`\`${item.ColumnName}\`=${this.escape(JSON.stringify(data))}`);
+                }
+                else {
+                    valueList.push(`\`${item.ColumnName}\`=${this.escape(data)}`);
+                }
+
             }
         });
 

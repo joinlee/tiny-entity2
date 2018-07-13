@@ -57,7 +57,16 @@ class Interpreter {
                 }
             }
             else {
-                valueList.push(this.escape(entity[item.ColumnName]));
+                let data = entity[item.ColumnName];
+                if (item.DataType == dataDefine_1.Define.DataType.Array) {
+                    valueList.push(this.escape(data.join(',')));
+                }
+                else if (item.DataType == dataDefine_1.Define.DataType.JSON) {
+                    valueList.push(this.escape(JSON.stringify(data)));
+                }
+                else {
+                    valueList.push(this.escape(data));
+                }
             }
         });
         sqlStr += " (" + keyList.join(',') + ") VALUES (" + valueList.join(',') + ");";
@@ -81,7 +90,16 @@ class Interpreter {
                 }
             }
             else {
-                valueList.push(`\`${item.ColumnName}\`=${this.escape(entity[item.ColumnName])}`);
+                let data = entity[item.ColumnName];
+                if (item.DataType == dataDefine_1.Define.DataType.Array) {
+                    valueList.push(`\`${item.ColumnName}\`=${this.escape(data.join(','))}`);
+                }
+                else if (item.DataType == dataDefine_1.Define.DataType.JSON) {
+                    valueList.push(`\`${item.ColumnName}\`=${this.escape(JSON.stringify(data))}`);
+                }
+                else {
+                    valueList.push(`\`${item.ColumnName}\`=${this.escape(data)}`);
+                }
             }
         });
         let primaryKeyObj = this.GetPrimaryKeyObj(entity);
