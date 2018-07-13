@@ -205,6 +205,9 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
                 }
                 obj[kv[0]][kv[1]] = row[key];
             }
+            for (let item in obj) {
+                obj[item].ConverToEntity(obj[item]);
+            }
             resultList.push(obj);
         }
         return resultList;

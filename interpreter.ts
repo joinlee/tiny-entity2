@@ -55,7 +55,7 @@ export class Interpreter {
             if (excludeFields && excludeFields.indexOf(item.ColumnName) > -1) return;
             if (item.Mapping) return;
             keyList.push("`" + item.ColumnName + "`");
-            if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null || entity[item.ColumnName] == '') {
+            if (entity[item.ColumnName] === undefined || entity[item.ColumnName] === null || entity[item.ColumnName] === '') {
                 if (item.DefaultValue != undefined && item.DefaultValue != null) {
                     valueList.push(this.escape(item.DefaultValue));
                 }
@@ -88,7 +88,7 @@ export class Interpreter {
         entityMetadata.forEach(item => {
             if (excludeFields && excludeFields.indexOf(item.ColumnName) > -1) return;
             if (item.Mapping) return;
-            if (entity[item.ColumnName] == undefined || entity[item.ColumnName] == null || entity[item.ColumnName] == '') {
+            if (entity[item.ColumnName] === undefined || entity[item.ColumnName] === null || entity[item.ColumnName] === '') {
                 if (item.DefaultValue != undefined && item.DefaultValue != null) {
                     valueList.push(`\`${item.ColumnName}\`=${this.escape(item.DefaultValue)}`);
                 }
