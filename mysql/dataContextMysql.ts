@@ -197,7 +197,15 @@ export class MysqlDataContext implements IDataContext {
                 }
             }
 
-            let cs = "`" + item.ColumnName + "` " + Define.DataType[item.DataType] + lengthStr + " COLLATE " + (<any>this.option).collate + " " + valueStr;
+            let dataType = Define.DataType[item.DataType];
+            if (item.DataType == Define.DataType.Array) {
+                dataType = 'VARCHAR';
+            }
+            else if (item.DataType == Define.DataType.JSON) {
+                dataType = 'TEXT';
+            }
+
+            let cs = "`" + item.ColumnName + "` " + dataType + lengthStr + " COLLATE " + (<any>this.option).collate + " " + valueStr;
             if (item.IsPrimaryKey) {
                 columnSqlList.push("PRIMARY KEY (`" + item.ColumnName + "`)");
             }
