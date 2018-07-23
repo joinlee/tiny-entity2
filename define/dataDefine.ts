@@ -33,7 +33,7 @@ export namespace Define {
                             if (item.DataType == DataType.Array && !(data instanceof Array) && data) {
                                 this[item.ColumnName] = data.split(',');
                             }
-                            else if (item.DataType == DataType.JSON && typeof(data) == 'string') {
+                            else if (item.DataType == DataType.JSON && typeof (data) == 'string') {
                                 this[item.ColumnName] = JSON.parse(data);
                             }
                             else {
@@ -70,10 +70,7 @@ export namespace Define {
         return (target: any, propertyName: string, propertyDescriptor?: PropertyDescriptor) => {
             opt || (opt = {});
             opt.ColumnName = propertyName;
-            if (!opt.DataType) {
-                opt.DataType = DataType.VARCHAR;
-                opt.DataLength = 255;
-            }
+
             opt = SetPropertyDefineOptionValue(opt);
 
             DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
@@ -91,9 +88,27 @@ export namespace Define {
     }
 
     function SetPropertyDefineOptionValue(opt: PropertyDefineOption) {
-        if (!opt.DataType) {
+        if (opt.DataType === undefined || opt.DataType === null) {
             opt.DataType = DataType.VARCHAR;
-            opt.DataLength = 255;
+        }
+
+        if (opt.DataType === DataType.VARCHAR || opt.DataType === DataType.Array) {
+            if (opt.DataLength === undefined || opt.DataLength === null) {
+                opt.DataLength = 255;
+            }
+        }
+
+        if(opt.DataType === DataType.INT){
+            if (opt.DataLength === undefined || opt.DataLength === null) {
+                opt.DataLength = 10;
+            }
+        }
+
+        if(opt.DataType === DataType.Decimal){
+            if (opt.DataLength === undefined || opt.DataLength === null) {
+                opt.DataLength = 10;
+                opt.DecimalPoint = 2;
+            }
         }
 
         return opt;

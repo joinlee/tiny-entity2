@@ -66,10 +66,6 @@ var Define;
         return (target, propertyName, propertyDescriptor) => {
             opt || (opt = {});
             opt.ColumnName = propertyName;
-            if (!opt.DataType) {
-                opt.DataType = DataType.VARCHAR;
-                opt.DataLength = 255;
-            }
             opt = SetPropertyDefineOptionValue(opt);
             DataDefine.Current.AddMetqdata(propertyName, JSON.stringify(opt), target.constructor.name);
             SetClassPropertyDefaultValue(target, propertyName, opt ? opt.DefaultValue : null);
@@ -86,9 +82,24 @@ var Define;
     }
     Define.Mapping = Mapping;
     function SetPropertyDefineOptionValue(opt) {
-        if (!opt.DataType) {
+        if (opt.DataType === undefined || opt.DataType === null) {
             opt.DataType = DataType.VARCHAR;
-            opt.DataLength = 255;
+        }
+        if (opt.DataType === DataType.VARCHAR || opt.DataType === DataType.Array) {
+            if (opt.DataLength === undefined || opt.DataLength === null) {
+                opt.DataLength = 255;
+            }
+        }
+        if (opt.DataType === DataType.INT) {
+            if (opt.DataLength === undefined || opt.DataLength === null) {
+                opt.DataLength = 10;
+            }
+        }
+        if (opt.DataType === DataType.Decimal) {
+            if (opt.DataLength === undefined || opt.DataLength === null) {
+                opt.DataLength = 10;
+                opt.DecimalPoint = 2;
+            }
         }
         return opt;
     }

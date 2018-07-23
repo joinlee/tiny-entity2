@@ -172,46 +172,7 @@ class MysqlDataContext {
         return __awaiter(this, void 0, void 0, function* () {
             let tableDefine = dataDefine_1.Define.DataDefine.Current.GetMetedata(entity);
             let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
-            let columnSqlList = [];
-            for (let item of tableDefine) {
-                if (item.Mapping)
-                    continue;
-                let valueStr = item.NotAllowNULL ? "NOT NULL" : "DEFAULT NULL";
-                let lengthStr = "";
-                if (item.DataLength != undefined) {
-                    let dcp = item.DecimalPoint != undefined ? "," + item.DecimalPoint : "";
-                    lengthStr = "(" + item.DataLength + dcp + ")";
-                }
-                if (item.DefaultValue != undefined) {
-                    if (item.DataType >= 0 && item.DataType <= 1) {
-                        valueStr = "DEFAULT '" + item.DefaultValue + "'";
-                    }
-                    else {
-                        valueStr = "DEFAULT " + item.DefaultValue;
-                    }
-                }
-                let dataType = dataDefine_1.Define.DataType[item.DataType];
-                if (item.DataType == dataDefine_1.Define.DataType.Array) {
-                    dataType = 'VARCHAR';
-                }
-                else if (item.DataType == dataDefine_1.Define.DataType.JSON) {
-                    dataType = 'TEXT';
-                }
-                let cs = "`" + item.ColumnName + "` " + dataType + lengthStr + " COLLATE " + this.option.collate + " " + valueStr;
-                if (item.IsPrimaryKey) {
-                    columnSqlList.push("PRIMARY KEY (`" + item.ColumnName + "`)");
-                }
-                let indexType = "USING BTREE";
-                if (item.ForeignKey && item.ForeignKey.IsPhysics) {
-                    indexType = "";
-                    columnSqlList.push("CONSTRAINT `fk_" + item.ColumnName + "` FOREIGN KEY (`" + item.ColumnName + "`) REFERENCES `" + item.ForeignKey.ForeignTable + "` (`" + item.ForeignKey.ForeignColumn + "`)");
-                }
-                if (item.IsIndex) {
-                    columnSqlList.push("KEY `idx_" + item.ColumnName + "` (`" + item.ColumnName + "`) " + indexType);
-                }
-                columnSqlList.push(cs);
-            }
-            sqls.push("CREATE TABLE `" + entity.TableName() + "` ( " + columnSqlList.join(",") + " ) ENGINE=InnoDB DEFAULT CHARSET=" + this.option.charset + " COLLATE=" + this.option.collate + ";");
+            sqls.push(this.CreateTableSql(entity));
             for (let sql of sqls) {
                 yield this.onSubmit(sql);
             }

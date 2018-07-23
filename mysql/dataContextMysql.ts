@@ -174,56 +174,8 @@ export class MysqlDataContext implements IDataContext {
     async CreateTable(entity: IEntityObject) {
         let tableDefine = Define.DataDefine.Current.GetMetedata(entity);
         let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
-        let columnSqlList = [];
-
-        for (let item of tableDefine) {
-            if (item.Mapping) continue;
-            let valueStr = item.NotAllowNULL ? "NOT NULL" : "DEFAULT NULL";
-
-            let lengthStr = "";
-            if (item.DataLength != undefined) {
-                let dcp = item.DecimalPoint != undefined ? "," + item.DecimalPoint : "";
-                lengthStr = "(" + item.DataLength + dcp + ")";
-            }
-
-            if (item.DefaultValue != undefined) {
-                if (item.DataType >= 0 && item.DataType <= 1) {
-                    //string type
-                    valueStr = "DEFAULT '" + item.DefaultValue + "'";
-                }
-                else {
-                    //number type
-                    valueStr = "DEFAULT " + item.DefaultValue;
-                }
-            }
-
-            let dataType = Define.DataType[item.DataType];
-            if (item.DataType == Define.DataType.Array) {
-                dataType = 'VARCHAR';
-            }
-            else if (item.DataType == Define.DataType.JSON) {
-                dataType = 'TEXT';
-            }
-
-            let cs = "`" + item.ColumnName + "` " + dataType + lengthStr + " COLLATE " + (<any>this.option).collate + " " + valueStr;
-            if (item.IsPrimaryKey) {
-                columnSqlList.push("PRIMARY KEY (`" + item.ColumnName + "`)");
-            }
-
-            let indexType = "USING BTREE";
-            if (item.ForeignKey && item.ForeignKey.IsPhysics) {
-                indexType = "";
-                columnSqlList.push("CONSTRAINT `fk_" + item.ColumnName + "` FOREIGN KEY (`" + item.ColumnName + "`) REFERENCES `" + item.ForeignKey.ForeignTable + "` (`" + item.ForeignKey.ForeignColumn + "`)");
-            }
-            if (item.IsIndex) {
-                columnSqlList.push("KEY `idx_" + item.ColumnName + "` (`" + item.ColumnName + "`) " + indexType);
-            }
-
-            columnSqlList.push(cs);
-        }
-
-        sqls.push("CREATE TABLE `" + entity.TableName() + "` ( " + columnSqlList.join(",") + " ) ENGINE=InnoDB DEFAULT CHARSET=" + this.option.charset + " COLLATE=" + (<any>this.option).collate + ";");
-
+        sqls.push(this.CreateTableSql(entity));
+       
         for (let sql of sqls) {
             await this.onSubmit(sql);
         }
