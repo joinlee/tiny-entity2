@@ -231,7 +231,14 @@ class MysqlDataContext {
                     valueStr = "DEFAULT " + item.DefaultValue;
                 }
             }
-            let cs = "`" + item.ColumnName + "` " + dataDefine_1.Define.DataType[item.DataType] + lengthStr + " COLLATE " + this.option.collate + " " + valueStr;
+            let dataType = dataDefine_1.Define.DataType[item.DataType];
+            if (item.DataType == dataDefine_1.Define.DataType.Array) {
+                dataType = 'VARCHAR';
+            }
+            else if (item.DataType == dataDefine_1.Define.DataType.JSON) {
+                dataType = 'TEXT';
+            }
+            let cs = "`" + item.ColumnName + "` " + dataType + lengthStr + " COLLATE " + this.option.collate + " " + valueStr;
             if (item.IsPrimaryKey) {
                 columnSqlList.push("PRIMARY KEY (`" + item.ColumnName + "`)");
             }
