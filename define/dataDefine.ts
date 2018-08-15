@@ -142,7 +142,7 @@ export namespace Define {
             for (let key in entity) {
                 if (typeof (entity[key]) == "function" || key === "interpreter" || key === "ctx" || key === "joinEntities") continue;
                 let s = Reflect.getMetadata(tableName + "_metadataKey", target, key);
-                list.push(JSON.parse(s));
+                if(s) list.push(JSON.parse(s));
             }
 
             return list;
