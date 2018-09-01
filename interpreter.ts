@@ -6,7 +6,7 @@ export class Interpreter {
     private partOfSelect: string = "*";
     private partOfJoin: string[] = [];
     private partOfLimt;
-    private partOfOrderBy: string;
+    private partOfOrderBy: string[] = [];
     private joinTeamp;
     constructor(escape?) {
         if (escape)
@@ -28,8 +28,8 @@ export class Interpreter {
             sqlCharts.push("WHERE");
             sqlCharts.push(this.partOfWhere.join(" AND "));
         }
-        if (this.partOfOrderBy) {
-            sqlCharts.push(this.partOfOrderBy);
+        if (this.partOfOrderBy && this.partOfOrderBy.length) {
+            sqlCharts.push(`ORDER BY ${this.partOfOrderBy.join(',')}`);
         }
         if (this.partOfLimt) {
             if (this.partOfLimt.skip) {
@@ -226,7 +226,7 @@ export class Interpreter {
     TransTOSQLOfGroup(func: Function, tableName: string, isDesc: boolean = false) {
         let sql = this.TransFuncToSQL(func, tableName);
         let descStr = isDesc ? 'DESC' : '';
-        this.partOfOrderBy = `ORDER BY ${sql} ${descStr}`;
+        this.partOfOrderBy.push(`${sql} ${descStr}`);
 
         return this.partOfOrderBy;
     }

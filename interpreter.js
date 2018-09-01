@@ -6,6 +6,7 @@ class Interpreter {
         this.partOfWhere = [];
         this.partOfSelect = "*";
         this.partOfJoin = [];
+        this.partOfOrderBy = [];
         if (escape)
             this.escape = escape;
         else
@@ -24,8 +25,8 @@ class Interpreter {
             sqlCharts.push("WHERE");
             sqlCharts.push(this.partOfWhere.join(" AND "));
         }
-        if (this.partOfOrderBy) {
-            sqlCharts.push(this.partOfOrderBy);
+        if (this.partOfOrderBy && this.partOfOrderBy.length) {
+            sqlCharts.push(`ORDER BY ${this.partOfOrderBy.join(',')}`);
         }
         if (this.partOfLimt) {
             if (this.partOfLimt.skip) {
@@ -205,7 +206,7 @@ class Interpreter {
     TransTOSQLOfGroup(func, tableName, isDesc = false) {
         let sql = this.TransFuncToSQL(func, tableName);
         let descStr = isDesc ? 'DESC' : '';
-        this.partOfOrderBy = `ORDER BY ${sql} ${descStr}`;
+        this.partOfOrderBy.push(`${sql} ${descStr}`);
         return this.partOfOrderBy;
     }
     TransFuncToSQL(func, tableName, param) {

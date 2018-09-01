@@ -92,11 +92,11 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         return this;
     }
 
-    OrderBy(func: IQueryEnumerable<T>): IResultQueryObject<T> {
+    OrderBy(func: IQueryEnumerable<T>): IQueryObject<T> {
         this.interpreter.TransTOSQLOfGroup(func, this.TableName());
         return this;
     }
-    OrderByDesc(func: IQueryEnumerable<T>): IResultQueryObject<T> {
+    OrderByDesc(func: IQueryEnumerable<T>): IQueryObject<T> {
         this.interpreter.TransTOSQLOfGroup(func, this.TableName(), true);
         return this;
     }

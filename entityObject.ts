@@ -56,10 +56,10 @@ export abstract class EntityObjectBase<T extends IEntityObject, R> implements IE
     Select(func: IQueryEnumerable<T>): IResultQueryObject<T> {
         throw new Error("Method not implemented.");
     }
-    OrderBy(func: IQueryEnumerable<T>): IResultQueryObject<T> {
+    OrderBy(func: IQueryEnumerable<T>): IQueryObject<T> {
         throw new Error("Method not implemented.");
     }
-    OrderByDesc(func: IQueryEnumerable<T>): IResultQueryObject<T> {
+    OrderByDesc(func: IQueryEnumerable<T>): IQueryObject<T> {
         throw new Error("Method not implemented.");
     }
     GroupBy(func: IQueryEnumerable<T>): IResultQueryObject<T> {
