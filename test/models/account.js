@@ -9,9 +9,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const entityObjectMysql_1 = require("../../mysql/entityObjectMysql");
 const dataDefine_1 = require("../../define/dataDefine");
-let Account = class Account extends entityObjectMysql_1.EntityObjectMysql {
+const entityObjectFactory_1 = require("../../entityObjectFactory");
+const EntityObjectType = entityObjectFactory_1.EntityObjectFactory.GetEntityObjectType('sqlite');
+let Account = class Account extends EntityObjectType {
 };
 __decorate([
     dataDefine_1.Define.PrimaryKey(),

@@ -1,4 +1,6 @@
-import { EntityObject, EntityObjectMysql } from ".";
+import { EntityObjectMysql } from "./mysql/entityObjectMysql";
+import { EntityObjectSqlite } from "./sqlite/entityObjectSqlite";
+import { EntityObject } from "./entityObject";
 
 export class EntityObjectFactory {
     static GetEntityObjectType(dbType: string) {
@@ -12,10 +14,8 @@ export class EntityObjectFactory {
             return entityObjectMysql;
         }
         else if (dbType == "sqlite") {
-            // let entityObjectSqlite: typeof EntityObject = require("tiny-entity/sqlite").EntityObjectSqlite;
-            // return entityObjectSqlite;
-
-            return null;
+            let entityObjectSqlite: typeof EntityObject = EntityObjectSqlite;
+            return entityObjectSqlite;
         }
     }
 }

@@ -94,7 +94,11 @@ export abstract class EntityObjectBase<T extends IEntityObject, R> implements IE
     }
 }
 
-export abstract class EntityObject<T extends IEntityObject> extends EntityObjectBase<T, null> { }
+export abstract class EntityObject<T extends IEntityObject> extends EntityObjectBase<T, null> {
+    constructor(args?) {
+        super();
+    }
+}
 
 export interface IEntityObject {
     toString(): string;

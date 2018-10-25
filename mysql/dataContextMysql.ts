@@ -141,7 +141,7 @@ export class MysqlDataContext implements IDataContext {
     DeleteDatabase() {
         throw new Error("Method not implemented.");
     }
-    async CreateDatabase() {
+    CreateDatabase() {
         let conn = mysql.createConnection({
             host: this.option.host,
             user: this.option.user,
@@ -172,7 +172,6 @@ export class MysqlDataContext implements IDataContext {
     }
 
     async CreateTable(entity: IEntityObject) {
-        let tableDefine = Define.DataDefine.Current.GetMetedata(entity);
         let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
         sqls.push(this.CreateTableSql(entity));
        

@@ -1,17 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const _1 = require(".");
+const entityObjectMysql_1 = require("./mysql/entityObjectMysql");
+const entityObjectSqlite_1 = require("./sqlite/entityObjectSqlite");
 class EntityObjectFactory {
     static GetEntityObjectType(dbType) {
         if (dbType == "nedb") {
             return null;
         }
         else if (dbType == "mysql") {
-            let entityObjectMysql = _1.EntityObjectMysql;
+            let entityObjectMysql = entityObjectMysql_1.EntityObjectMysql;
             return entityObjectMysql;
         }
         else if (dbType == "sqlite") {
-            return null;
+            let entityObjectSqlite = entityObjectSqlite_1.EntityObjectSqlite;
+            return entityObjectSqlite;
         }
     }
 }

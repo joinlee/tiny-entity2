@@ -10,8 +10,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const dataDefine_1 = require("../../define/dataDefine");
-const entityObjectMysql_1 = require("../../mysql/entityObjectMysql");
-let DeskTable = class DeskTable extends entityObjectMysql_1.EntityObjectMysql {
+const entityObjectFactory_1 = require("../../entityObjectFactory");
+const EntityObjectType = entityObjectFactory_1.EntityObjectFactory.GetEntityObjectType('sqlite');
+let DeskTable = class DeskTable extends EntityObjectType {
 };
 __decorate([
     dataDefine_1.Define.PrimaryKey(),

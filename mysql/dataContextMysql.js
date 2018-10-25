@@ -140,37 +140,34 @@ class MysqlDataContext {
         throw new Error("Method not implemented.");
     }
     CreateDatabase() {
-        return __awaiter(this, void 0, void 0, function* () {
-            let conn = mysql.createConnection({
-                host: this.option.host,
-                user: this.option.user,
-                password: this.option.password,
-                database: "mysql"
-            });
-            let sql = "CREATE DATABASE IF NOT EXISTS `" + this.option.database + "` DEFAULT CHARACTER SET " + this.option.charset + " COLLATE utf8_unicode_ci;";
-            return new Promise((resolve, reject) => {
-                conn.connect(function (err) {
-                    if (err) {
-                        return reject(err);
-                    }
-                    else {
-                        conn.query(sql, function (err, result) {
-                            if (err) {
-                                return reject(err);
-                            }
-                            else {
-                                resolve(result);
-                                conn.end();
-                            }
-                        });
-                    }
-                });
+        let conn = mysql.createConnection({
+            host: this.option.host,
+            user: this.option.user,
+            password: this.option.password,
+            database: "mysql"
+        });
+        let sql = "CREATE DATABASE IF NOT EXISTS `" + this.option.database + "` DEFAULT CHARACTER SET " + this.option.charset + " COLLATE utf8_unicode_ci;";
+        return new Promise((resolve, reject) => {
+            conn.connect(function (err) {
+                if (err) {
+                    return reject(err);
+                }
+                else {
+                    conn.query(sql, function (err, result) {
+                        if (err) {
+                            return reject(err);
+                        }
+                        else {
+                            resolve(result);
+                            conn.end();
+                        }
+                    });
+                }
             });
         });
     }
     CreateTable(entity) {
         return __awaiter(this, void 0, void 0, function* () {
-            let tableDefine = dataDefine_1.Define.DataDefine.Current.GetMetedata(entity);
             let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
             sqls.push(this.CreateTableSql(entity));
             for (let sql of sqls) {

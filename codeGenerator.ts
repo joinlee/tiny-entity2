@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import { Define } from './define/dataDefine';
 
 // const outDir = "./test";
@@ -114,19 +113,20 @@ export class CodeGenerator {
         this.loadEntityModels((() => {
             let importList = [];
             let baseCtx = "";
-            importList.push('const config = require("' + this.options.configFilePath + '");');
+            importList.push(`const config = require("${this.options.configFilePath}");`);
             if (this.options.databaseType == "mysql") {
                 baseCtx = "MysqlDataContext";
-                importList.push('import { ' + baseCtx + ' } from "' + this.options.packageName + '"');
+                importList.push(`import { ${baseCtx} } from "${this.options.packageName}"`);
+            }
+            else if (this.options.databaseType == "sqlite") {
+                baseCtx = "SqliteDataContext";
+                importList.push(`import { ${baseCtx} } from "${this.options.packageName}"`);
             }
             this.modelList.forEach(item => {
-                importList.push('import { ' + item.className + ' } from "' + item.filePath + '"');
+                importList.push(`import { ${item.className} } from "${item.filePath}"`);
             })
 
-            let context = importList.join('\n');
             let fileName = this.upperFirstLetter(this.options.outFileName.split('.')[0]);
-            context += "\n export class " + fileName + " extends " + baseCtx + "{\n";
-
             let tempList = [];
             this.modelList.forEach(item => {
                 tempList.push({
@@ -137,19 +137,28 @@ export class CodeGenerator {
                 });
             });
 
-            context += tempList.map(x => x.feild).join('\n');
-            context += "\n constructor() { \n super(config);\n";
-            context += tempList.map(x => x.constructorMethod).join('\n');
-            context += "}\n";
-            context += tempList.map(x => x.property).join('\n');
-            context += "\n async CreateDatabase() { \n await super.CreateDatabase(); \n";
-            context += tempList.map(x => x.createDatabaseMethod).join('\n');
-            context += "\n return true; \n} ";
+            let context = `
+            ${importList.join('\n')}
+            export class ${fileName} extends ${baseCtx} {
+                ${tempList.map(x => x.feild).join('\n')}
+                constructor(){
+                    super(config);
+                    ${tempList.map(x => x.constructorMethod).join('\n')}
+                }
+                ${tempList.map(x => x.property).join('\n')}
+                async CreateDatabase(){
+                    await super.CreateDatabase();
+                    ${tempList.map(x => x.createDatabaseMethod).join('\n')}
+                    return true;
+                }
 
-            context += "\nGetEntityObjectList(){\n";
-            context += 'return [' + this.modelList.map(item => {
-                return "this." + this.lowerFirstLetter(item.className);
-            }).join(',') + '];\n}\n}';
+                GetEntityObjectList(){
+                    return [${this.modelList.map(item => {
+                    return "this." + this.lowerFirstLetter(item.className);
+                    }).join(',')}];
+                }
+            }
+            `;
 
             this.writeFile(context);
         }).bind(this));
