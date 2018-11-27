@@ -320,4 +320,6 @@ class Interpreter {
     }
 }
 exports.Interpreter = Interpreter;
+function escape(str) {
+}
 //# sourceMappingURL=interpreter.js.map

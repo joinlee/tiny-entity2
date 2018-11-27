@@ -41,6 +41,9 @@ export class Person extends EntityObjectType<Person> {
     })
     status:Boolean;
 
-    @Define.Mapping({ Mapping: "Account" })
+    @Define.Mapping({ 
+        Mapping: 'Account',
+        MappingKey: 'personId'
+    })
     accounts: Account[];
 }

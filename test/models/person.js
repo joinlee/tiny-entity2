@@ -60,7 +60,10 @@ __decorate([
     __metadata("design:type", Boolean)
 ], Person.prototype, "status", void 0);
 __decorate([
-    dataDefine_1.Define.Mapping({ Mapping: "Account" }),
+    dataDefine_1.Define.Mapping({
+        Mapping: 'Account',
+        MappingKey: 'personId'
+    }),
     __metadata("design:type", Array)
 ], Person.prototype, "accounts", void 0);
 Person = __decorate([

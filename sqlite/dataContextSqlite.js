@@ -9,9 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const sqlite = require("sqlite3");
-const mysql = require("mysql");
 const dataDefine_1 = require("../define/dataDefine");
 const interpreter_1 = require("../interpreter");
+const sqlstring = require("sqlstring-sqlite");
 let sqlite3 = sqlite.verbose();
 function log() {
     if (process.env.tinyLog == "on") {
@@ -24,7 +24,7 @@ class SqliteDataContext {
         this.querySentence = [];
         this.transStatus = [];
         this.option = option;
-        this.interpreter = new interpreter_1.Interpreter(mysql.escape);
+        this.interpreter = new interpreter_1.Interpreter(sqlstring.escape);
         this.db = new sqlite3.Database(option.database);
     }
     Create(entity, excludeFields) {
@@ -70,38 +70,21 @@ class SqliteDataContext {
             return false;
         }
         return new Promise((resolve, reject) => {
-            mysqlPool.getConnection((err, conn) => __awaiter(this, void 0, void 0, function* () {
-                if (err) {
-                    conn.destroy();
-                    reject(err);
-                }
-                conn.beginTransaction(err => {
-                    if (err) {
-                        conn.destroy();
-                        reject(err);
-                    }
-                });
+            this.db.serialize(() => __awaiter(this, void 0, void 0, function* () {
                 try {
+                    yield this.onSubmit('BEGIN;');
                     for (let sql of this.querySentence) {
-                        logger(sql);
-                        yield this.TrasnQuery(conn, sql);
+                        yield this.onSubmit(sql);
                     }
-                    conn.commit(err => {
-                        if (err)
-                            conn.rollback(() => {
-                                conn.destroy();
-                                reject(err);
-                            });
-                        this.CleanTransactionStatus();
-                        conn.release();
-                        resolve(true);
-                        logger("Transcation successful!");
-                    });
+                    yield this.onSubmit('COMMIT;');
+                    resolve();
                 }
                 catch (error) {
-                    this.CleanTransactionStatus();
-                    conn.destroy();
+                    yield this.onSubmit('ROLLBACK;');
                     reject(error);
+                }
+                finally {
+                    this.CleanTransactionStatus();
                 }
             }));
         });
@@ -225,6 +208,11 @@ class SqliteDataContext {
         delete r.interpreter;
         delete r.joinEntities;
         return r;
+    }
+    CleanTransactionStatus() {
+        this.querySentence = [];
+        this.transactionOn = null;
+        this.transStatus = [];
     }
 }
 exports.SqliteDataContext = SqliteDataContext;

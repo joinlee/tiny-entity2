@@ -33,9 +33,11 @@
   },
   "devDependencies": {
     "@types/mocha": "^2.2.39",
+    "@types/sqlstring": "^2.2.0",
     "gulp": "^3.9.1",
     "mocha": "^3.2.0",
     "mysql": "^2.14.1",
-    "sqlite3": "^4.0.3"
+    "sqlite3": "^4.0.3",
+    "sqlstring-sqlite": "^0.1.1"
   }
 }

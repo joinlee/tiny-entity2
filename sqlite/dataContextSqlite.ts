@@ -2,9 +2,9 @@ import { IDataContext } from '../dataContext';
 import { IEntityObject } from '../entityObject';
 import { IQueryParameter, IQuerySelector } from '../queryObject';
 import * as sqlite from 'sqlite3';
-import * as mysql from "mysql";
 import { Define } from '../define/dataDefine';
 import { Interpreter } from '../interpreter';
+import * as sqlstring from 'sqlstring-sqlite';
 let sqlite3 = sqlite.verbose();
 function log() {
     if (process.env.tinyLog == "on") {
@@ -22,7 +22,7 @@ export class SqliteDataContext implements IDataContext {
     private transStatus: any = [];
     constructor(option) {
         this.option = option;
-        this.interpreter = new Interpreter(mysql.escape);
+        this.interpreter = new Interpreter(sqlstring.escape);
         this.db = new sqlite3.Database(option.database);
     }
     Create<T extends IEntityObject>(entity: T): Promise<T>;
@@ -72,39 +72,23 @@ export class SqliteDataContext implements IDataContext {
             return false;
         }
         return new Promise((resolve, reject) => {
-            mysqlPool.getConnection(async (err, conn) => {
-                if (err) {
-                    conn.destroy();
-                    reject(err);
-                }
-                conn.beginTransaction(err => {
-                    if (err) {
-                        conn.destroy();
-                        reject(err);
-                    }
-                });
+            this.db.serialize(async () => {
                 try {
+                    await this.onSubmit('BEGIN;');
                     for (let sql of this.querySentence) {
-                        logger(sql);
-                        await this.TrasnQuery(conn, sql);
+                        await this.onSubmit(sql);
                     }
-                    conn.commit(err => {
-                        if (err) conn.rollback(() => {
-                            conn.destroy();
-                            reject(err);
-                        });
-                        this.CleanTransactionStatus();
-                        conn.release();
-                        resolve(true);
-                        logger("Transcation successful!");
-                    });
+                    await this.onSubmit('COMMIT;');
+                    resolve();
                 } catch (error) {
-                    this.CleanTransactionStatus();
-                    conn.destroy();
+                    await this.onSubmit('ROLLBACK;');
                     reject(error);
                 }
+                finally {
+                    this.CleanTransactionStatus();
+                }
             });
-        });
+        })
     }
     async Query(...args: any[]): Promise<any> {
         if (args.length == 1)
@@ -241,5 +225,11 @@ export class SqliteDataContext implements IDataContext {
         // delete r.ConverToEntity;
         delete r.joinEntities;
         return r;
+    }
+
+    private CleanTransactionStatus() {
+        this.querySentence = [];
+        this.transactionOn = null;
+        this.transStatus = [];
     }
 }

@@ -21,8 +21,7 @@ __decorate([
 __decorate([
     dataDefine_1.Define.Column({
         DataType: dataDefine_1.Define.DataType.VARCHAR,
-        IsIndex: true,
-        ForeignKey: { ForeignTable: 'person', ForeignColumn: 'id' }
+        IsIndex: true
     }),
     __metadata("design:type", String)
 ], Account.prototype, "personId", void 0);

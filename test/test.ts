@@ -7,7 +7,7 @@ import { Guid } from './guid';
 import * as assert from "assert";
 import { Person } from './models/person';
 
-process.env.tinyLog = "off";
+process.env.tinyLog = "on";
 
 describe("query data", () => {
     let ctx = new TestDataContext();
@@ -114,6 +114,7 @@ describe("using left join key work query multi tables ", () => {
             .Join(ctx.Account).On((m, f) => m.id == f.personId)
             .Where(x => x.id == $args1, { $args1: person.id })
             .ToList();
+        console.log(list);
         assert.equal(list.length, 1);
         assert.equal(list[0].accounts.length, 10);
 
@@ -136,6 +137,10 @@ describe("using left join key work query multi tables ", () => {
         await ctx.Delete<Person>(x => x.id != null, ctx.Person);
         await ctx.Delete<Account>(x => x.id != null, ctx.Account);
     })
-})
+});
+
+describe("transaction", () => {
+
+});
 
 

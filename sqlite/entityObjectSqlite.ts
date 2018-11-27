@@ -3,7 +3,7 @@ import { SqliteDataContext } from "./dataContextSqlite";
 import { ITakeChildQueryObject, IAssembleResultQuery, IQueryObject, IQuerySelector, IQueryParameter, IQueryEnumerable, IResultQueryObject, IJoinChildQueryObject } from "../queryObject";
 import { Interpreter } from "../interpreter";
 import { Define } from "../define/dataDefine";
-import * as mysql from "mysql";
+import * as sqlstring from 'sqlstring-sqlite';
 
 export class EntityObjectSqlite<T extends IEntityObject> extends EntityObject<T> {
     private interpreter: Interpreter;
@@ -11,7 +11,7 @@ export class EntityObjectSqlite<T extends IEntityObject> extends EntityObject<T>
     private joinEntities = [];
     constructor(ctx?: SqliteDataContext) {
         super();
-        this.interpreter = new Interpreter(mysql.escape);
+        this.interpreter = new Interpreter(sqlstring.escape);
         this.ctx = arguments[0][0];
     }
     Take(count: number): ITakeChildQueryObject<T> {
@@ -76,7 +76,8 @@ export class EntityObjectSqlite<T extends IEntityObject> extends EntityObject<T>
     Contains(func: IQueryEnumerable<T>, values: any[]): IResultQueryObject<T>;
     Contains<K extends IEntityObject>(func: IQueryEnumerable<K>, values: any[], entity: K): IResultQueryObject<T>;
     Contains(func: any, values: any, entity?: any) {
-        if (values && values.length == 0) throw new Error("values can not be null or length equals 0!");
+        if (values && values.length == 0)
+            throw new Error("values can not be null or length equals 0!");
         let tbaleName;
         if (entity) tbaleName = entity.TableName();
         else tbaleName = this.TableName();
@@ -246,7 +247,7 @@ export class EntityObjectSqlite<T extends IEntityObject> extends EntityObject<T>
     }
 
     private Disposed() {
-        this.interpreter = new Interpreter();
+        this.interpreter = new Interpreter(sqlstring.escape);
         this.joinEntities = [];
     }
 }

@@ -9,8 +9,7 @@ export class Account extends EntityObjectType<Account>{
 
     @Define.Column({
         DataType: Define.DataType.VARCHAR,
-        IsIndex: true,
-        ForeignKey: { ForeignTable: 'person', ForeignColumn: 'id' }
+        IsIndex: true
     })
     personId: string;
 

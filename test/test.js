@@ -13,7 +13,7 @@ const testDataContext_1 = require("./testDataContext");
 const guid_1 = require("./guid");
 const assert = require("assert");
 const person_1 = require("./models/person");
-process.env.tinyLog = "off";
+process.env.tinyLog = "on";
 describe("query data", () => {
     let ctx = new testDataContext_1.TestDataContext();
     let personList = [];
@@ -99,6 +99,7 @@ describe("using left join key work query multi tables ", () => {
             .Join(ctx.Account).On((m, f) => m.id == f.personId)
             .Where(x => x.id == $args1, { $args1: person.id })
             .ToList();
+        console.log(list);
         assert.equal(list.length, 1);
         assert.equal(list[0].accounts.length, 10);
         let values2 = [100 - 1 / 2, 100 + 1 / 2];
@@ -117,5 +118,7 @@ describe("using left join key work query multi tables ", () => {
         yield ctx.Delete(x => x.id != null, ctx.Person);
         yield ctx.Delete(x => x.id != null, ctx.Account);
     }));
+});
+describe("transaction", () => {
 });
 //# sourceMappingURL=test.js.map

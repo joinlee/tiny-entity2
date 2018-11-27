@@ -340,3 +340,7 @@ export class Interpreter {
         return feildList;
     }
 }
+
+function escape(str: string) {
+    
+}
