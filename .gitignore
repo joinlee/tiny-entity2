@@ -2,3 +2,4 @@
 yarn.lock
 /test/oplog.log
 /test/sqllogs.log
+tiny.db
