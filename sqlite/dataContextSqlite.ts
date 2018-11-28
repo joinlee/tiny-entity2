@@ -107,7 +107,7 @@ export class SqliteDataContext implements IDataContext {
         }
     }
     RollBack() {
-        throw new Error("Method not implemented.");
+        // throw new Error("Method not implemented.");
     }
     CreateDatabase() {
         // throw new Error("Method not implemented.");

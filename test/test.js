@@ -13,7 +13,8 @@ const testDataContext_1 = require("./testDataContext");
 const guid_1 = require("./guid");
 const assert = require("assert");
 const person_1 = require("./models/person");
-process.env.tinyLog = "on";
+const transcation_1 = require("../transcation");
+process.env.tinyLog = "off";
 describe("query data", () => {
     let ctx = new testDataContext_1.TestDataContext();
     let personList = [];
@@ -120,5 +121,55 @@ describe("using left join key work query multi tables ", () => {
     }));
 });
 describe("transaction", () => {
+    it('事务处理失败回滚', () => __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield transcation_1.Transaction(new testDataContext_1.TestDataContext(), (ctx) => __awaiter(this, void 0, void 0, function* () {
+                for (let i = 0; i < 10; i++) {
+                    let person = new person_1.Person();
+                    person.id = guid_1.Guid.GetGuid();
+                    person.name = "likecheng" + i;
+                    person.age = 30 + i;
+                    person.birth = new Date("1987-12-1").getTime();
+                    if (i == 9)
+                        throw ' transaction error';
+                    yield ctx.Create(person);
+                }
+            }));
+        }
+        catch (error) {
+            console.log(error);
+        }
+        finally {
+            let ctx = new testDataContext_1.TestDataContext();
+            let count = yield ctx.Person.Count();
+            assert.equal(count, 0);
+        }
+    }));
+    it('事务处理成功', () => __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield transcation_1.Transaction(new testDataContext_1.TestDataContext(), (ctx) => __awaiter(this, void 0, void 0, function* () {
+                for (let i = 0; i < 10; i++) {
+                    let person = new person_1.Person();
+                    person.id = guid_1.Guid.GetGuid();
+                    person.name = "likecheng" + i;
+                    person.age = 30 + i;
+                    person.birth = new Date("1987-12-1").getTime();
+                    yield ctx.Create(person);
+                }
+            }));
+        }
+        catch (error) {
+            console.log(error);
+        }
+        finally {
+            let ctx = new testDataContext_1.TestDataContext();
+            let count = yield ctx.Person.Count();
+            assert.equal(count, 10);
+        }
+    }));
+    after(() => __awaiter(this, void 0, void 0, function* () {
+        let ctx = new testDataContext_1.TestDataContext();
+        yield ctx.Delete(x => x.id != null, ctx.Person);
+    }));
 });
 //# sourceMappingURL=test.js.map

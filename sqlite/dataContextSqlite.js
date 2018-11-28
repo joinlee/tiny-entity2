@@ -108,7 +108,6 @@ class SqliteDataContext {
         });
     }
     RollBack() {
-        throw new Error("Method not implemented.");
     }
     CreateDatabase() {
     }
