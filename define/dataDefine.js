@@ -113,12 +113,13 @@ var Define;
     (function (DataType) {
         DataType[DataType["VARCHAR"] = 0] = "VARCHAR";
         DataType[DataType["TEXT"] = 1] = "TEXT";
-        DataType[DataType["Decimal"] = 2] = "Decimal";
-        DataType[DataType["INT"] = 3] = "INT";
-        DataType[DataType["BIGINT"] = 4] = "BIGINT";
-        DataType[DataType["BOOL"] = 5] = "BOOL";
-        DataType[DataType["Array"] = 6] = "Array";
-        DataType[DataType["JSON"] = 7] = "JSON";
+        DataType[DataType["LONGTEXT"] = 2] = "LONGTEXT";
+        DataType[DataType["Decimal"] = 3] = "Decimal";
+        DataType[DataType["INT"] = 4] = "INT";
+        DataType[DataType["BIGINT"] = 5] = "BIGINT";
+        DataType[DataType["BOOL"] = 6] = "BOOL";
+        DataType[DataType["Array"] = 7] = "Array";
+        DataType[DataType["JSON"] = 8] = "JSON";
     })(DataType = Define.DataType || (Define.DataType = {}));
     class DataDefine {
         constructor() {

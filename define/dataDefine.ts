@@ -123,6 +123,7 @@ export namespace Define {
     export enum DataType {
         VARCHAR,
         TEXT,
+        LONGTEXT,
         Decimal,
         INT,
         BIGINT,
