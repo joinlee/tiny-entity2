@@ -1,6 +1,6 @@
 {
   "name": "tiny-entity2",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "A simple and easy to use ORM framework, support NEDB, IndexedDB, MySQL and Sqlite and other commonly used database ",
   "main": "index.js",
   "scripts": {

@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./codeGenerator"));
 __export(require("./define/dataDefine"));
 __export(require("./mysql"));
+__export(require("./sqlite"));
 __export(require("./entityObject"));
 __export(require("./entityObjectFactory"));
 __export(require("./transcation"));
