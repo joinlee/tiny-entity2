@@ -1,12 +1,11 @@
 import { IDataContext } from '../dataContext';
 import { IEntityObject } from '../entityObject';
-import { IMySql, IPool, IPoolConfig, IConnection } from 'mysql';
-import { Interpreter } from '../interpreter';
-import * as mysql from "mysql";
-import { Define } from '../define/dataDefine';
 import { IQueryParameter, IQuerySelector } from '../queryObject';
-
-let mysqlPool: IPool;
+import * as sqlite from 'sqlite3';
+import { Define } from '../define/dataDefine';
+import { Interpreter } from '../interpreter';
+import * as sqlstring from 'sqlstring-sqlite';
+let sqlite3 = sqlite.verbose();
 function log() {
     if (process.env.tinyLog == "on") {
         console.log.apply(this, arguments);
@@ -14,18 +13,18 @@ function log() {
 }
 const logger: (...args) => void = log;
 
-export class MysqlDataContext implements IDataContext {
+export class SqliteDataContext implements IDataContext {
+    private db: sqlite.Database;
+    private option;
     private querySentence: any[] = [];
-    private transStatus: any = [];
     private transactionOn: string;
     private interpreter: Interpreter;
-    private option: IPoolConfig;
-    constructor(option: IPoolConfig) {
-        if (!mysqlPool) mysqlPool = mysql.createPool(option);
-        this.interpreter = new Interpreter(mysql.escape);
+    private transStatus: any = [];
+    constructor(option) {
         this.option = option;
+        this.interpreter = new Interpreter(sqlstring.escape);
+        this.db = new sqlite3.Database(option.database);
     }
-
     Create<T extends IEntityObject>(entity: T): Promise<T>;
     Create<T extends IEntityObject>(entity: T, excludeFields: string[]): Promise<T>;
     async Create(entity: any, excludeFields?: any) {
@@ -38,23 +37,14 @@ export class MysqlDataContext implements IDataContext {
         }
         return (<any>entity).ConverToEntity(entity);
     }
-
     Update<T extends IEntityObject>(entity: T): Promise<T>;
     Update<T extends IEntityObject>(entity: T, excludeFields: string[]): Promise<T>;
-    async Update(entity: any, excludeFields?: any) {
-        let sqlStr = this.interpreter.TransToUpdateSql(entity, excludeFields);
-        if (this.transactionOn) {
-            this.querySentence.push(sqlStr);
-        }
-        else {
-            await this.onSubmit(sqlStr);
-        }
-        return (<any>entity).ConverToEntity(entity);
+    Update(entity: any, excludeFields?: any) {
+        return null;
     }
-
-    Delete(obj: IEntityObject);
+    Delete(entity: IEntityObject);
     Delete<T extends IEntityObject>(func: IQuerySelector<T>, entity: T, params?: IQueryParameter);
-    Delete(func: any, entity?: any, params?: IQueryParameter) {
+    Delete(func: any, entity?: any, params?: any) {
         if (arguments.length > 1) {
             func = arguments[0];
             entity = arguments[1];
@@ -71,13 +61,10 @@ export class MysqlDataContext implements IDataContext {
             return this.onSubmit(sqlStr);
         }
     }
-
-
     BeginTranscation() {
         this.transactionOn = "on";
         this.transStatus.push({ key: new Date().getTime() });
     }
-
     Commit() {
         if (this.transStatus.length > 1) {
             logger("transaction is pedding!");
@@ -85,39 +72,23 @@ export class MysqlDataContext implements IDataContext {
             return false;
         }
         return new Promise((resolve, reject) => {
-            mysqlPool.getConnection(async (err, conn) => {
-                if (err) {
-                    conn.destroy();
-                    reject(err);
-                }
-                conn.beginTransaction(err => {
-                    if (err) {
-                        conn.destroy();
-                        reject(err);
-                    }
-                });
+            this.db.serialize(async () => {
                 try {
+                    await this.onSubmit('BEGIN;');
                     for (let sql of this.querySentence) {
-                        logger(sql);
-                        await this.TrasnQuery(conn, sql);
+                        await this.onSubmit(sql);
                     }
-                    conn.commit(err => {
-                        if (err) conn.rollback(() => {
-                            conn.destroy();
-                            reject(err);
-                        });
-                        this.CleanTransactionStatus();
-                        conn.release();
-                        resolve(true);
-                        logger("Transcation successful!");
-                    });
+                    await this.onSubmit('COMMIT;');
+                    resolve();
                 } catch (error) {
-                    this.CleanTransactionStatus();
-                    conn.destroy();
+                    await this.onSubmit('ROLLBACK;');
                     reject(error);
                 }
+                finally {
+                    this.CleanTransactionStatus();
+                }
             });
-        });
+        })
     }
     async Query(...args: any[]): Promise<any> {
         if (args.length == 1)
@@ -136,55 +107,45 @@ export class MysqlDataContext implements IDataContext {
         }
     }
     RollBack() {
-        this.CleanTransactionStatus();
-    }
-    DeleteDatabase() {
-        throw new Error("Method not implemented.");
+        // throw new Error("Method not implemented.");
     }
     CreateDatabase() {
-        let conn = mysql.createConnection({
-            host: this.option.host,
-            user: this.option.user,
-            password: this.option.password,
-            database: "mysql"
-        });
-
-        let sql = "CREATE DATABASE IF NOT EXISTS `" + this.option.database + "` DEFAULT CHARACTER SET " + this.option.charset + " COLLATE utf8_unicode_ci;";
-
+        // throw new Error("Method not implemented.");
+    }
+    CreateTable(entity: IEntityObject) {
         return new Promise((resolve, reject) => {
-            conn.connect(function (err) {
+            this.db.serialize(async () => {
+                let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
+                let result = this.CreateTableSql(entity);
+                sqls.push(result);
+
+                for (let sql of sqls) {
+                    await this.onSubmit(sql);
+                }
+
+                return resolve(true);
+            });
+        });
+    }
+
+    private onSubmit(sql: string) {
+        return new Promise((resolve, reject) => {
+            this.db.all(sql, (err, row) => {
+                logger(sql);
                 if (err) {
-                    return reject(err);
+                    console.log(err);
+                    reject(err);
                 }
                 else {
-                    conn.query(sql, function (err, result) {
-                        if (err) {
-                            return reject(err);
-                        }
-                        else {
-                            resolve(result);
-                            conn.end();
-                        }
-                    })
+                    resolve(row);
                 }
             })
         });
     }
-
-    async CreateTable(entity: IEntityObject) {
-        let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
-        sqls.push(this.CreateTableSql(entity));
-       
-        for (let sql of sqls) {
-            await this.onSubmit(sql);
-        }
-
-        return true;
-    }
-
     CreateTableSql(entity: IEntityObject) {
         let tableDefine = Define.DataDefine.Current.GetMetedata(entity);
         let columnSqlList = [];
+        let indexColumns = [];
 
         for (let item of tableDefine) {
             if (item.Mapping) continue;
@@ -215,27 +176,36 @@ export class MysqlDataContext implements IDataContext {
                 dataType = 'TEXT';
             }
 
-            let cs = "`" + item.ColumnName + "` " + dataType + lengthStr + " COLLATE " + (<any>this.option).collate + " " + valueStr;
+            let primaryKey = '';
             if (item.IsPrimaryKey) {
-                columnSqlList.push("PRIMARY KEY (`" + item.ColumnName + "`)");
+                primaryKey = 'PRIMARY KEY';
             }
 
-            let indexType = "USING BTREE";
+            let cs = `${item.ColumnName} ${dataType}${lengthStr} ${primaryKey} ${valueStr}`;
+
             if (item.ForeignKey && item.ForeignKey.IsPhysics) {
-                indexType = "";
-                columnSqlList.push("CONSTRAINT `fk_" + item.ColumnName + "` FOREIGN KEY (`" + item.ColumnName + "`) REFERENCES `" + item.ForeignKey.ForeignTable + "` (`" + item.ForeignKey.ForeignColumn + "`)");
+                let f = `FOREIGN KEY(${item.ColumnName}) REFERENCES ${item.ForeignKey.ForeignTable}(${item.ForeignKey.ForeignColumn})`;
+                columnSqlList.push(f);
             }
             if (item.IsIndex) {
-                columnSqlList.push("KEY `idx_" + item.ColumnName + "` (`" + item.ColumnName + "`) " + indexType);
+                indexColumns.push(`CREATE INDEX idx_${item.ColumnName} ON ${entity.TableName()}(${item.ColumnName});`);
             }
 
             columnSqlList.push(cs);
         }
 
-        return "CREATE TABLE `" + entity.TableName() + "` ( " + columnSqlList.join(",") + " ) ENGINE=InnoDB DEFAULT CHARSET=" + this.option.charset + " COLLATE=" + (<any>this.option).collate + ";";
+        let sql = `
+        CREATE TABLE ${entity.TableName()}(
+            ${columnSqlList.join(',\n')}
+        );
+
+        ${indexColumns.join('\n')}
+        `;
+
+        return sql;
     }
-    DeleteTableSql(entity: IEntityObject) {
-        return "DROP TABLE IF EXISTS `" + entity.TableName() + "`;";
+    DeleteDatabase() {
+        throw new Error("Method not implemented.");
     }
 
     private CreateOperateLog(entity: IEntityObject) {
@@ -257,39 +227,9 @@ export class MysqlDataContext implements IDataContext {
         return r;
     }
 
-    private async TrasnQuery(conn: IConnection, sql: string) {
-        return new Promise((resolve, reject) => {
-            conn.query(sql, (err, result) => {
-                if (err) {
-                    logger("TrasnQuery", err, sql);
-                    conn.rollback(() => { reject(err) });
-                }
-                else {
-                    resolve(result);
-                }
-            });
-        });
-    }
-    private onSubmit(sqlStr: string) {
-        return new Promise((resolve, reject) => {
-            mysqlPool.getConnection((err, conn) => {
-                logger(sqlStr);
-                if (err) {
-                    conn.release();
-                    reject(err);
-                }
-                conn.query(sqlStr, (err, args) => {
-                    conn.release();
-                    if (err) reject(err);
-                    else resolve(args);
-                });
-            });
-        });
-    }
     private CleanTransactionStatus() {
         this.querySentence = [];
         this.transactionOn = null;
         this.transStatus = [];
     }
-
 }

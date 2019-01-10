@@ -1,9 +1,10 @@
-import { EntityObjectMysql } from './../../mysql/entityObjectMysql';
 import { Define } from '../../define/dataDefine';
 import { Account } from './account';
+import { EntityObjectFactory } from '../../entityObjectFactory';
+const EntityObjectType = EntityObjectFactory.GetEntityObjectType('sqlite');
 
 @Define.Table({ TableName: "person" })
-export class Person extends EntityObjectMysql<Person> {
+export class Person extends EntityObjectType<Person> {
     @Define.PrimaryKey()
     id: string;
 
@@ -40,6 +41,9 @@ export class Person extends EntityObjectMysql<Person> {
     })
     status:Boolean;
 
-    @Define.Mapping({ Mapping: "Account" })
+    @Define.Mapping({ 
+        Mapping: 'Account',
+        MappingKey: 'personId'
+    })
     accounts: Account[];
 }

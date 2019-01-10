@@ -6,6 +6,7 @@ import { TestDataContext } from './testDataContext';
 import { Guid } from './guid';
 import * as assert from "assert";
 import { Person } from './models/person';
+import { Transaction } from '../transcation';
 
 process.env.tinyLog = "off";
 
@@ -114,6 +115,7 @@ describe("using left join key work query multi tables ", () => {
             .Join(ctx.Account).On((m, f) => m.id == f.personId)
             .Where(x => x.id == $args1, { $args1: person.id })
             .ToList();
+        console.log(list);
         assert.equal(list.length, 1);
         assert.equal(list[0].accounts.length, 10);
 
@@ -136,6 +138,62 @@ describe("using left join key work query multi tables ", () => {
         await ctx.Delete<Person>(x => x.id != null, ctx.Person);
         await ctx.Delete<Account>(x => x.id != null, ctx.Account);
     })
-})
+});
+
+describe("transaction", () => {
+    it('事务处理失败回滚', async () => {
+        try {
+            await Transaction(new TestDataContext(), async (ctx) => {
+                //insert 10 persons to database;
+                for (let i = 0; i < 10; i++) {
+                    let person = new Person();
+                    person.id = Guid.GetGuid();
+                    person.name = "likecheng" + i;
+                    person.age = 30 + i;
+                    person.birth = new Date("1987-12-1").getTime();
+                    if (i == 9)
+                        throw ' transaction error';
+                    await ctx.Create(person);
+                }
+            });
+        } catch (error) {
+            console.log(error);
+        }
+        finally {
+            let ctx = new TestDataContext();
+            let count = await ctx.Person.Count();
+            assert.equal(count, 0);
+        }
+    });
+    it('事务处理成功', async () => {
+        try {
+            await Transaction(new TestDataContext(), async (ctx) => {
+                //insert 10 persons to database;
+                for (let i = 0; i < 10; i++) {
+                    let person = new Person();
+                    person.id = Guid.GetGuid();
+                    person.name = "likecheng" + i;
+                    person.age = 30 + i;
+                    person.birth = new Date("1987-12-1").getTime();
+                    await ctx.Create(person);
+                }
+            });
+        } catch (error) {
+            console.log(error);
+        }
+        finally {
+            let ctx = new TestDataContext();
+            let count = await ctx.Person.Count();
+            assert.equal(count, 10);
+        }
+
+    });
+
+    after(async () => {
+        let ctx = new TestDataContext();
+        // clean person table from database;
+        await ctx.Delete<Person>(x => x.id != null, ctx.Person);
+    });
+});
 
 

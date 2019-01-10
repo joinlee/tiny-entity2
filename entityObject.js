@@ -67,6 +67,9 @@ class EntityObjectBase {
 }
 exports.EntityObjectBase = EntityObjectBase;
 class EntityObject extends EntityObjectBase {
+    constructor(args) {
+        super();
+    }
 }
 exports.EntityObject = EntityObject;
 //# sourceMappingURL=entityObject.js.map

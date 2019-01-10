@@ -10,8 +10,11 @@
             "name": "Gulp task",
             "program": "${workspaceFolder}/node_modules/gulp/bin/gulp.js",
             "args": [
-                "gop"
-            ]
+                "gdb"
+            ],
+            "env": {
+                "tinyLog": "on"
+            }
         },
         {
             "type": "node",

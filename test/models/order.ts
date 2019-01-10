@@ -1,8 +1,9 @@
-import { EntityObjectMysql } from './../../mysql/entityObjectMysql';
 import { Define } from '../../define/dataDefine';
+import { EntityObjectFactory } from '../../entityObjectFactory';
+const EntityObjectType = EntityObjectFactory.GetEntityObjectType('sqlite');
 
 @Define.Table({ TableName: "orders" })
-export class Order extends EntityObjectMysql<Order> {
+export class Order extends EntityObjectType<Order> {
     @Define.PrimaryKey()
     id: string;
 

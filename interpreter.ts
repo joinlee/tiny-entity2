@@ -282,6 +282,8 @@ export class Interpreter {
                 funcCharList[index] = funcCharList[index].replace(/\"\)/g, '%"');
                 funcCharList[index] = funcCharList[index].replace(/\(\'/g, '"%');
                 funcCharList[index] = funcCharList[index].replace(/\'\)/g, '%"');
+                funcCharList[index] = funcCharList[index].replace(/\(/g, '"%');
+                funcCharList[index] = funcCharList[index].replace(/\)/g, '%"');
             }
         }
 
@@ -337,4 +339,8 @@ export class Interpreter {
         }
         return feildList;
     }
+}
+
+function escape(str: string) {
+    
 }

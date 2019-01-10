@@ -3,7 +3,7 @@
     "host": "localhost",
     "user": "root",
     "password": "123456",
-    "database": "tiny",
+    "database": "tiny.db",
     "charset": "utf8",
     "collate": "utf8_unicode_ci"
 }

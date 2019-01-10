@@ -8,24 +8,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const interpreter_1 = require("../interpreter");
-const mysql = require("mysql");
+const sqlite = require("sqlite3");
 const dataDefine_1 = require("../define/dataDefine");
-let mysqlPool;
+const interpreter_1 = require("../interpreter");
+const sqlstring = require("sqlstring-sqlite");
+let sqlite3 = sqlite.verbose();
 function log() {
     if (process.env.tinyLog == "on") {
         console.log.apply(this, arguments);
     }
 }
 const logger = log;
-class MysqlDataContext {
+class SqliteDataContext {
     constructor(option) {
         this.querySentence = [];
         this.transStatus = [];
-        if (!mysqlPool)
-            mysqlPool = mysql.createPool(option);
-        this.interpreter = new interpreter_1.Interpreter(mysql.escape);
         this.option = option;
+        this.interpreter = new interpreter_1.Interpreter(sqlstring.escape);
+        this.db = new sqlite3.Database(option.database);
     }
     Create(entity, excludeFields) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -40,16 +40,7 @@ class MysqlDataContext {
         });
     }
     Update(entity, excludeFields) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let sqlStr = this.interpreter.TransToUpdateSql(entity, excludeFields);
-            if (this.transactionOn) {
-                this.querySentence.push(sqlStr);
-            }
-            else {
-                yield this.onSubmit(sqlStr);
-            }
-            return entity.ConverToEntity(entity);
-        });
+        return null;
     }
     Delete(func, entity, params) {
         if (arguments.length > 1) {
@@ -79,38 +70,21 @@ class MysqlDataContext {
             return false;
         }
         return new Promise((resolve, reject) => {
-            mysqlPool.getConnection((err, conn) => __awaiter(this, void 0, void 0, function* () {
-                if (err) {
-                    conn.destroy();
-                    reject(err);
-                }
-                conn.beginTransaction(err => {
-                    if (err) {
-                        conn.destroy();
-                        reject(err);
-                    }
-                });
+            this.db.serialize(() => __awaiter(this, void 0, void 0, function* () {
                 try {
+                    yield this.onSubmit('BEGIN;');
                     for (let sql of this.querySentence) {
-                        logger(sql);
-                        yield this.TrasnQuery(conn, sql);
+                        yield this.onSubmit(sql);
                     }
-                    conn.commit(err => {
-                        if (err)
-                            conn.rollback(() => {
-                                conn.destroy();
-                                reject(err);
-                            });
-                        this.CleanTransactionStatus();
-                        conn.release();
-                        resolve(true);
-                        logger("Transcation successful!");
-                    });
+                    yield this.onSubmit('COMMIT;');
+                    resolve();
                 }
                 catch (error) {
-                    this.CleanTransactionStatus();
-                    conn.destroy();
+                    yield this.onSubmit('ROLLBACK;');
                     reject(error);
+                }
+                finally {
+                    this.CleanTransactionStatus();
                 }
             }));
         });
@@ -134,51 +108,40 @@ class MysqlDataContext {
         });
     }
     RollBack() {
-        this.CleanTransactionStatus();
-    }
-    DeleteDatabase() {
-        throw new Error("Method not implemented.");
     }
     CreateDatabase() {
-        let conn = mysql.createConnection({
-            host: this.option.host,
-            user: this.option.user,
-            password: this.option.password,
-            database: "mysql"
-        });
-        let sql = "CREATE DATABASE IF NOT EXISTS `" + this.option.database + "` DEFAULT CHARACTER SET " + this.option.charset + " COLLATE utf8_unicode_ci;";
-        return new Promise((resolve, reject) => {
-            conn.connect(function (err) {
-                if (err) {
-                    return reject(err);
-                }
-                else {
-                    conn.query(sql, function (err, result) {
-                        if (err) {
-                            return reject(err);
-                        }
-                        else {
-                            resolve(result);
-                            conn.end();
-                        }
-                    });
-                }
-            });
-        });
     }
     CreateTable(entity) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
-            sqls.push(this.CreateTableSql(entity));
-            for (let sql of sqls) {
-                yield this.onSubmit(sql);
-            }
-            return true;
+        return new Promise((resolve, reject) => {
+            this.db.serialize(() => __awaiter(this, void 0, void 0, function* () {
+                let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
+                let result = this.CreateTableSql(entity);
+                sqls.push(result);
+                for (let sql of sqls) {
+                    yield this.onSubmit(sql);
+                }
+                return resolve(true);
+            }));
+        });
+    }
+    onSubmit(sql) {
+        return new Promise((resolve, reject) => {
+            this.db.all(sql, (err, row) => {
+                logger(sql);
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                }
+                else {
+                    resolve(row);
+                }
+            });
         });
     }
     CreateTableSql(entity) {
         let tableDefine = dataDefine_1.Define.DataDefine.Current.GetMetedata(entity);
         let columnSqlList = [];
+        let indexColumns = [];
         for (let item of tableDefine) {
             if (item.Mapping)
                 continue;
@@ -203,24 +166,31 @@ class MysqlDataContext {
             else if (item.DataType == dataDefine_1.Define.DataType.JSON) {
                 dataType = 'TEXT';
             }
-            let cs = "`" + item.ColumnName + "` " + dataType + lengthStr + " COLLATE " + this.option.collate + " " + valueStr;
+            let primaryKey = '';
             if (item.IsPrimaryKey) {
-                columnSqlList.push("PRIMARY KEY (`" + item.ColumnName + "`)");
+                primaryKey = 'PRIMARY KEY';
             }
-            let indexType = "USING BTREE";
+            let cs = `${item.ColumnName} ${dataType}${lengthStr} ${primaryKey} ${valueStr}`;
             if (item.ForeignKey && item.ForeignKey.IsPhysics) {
-                indexType = "";
-                columnSqlList.push("CONSTRAINT `fk_" + item.ColumnName + "` FOREIGN KEY (`" + item.ColumnName + "`) REFERENCES `" + item.ForeignKey.ForeignTable + "` (`" + item.ForeignKey.ForeignColumn + "`)");
+                let f = `FOREIGN KEY(${item.ColumnName}) REFERENCES ${item.ForeignKey.ForeignTable}(${item.ForeignKey.ForeignColumn})`;
+                columnSqlList.push(f);
             }
             if (item.IsIndex) {
-                columnSqlList.push("KEY `idx_" + item.ColumnName + "` (`" + item.ColumnName + "`) " + indexType);
+                indexColumns.push(`CREATE INDEX idx_${item.ColumnName} ON ${entity.TableName()}(${item.ColumnName});`);
             }
             columnSqlList.push(cs);
         }
-        return "CREATE TABLE `" + entity.TableName() + "` ( " + columnSqlList.join(",") + " ) ENGINE=InnoDB DEFAULT CHARSET=" + this.option.charset + " COLLATE=" + this.option.collate + ";";
+        let sql = `
+        CREATE TABLE ${entity.TableName()}(
+            ${columnSqlList.join(',\n')}
+        );
+
+        ${indexColumns.join('\n')}
+        `;
+        return sql;
     }
-    DeleteTableSql(entity) {
-        return "DROP TABLE IF EXISTS `" + entity.TableName() + "`;";
+    DeleteDatabase() {
+        throw new Error("Method not implemented.");
     }
     CreateOperateLog(entity) {
         let tableDefine = dataDefine_1.Define.DataDefine.Current.GetMetedata(entity);
@@ -238,44 +208,11 @@ class MysqlDataContext {
         delete r.joinEntities;
         return r;
     }
-    TrasnQuery(conn, sql) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
-                conn.query(sql, (err, result) => {
-                    if (err) {
-                        logger("TrasnQuery", err, sql);
-                        conn.rollback(() => { reject(err); });
-                    }
-                    else {
-                        resolve(result);
-                    }
-                });
-            });
-        });
-    }
-    onSubmit(sqlStr) {
-        return new Promise((resolve, reject) => {
-            mysqlPool.getConnection((err, conn) => {
-                logger(sqlStr);
-                if (err) {
-                    conn.release();
-                    reject(err);
-                }
-                conn.query(sqlStr, (err, args) => {
-                    conn.release();
-                    if (err)
-                        reject(err);
-                    else
-                        resolve(args);
-                });
-            });
-        });
-    }
     CleanTransactionStatus() {
         this.querySentence = [];
         this.transactionOn = null;
         this.transStatus = [];
     }
 }
-exports.MysqlDataContext = MysqlDataContext;
-//# sourceMappingURL=dataContextMysql.js.map
+exports.SqliteDataContext = SqliteDataContext;
+//# sourceMappingURL=dataContextSqlite.js.map
