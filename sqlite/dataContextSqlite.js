@@ -40,7 +40,16 @@ class SqliteDataContext {
         });
     }
     Update(entity, excludeFields) {
-        return null;
+        return __awaiter(this, void 0, void 0, function* () {
+            let sqlStr = this.interpreter.TransToUpdateSql(entity, excludeFields);
+            if (this.transactionOn) {
+                this.querySentence.push(sqlStr);
+            }
+            else {
+                yield this.onSubmit(sqlStr);
+            }
+            return entity.ConverToEntity(entity);
+        });
     }
     Delete(func, entity, params) {
         if (arguments.length > 1) {
@@ -215,4 +224,13 @@ class SqliteDataContext {
     }
 }
 exports.SqliteDataContext = SqliteDataContext;
+class SqlitePool {
+    GetConnection(option) {
+        if (!this.db) {
+            this.db = new sqlite3.Database(option.database);
+        }
+        return this.db;
+    }
+}
+SqlitePool.Current = new SqlitePool();
 //# sourceMappingURL=dataContextSqlite.js.map

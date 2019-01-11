@@ -12,6 +12,7 @@ process.env.tinyLog = "off";
 
 describe("query data", () => {
     let ctx = new TestDataContext();
+    let ctx1 = new TestDataContext();
     let personList: Person[] = [];
 
     before(async () => {
@@ -23,7 +24,13 @@ describe("query data", () => {
             person.age = 30 + i;
             person.birth = new Date("1987-12-1").getTime();
 
-            await ctx.Create(person);
+            if (i == 1) {
+                await ctx1.Create(person);
+            }
+            else {
+                await ctx.Create(person);
+            }
+
             personList.push(person);
         }
     })
@@ -166,17 +173,29 @@ describe("transaction", () => {
         }
     });
     it('事务处理成功', async () => {
+        let handlers = [];
         try {
             await Transaction(new TestDataContext(), async (ctx) => {
                 //insert 10 persons to database;
                 for (let i = 0; i < 10; i++) {
-                    let person = new Person();
-                    person.id = Guid.GetGuid();
-                    person.name = "likecheng" + i;
-                    person.age = 30 + i;
-                    person.birth = new Date("1987-12-1").getTime();
-                    await ctx.Create(person);
+                    // let person = new Person();
+                    // person.id = Guid.GetGuid();
+                    // person.name = "likecheng" + i;
+                    // person.age = 30 + i;
+                    // person.birth = new Date("1987-12-1").getTime();
+                    // await ctx.Create(person);
+
+                    handlers.push(async () => {
+                        let person = new Person();
+                        person.id = Guid.GetGuid();
+                        person.name = "likecheng" + i;
+                        person.age = 30 + i;
+                        person.birth = new Date("1987-12-1").getTime();
+                        return await ctx.Create(person);
+                    });
                 }
+
+                await Promise.all(handlers);
             });
         } catch (error) {
             console.log(error);

@@ -17,6 +17,7 @@ const transcation_1 = require("../transcation");
 process.env.tinyLog = "off";
 describe("query data", () => {
     let ctx = new testDataContext_1.TestDataContext();
+    let ctx1 = new testDataContext_1.TestDataContext();
     let personList = [];
     before(() => __awaiter(this, void 0, void 0, function* () {
         for (let i = 0; i < 10; i++) {
@@ -25,7 +26,12 @@ describe("query data", () => {
             person.name = "likecheng" + i;
             person.age = 30 + i;
             person.birth = new Date("1987-12-1").getTime();
-            yield ctx.Create(person);
+            if (i == 1) {
+                yield ctx1.Create(person);
+            }
+            else {
+                yield ctx.Create(person);
+            }
             personList.push(person);
         }
     }));
@@ -146,16 +152,20 @@ describe("transaction", () => {
         }
     }));
     it('事务处理成功', () => __awaiter(this, void 0, void 0, function* () {
+        let handlers = [];
         try {
             yield transcation_1.Transaction(new testDataContext_1.TestDataContext(), (ctx) => __awaiter(this, void 0, void 0, function* () {
                 for (let i = 0; i < 10; i++) {
-                    let person = new person_1.Person();
-                    person.id = guid_1.Guid.GetGuid();
-                    person.name = "likecheng" + i;
-                    person.age = 30 + i;
-                    person.birth = new Date("1987-12-1").getTime();
-                    yield ctx.Create(person);
+                    handlers.push(() => __awaiter(this, void 0, void 0, function* () {
+                        let person = new person_1.Person();
+                        person.id = guid_1.Guid.GetGuid();
+                        person.name = "likecheng" + i;
+                        person.age = 30 + i;
+                        person.birth = new Date("1987-12-1").getTime();
+                        return yield ctx.Create(person);
+                    }));
                 }
+                yield Promise.all(handlers);
             }));
         }
         catch (error) {

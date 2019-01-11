@@ -24,6 +24,7 @@ export class SqliteDataContext implements IDataContext {
         this.option = option;
         this.interpreter = new Interpreter(sqlstring.escape);
         this.db = new sqlite3.Database(option.database);
+        // this.db = SqlitePool.Current.GetConnection(option);
     }
     Create<T extends IEntityObject>(entity: T): Promise<T>;
     Create<T extends IEntityObject>(entity: T, excludeFields: string[]): Promise<T>;
@@ -39,8 +40,15 @@ export class SqliteDataContext implements IDataContext {
     }
     Update<T extends IEntityObject>(entity: T): Promise<T>;
     Update<T extends IEntityObject>(entity: T, excludeFields: string[]): Promise<T>;
-    Update(entity: any, excludeFields?: any) {
-        return null;
+    async Update(entity: any, excludeFields?: any) {
+        let sqlStr = this.interpreter.TransToUpdateSql(entity, excludeFields);
+        if (this.transactionOn) {
+            this.querySentence.push(sqlStr);
+        }
+        else {
+            await this.onSubmit(sqlStr);
+        }
+        return (<any>entity).ConverToEntity(entity);
     }
     Delete(entity: IEntityObject);
     Delete<T extends IEntityObject>(func: IQuerySelector<T>, entity: T, params?: IQueryParameter);
@@ -231,5 +239,17 @@ export class SqliteDataContext implements IDataContext {
         this.querySentence = [];
         this.transactionOn = null;
         this.transStatus = [];
+    }
+}
+
+class SqlitePool {
+    static Current: SqlitePool = new SqlitePool();
+    private db: sqlite.Database;
+    GetConnection(option): sqlite.Database {
+        if (!this.db) {
+            this.db = new sqlite3.Database(option.database);
+        }
+
+        return this.db;
     }
 }
