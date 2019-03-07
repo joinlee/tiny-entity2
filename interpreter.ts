@@ -151,7 +151,7 @@ export class Interpreter {
     }
     TransToSQLCount(entity) {
         let k = this.GetPrimaryKeyObj(entity);
-        this.partOfSelect = `COUNT(${k.key})`;
+        this.partOfSelect = `COUNT(\`${entity.TableName()}\`.${k.key})`;
         return this.partOfSelect;
     }
 
