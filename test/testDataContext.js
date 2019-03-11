@@ -33,15 +33,18 @@ class TestDataContext extends dataContextSqlite_1.SqliteDataContext {
     get TableParty() { return this.tableParty; }
     get Users() { return this.users; }
     CreateDatabase() {
-        const _super = name => super[name];
+        const _super = Object.create(null, {
+            CreateDatabase: { get: () => super.CreateDatabase },
+            CreateTable: { get: () => super.CreateTable }
+        });
         return __awaiter(this, void 0, void 0, function* () {
-            yield _super("CreateDatabase").call(this);
-            yield _super("CreateTable").call(this, this.account);
-            yield _super("CreateTable").call(this, this.order);
-            yield _super("CreateTable").call(this, this.person);
-            yield _super("CreateTable").call(this, this.deskTable);
-            yield _super("CreateTable").call(this, this.tableParty);
-            yield _super("CreateTable").call(this, this.users);
+            yield _super.CreateDatabase.call(this);
+            yield _super.CreateTable.call(this, this.account);
+            yield _super.CreateTable.call(this, this.order);
+            yield _super.CreateTable.call(this, this.person);
+            yield _super.CreateTable.call(this, this.deskTable);
+            yield _super.CreateTable.call(this, this.tableParty);
+            yield _super.CreateTable.call(this, this.users);
             return true;
         });
     }

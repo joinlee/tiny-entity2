@@ -154,8 +154,8 @@ export class CodeGenerator {
 
                 GetEntityObjectList(){
                     return [${this.modelList.map(item => {
-                    return "this." + this.lowerFirstLetter(item.className);
-                    }).join(',')}];
+                return "this." + this.lowerFirstLetter(item.className);
+            }).join(',')}];
                 }
             }
             `;
@@ -509,7 +509,9 @@ export class CodeGenerator {
         return new Promise((resolve, reject) => {
             fs.readFile(filePath, (err, data) => {
                 if (err) {
-                    if (err.errno == -4058) return resolve();
+                    if (err.errno == -4058 || err.errno == -2) {
+                        return resolve();
+                    }
                     return reject(err);
                 }
                 else {

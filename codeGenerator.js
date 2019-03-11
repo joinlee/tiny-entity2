@@ -407,8 +407,9 @@ class CodeGenerator {
         return new Promise((resolve, reject) => {
             fs.readFile(filePath, (err, data) => {
                 if (err) {
-                    if (err.errno == -4058)
+                    if (err.errno == -4058 || err.errno == -2) {
                         return resolve();
+                    }
                     return reject(err);
                 }
                 else {
