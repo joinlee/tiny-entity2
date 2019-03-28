@@ -463,6 +463,9 @@ export class CodeGenerator {
             lengthStr = "(" + c.DataLength + dcp + ")";
         }
 
+        if (c.DataType == Define.DataType.JSON) {
+            c.DataType = Define.DataType.TEXT;
+        }
         columnDefineList.push(Define.DataType[c.DataType] + lengthStr);
         columnDefineList.push(c.NotAllowNULL ? 'NOT NULL' : 'NULL');
 

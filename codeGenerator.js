@@ -368,6 +368,9 @@ class CodeGenerator {
             let dcp = c.DecimalPoint != undefined ? "," + c.DecimalPoint : "";
             lengthStr = "(" + c.DataLength + dcp + ")";
         }
+        if (c.DataType == dataDefine_1.Define.DataType.JSON) {
+            c.DataType = dataDefine_1.Define.DataType.TEXT;
+        }
         columnDefineList.push(dataDefine_1.Define.DataType[c.DataType] + lengthStr);
         columnDefineList.push(c.NotAllowNULL ? 'NOT NULL' : 'NULL');
         let valueStr = '';
