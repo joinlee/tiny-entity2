@@ -440,8 +440,12 @@ export class CodeGenerator {
 
                         if (diffItem.oldItem && diffItem.newItem) {
                             let columnDefineList = this.getColumnsSqlList(diffItem, 'alter');
+                            let clName = diffItem.newItem.ColumnName;
+                            if (!clName) { 
+                                clName = diffItem.oldItem.ColumnName;
+                            }
 
-                            sqls.push(`ALTER TABLE \`${logItem.diffContent.tableName}\` CHANGE \`${diffItem.oldItem.ColumnName}\` \`${diffItem.newItem.ColumnName}\` ${columnDefineList.join(' ')};`);
+                            sqls.push(`ALTER TABLE \`${logItem.diffContent.tableName}\` CHANGE \`${diffItem.oldItem.ColumnName}\` \`${clName}\` ${columnDefineList.join(' ')};`);
                         }
                     }
                 }

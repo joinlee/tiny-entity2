@@ -350,7 +350,11 @@ class CodeGenerator {
                             }
                             if (diffItem.oldItem && diffItem.newItem) {
                                 let columnDefineList = this.getColumnsSqlList(diffItem, 'alter');
-                                sqls.push(`ALTER TABLE \`${logItem.diffContent.tableName}\` CHANGE \`${diffItem.oldItem.ColumnName}\` \`${diffItem.newItem.ColumnName}\` ${columnDefineList.join(' ')};`);
+                                let clName = diffItem.newItem.ColumnName;
+                                if (!clName) {
+                                    clName = diffItem.oldItem.ColumnName;
+                                }
+                                sqls.push(`ALTER TABLE \`${logItem.diffContent.tableName}\` CHANGE \`${diffItem.oldItem.ColumnName}\` \`${clName}\` ${columnDefineList.join(' ')};`);
                             }
                         }
                     }
