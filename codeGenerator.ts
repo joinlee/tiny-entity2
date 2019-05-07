@@ -495,14 +495,14 @@ export class CodeGenerator {
         else if (action == 'alter') {
             if (c.IsIndex) {
                 let indexSql = '';
-                if (diffItem.oldItem && diffItem.oldItem.IsIndex) {
+                if (diffItem.oldItem && !diffItem.oldItem.IsIndex) {
                     indexSql = ',DROP INDEX `idx_' + diffItem.oldItem.ColumnName + '`,';
                 }
                 indexSql += 'ADD INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE';
                 columnDefineList.push(indexSql);
             }
             else {
-                if (diffItem.oldItem && diffItem.oldItem.IsIndex) {
+                if (diffItem.oldItem && !diffItem.oldItem.IsIndex) {
                     columnDefineList.push(',DROP INDEX `idx_' + diffItem.oldItem.ColumnName + '`');
                 }
             }
