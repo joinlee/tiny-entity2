@@ -256,7 +256,7 @@ export class CodeGenerator {
                     let newCtxInstance = this.getCtxInstance();
                     await Transaction(newCtxInstance, async ctx => {
                         for (let query of lastSql.sql) {
-                            await newCtxInstance.Query(query);
+                            await newCtxInstance.Query(query, true);
                         }
                     });
                     

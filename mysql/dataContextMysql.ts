@@ -119,13 +119,19 @@ export class MysqlDataContext implements IDataContext {
             });
         });
     }
+    
     async Query(...args: any[]): Promise<any> {
-        let sql = args[0];
-        if (this.transactionOn == 'on') { 
-            this.querySentence.push(sql);
-        }
-        else {
+        if (args.length == 1) {
             return this.onSubmit(args[0]);
+        }
+        else if (args.length == 2) {
+            let sql = args[0];
+            if (this.transactionOn == 'on') {
+                this.querySentence.push(sql);
+            }
+            else {
+                return this.onSubmit(args[0]);
+            }
         }
     }
     RollBack() {
@@ -167,7 +173,7 @@ export class MysqlDataContext implements IDataContext {
     async CreateTable(entity: IEntityObject) {
         let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
         sqls.push(this.CreateTableSql(entity));
-       
+
         for (let sql of sqls) {
             await this.onSubmit(sql);
         }

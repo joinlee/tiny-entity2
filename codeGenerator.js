@@ -177,7 +177,7 @@ class CodeGenerator {
                         let newCtxInstance = this.getCtxInstance();
                         yield transcation_1.Transaction(newCtxInstance, (ctx) => __awaiter(this, void 0, void 0, function* () {
                             for (let query of lastSql.sql) {
-                                yield newCtxInstance.Query(query);
+                                yield newCtxInstance.Query(query, true);
                             }
                         }));
                         lastSql.done = true;
