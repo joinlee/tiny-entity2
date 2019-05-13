@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
 const dataDefine_1 = require("./define/dataDefine");
+const transcation_1 = require("./transcation");
 class CodeGenerator {
     constructor(options) {
         this.options = options;
@@ -174,9 +175,11 @@ class CodeGenerator {
                     let lastSql = this.sqlData[this.sqlData.length - 1];
                     if (!lastSql.done) {
                         let newCtxInstance = this.getCtxInstance();
-                        for (let query of lastSql.sql) {
-                            yield newCtxInstance.Query(query, true);
-                        }
+                        yield transcation_1.Transaction(newCtxInstance, (ctx) => __awaiter(this, void 0, void 0, function* () {
+                            for (let query of lastSql.sql) {
+                                yield newCtxInstance.Query(query);
+                            }
+                        }));
                         lastSql.done = true;
                         yield this.writeFile(JSON.stringify(this.sqlData), 'sqllogs.logq');
                         yield this.writeFile(this.hisStr, 'oplog.log');

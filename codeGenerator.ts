@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { Define } from './define/dataDefine';
+import { Transaction } from './transcation';
 
 // const outDir = "./test";
 // //相对于项目路径
@@ -253,9 +254,12 @@ export class CodeGenerator {
                 let lastSql = this.sqlData[this.sqlData.length - 1];
                 if (!lastSql.done) {
                     let newCtxInstance = this.getCtxInstance();
-                    for (let query of lastSql.sql) {
-                        await newCtxInstance.Query(query, true);
-                    }
+                    await Transaction(newCtxInstance, async ctx => {
+                        for (let query of lastSql.sql) {
+                            await newCtxInstance.Query(query);
+                        }
+                    });
+                    
                     lastSql.done = true;
                     await this.writeFile(JSON.stringify(this.sqlData), 'sqllogs.logq');
                     await this.writeFile(this.hisStr, 'oplog.log');
