@@ -117,19 +117,12 @@ class MysqlDataContext {
     }
     Query(...args) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (args.length == 1)
+            let sql = args[0];
+            if (this.transactionOn == 'on') {
+                this.querySentence.push(sql);
+            }
+            else {
                 return this.onSubmit(args[0]);
-            else if (args.length == 2) {
-                let sql = args[0];
-                try {
-                    this.BeginTranscation();
-                    this.querySentence.push(sql);
-                    yield this.Commit();
-                }
-                catch (error) {
-                    yield this.RollBack();
-                    throw error;
-                }
             }
         });
     }

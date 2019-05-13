@@ -1,14 +1,11 @@
-import { DeskTable } from './models/table';
-import { TableParty } from './models/tableParty';
 import { Account } from "./models/account";
-import { Order } from './models/order';
 import { TestDataContext } from './testDataContext';
 import { Guid } from './guid';
 import * as assert from "assert";
 import { Person } from './models/person';
 import { Transaction } from '../transcation';
 
-process.env.tinyLog = "off";
+process.env.tinyLog = "on";
 
 describe("query data", () => {
     let ctx = new TestDataContext();
@@ -178,24 +175,24 @@ describe("transaction", () => {
             await Transaction(new TestDataContext(), async (ctx) => {
                 //insert 10 persons to database;
                 for (let i = 0; i < 10; i++) {
-                    // let person = new Person();
-                    // person.id = Guid.GetGuid();
-                    // person.name = "likecheng" + i;
-                    // person.age = 30 + i;
-                    // person.birth = new Date("1987-12-1").getTime();
-                    // await ctx.Create(person);
+                    let person = new Person();
+                    person.id = Guid.GetGuid();
+                    person.name = "likecheng" + i;
+                    person.age = 30 + i;
+                    person.birth = new Date("1987-12-1").getTime();
+                    await ctx.Create(person);
 
-                    handlers.push(async () => {
-                        let person = new Person();
-                        person.id = Guid.GetGuid();
-                        person.name = "likecheng" + i;
-                        person.age = 30 + i;
-                        person.birth = new Date("1987-12-1").getTime();
-                        return await ctx.Create(person);
-                    });
+                    // handlers.push(async () => {
+                    //     let person = new Person();
+                    //     person.id = Guid.GetGuid();
+                    //     person.name = "likecheng" + i;
+                    //     person.age = 30 + i;
+                    //     person.birth = new Date("1987-12-1").getTime();
+                    //     return await ctx.Create(person);
+                    // });
                 }
 
-                await Promise.all(handlers);
+                // await Promise.all(handlers);
             });
         } catch (error) {
             console.log(error);
@@ -207,6 +204,16 @@ describe("transaction", () => {
         }
 
     });
+
+    it('Query方法的事物处理', async () => { 
+        let ctx = new TestDataContext();
+        await Transaction(ctx, async ctx => { 
+            let result = await ctx.Query('select * from Person;', true);
+            console.log(result);
+        })
+        
+        assert.equal(true, true);
+    })
 
     after(async () => {
         let ctx = new TestDataContext();

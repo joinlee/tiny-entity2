@@ -14,7 +14,7 @@ const guid_1 = require("./guid");
 const assert = require("assert");
 const person_1 = require("./models/person");
 const transcation_1 = require("../transcation");
-process.env.tinyLog = "off";
+process.env.tinyLog = "on";
 describe("query data", () => {
     let ctx = new testDataContext_1.TestDataContext();
     let ctx1 = new testDataContext_1.TestDataContext();
@@ -156,16 +156,13 @@ describe("transaction", () => {
         try {
             yield transcation_1.Transaction(new testDataContext_1.TestDataContext(), (ctx) => __awaiter(this, void 0, void 0, function* () {
                 for (let i = 0; i < 10; i++) {
-                    handlers.push(() => __awaiter(this, void 0, void 0, function* () {
-                        let person = new person_1.Person();
-                        person.id = guid_1.Guid.GetGuid();
-                        person.name = "likecheng" + i;
-                        person.age = 30 + i;
-                        person.birth = new Date("1987-12-1").getTime();
-                        return yield ctx.Create(person);
-                    }));
+                    let person = new person_1.Person();
+                    person.id = guid_1.Guid.GetGuid();
+                    person.name = "likecheng" + i;
+                    person.age = 30 + i;
+                    person.birth = new Date("1987-12-1").getTime();
+                    yield ctx.Create(person);
                 }
-                yield Promise.all(handlers);
             }));
         }
         catch (error) {
@@ -176,6 +173,14 @@ describe("transaction", () => {
             let count = yield ctx.Person.Count();
             assert.equal(count, 10);
         }
+    }));
+    it('Query方法的事物处理', () => __awaiter(this, void 0, void 0, function* () {
+        let ctx = new testDataContext_1.TestDataContext();
+        yield transcation_1.Transaction(ctx, (ctx) => __awaiter(this, void 0, void 0, function* () {
+            let result = yield ctx.Query('select * from Person;', true);
+            console.log(result);
+        }));
+        assert.equal(true, true);
     }));
     after(() => __awaiter(this, void 0, void 0, function* () {
         let ctx = new testDataContext_1.TestDataContext();

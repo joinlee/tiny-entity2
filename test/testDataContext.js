@@ -9,14 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const config = require("./config");
-const dataContextSqlite_1 = require("../sqlite/dataContextSqlite");
+const dataContextMysql_1 = require("../mysql/dataContextMysql");
 const account_1 = require("./models/account");
 const order_1 = require("./models/order");
 const person_1 = require("./models/person");
 const table_1 = require("./models/table");
 const tableParty_1 = require("./models/tableParty");
 const user_1 = require("./models/user");
-class TestDataContext extends dataContextSqlite_1.SqliteDataContext {
+class TestDataContext extends dataContextMysql_1.MysqlDataContext {
     constructor() {
         super(config);
         this.account = new account_1.Account(this);

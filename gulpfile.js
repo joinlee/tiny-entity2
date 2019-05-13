@@ -9,8 +9,8 @@ let g = new m.CodeGenerator({
     ctxExportPath: '../mysql',
     configFilePath: './config',
     outFileName: 'testDataContext.ts',
-    databaseType: 'sqlite',
-    packageName: '../sqlite/dataContextSqlite'
+    databaseType: 'mysql',
+    packageName: '../mysql/dataContextMysql'
 });
 
 // const outDir = "./test";
