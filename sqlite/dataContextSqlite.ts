@@ -14,6 +14,7 @@ function log() {
 const logger: (...args) => void = log;
 
 export class SqliteDataContext implements IDataContext {
+
     private db: sqlite.Database;
     private option;
     private querySentence: any[] = [];
@@ -212,10 +213,12 @@ export class SqliteDataContext implements IDataContext {
 
         return sql;
     }
+    DeleteTableSql(entity: IEntityObject) {
+        return "DROP TABLE IF EXISTS `" + entity.TableName() + "`;";
+    }
     DeleteDatabase() {
         throw new Error("Method not implemented.");
     }
-
     private CreateOperateLog(entity: IEntityObject) {
         let tableDefine = Define.DataDefine.Current.GetMetedata(entity);
         let opLog = {

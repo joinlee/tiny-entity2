@@ -198,6 +198,9 @@ class SqliteDataContext {
         `;
         return sql;
     }
+    DeleteTableSql(entity) {
+        return "DROP TABLE IF EXISTS `" + entity.TableName() + "`;";
+    }
     DeleteDatabase() {
         throw new Error("Method not implemented.");
     }
