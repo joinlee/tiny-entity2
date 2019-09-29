@@ -429,11 +429,8 @@ class CodeGenerator {
         });
     }
     getCtxInstance() {
-        let sp = '/../../';
-        if (this.options.packageName != 'tiny-entity2')
-            sp = '/';
         let ctxName = this.options.outFileName.split(".")[0];
-        let filePath = __dirname + sp + this.options.outDir + "/" + ctxName;
+        let filePath = this.options.outDir + "/" + ctxName;
         let ctxModule = require(filePath);
         let ctxClassName = Object.keys(ctxModule)[0];
         return new ctxModule[ctxClassName];

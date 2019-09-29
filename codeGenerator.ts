@@ -259,7 +259,7 @@ export class CodeGenerator {
                             await newCtxInstance.Query(query, true);
                         }
                     });
-                    
+
                     lastSql.done = true;
                     await this.writeFile(JSON.stringify(this.sqlData), 'sqllogs.logq');
                     await this.writeFile(this.hisStr, 'oplog.log');
@@ -445,7 +445,7 @@ export class CodeGenerator {
                         if (diffItem.oldItem && diffItem.newItem) {
                             let columnDefineList = this.getColumnsSqlList(diffItem, 'alter');
                             let clName = diffItem.newItem.ColumnName;
-                            if (!clName) { 
+                            if (!clName) {
                                 clName = diffItem.oldItem.ColumnName;
                             }
 
@@ -533,10 +533,10 @@ export class CodeGenerator {
     }
 
     private getCtxInstance() {
-        let sp = '/../../';
-        if (this.options.packageName != 'tiny-entity2') sp = '/';
+        // let sp = '/../../';
+        // if (this.options.packageName != 'tiny-entity2') sp = '/';
         let ctxName = this.options.outFileName.split(".")[0];
-        let filePath = __dirname + sp + this.options.outDir + "/" + ctxName;
+        let filePath = this.options.outDir + "/" + ctxName;
         let ctxModule = require(filePath);
         let ctxClassName = Object.keys(ctxModule)[0];
         return new ctxModule[ctxClassName];
