@@ -36,7 +36,6 @@ class SqliteDataContext {
             }
             else {
                 yield this.onSubmit(sqlStr);
-                yield this.DisposeDb();
             }
             return entity.ConverToEntity(entity);
         });
@@ -49,7 +48,6 @@ class SqliteDataContext {
             }
             else {
                 yield this.onSubmit(sqlStr);
-                yield this.DisposeDb();
             }
             return entity.ConverToEntity(entity);
         });
@@ -69,9 +67,7 @@ class SqliteDataContext {
                 this.querySentence.push(sqlStr);
             }
             else {
-                let r = yield this.onSubmit(sqlStr);
-                yield this.DisposeDb();
-                return r;
+                return yield this.onSubmit(sqlStr);
             }
         });
     }
@@ -93,12 +89,10 @@ class SqliteDataContext {
                         yield this.onSubmit(sql);
                     }
                     yield this.onSubmit('COMMIT;');
-                    yield this.DisposeDb();
                     resolve();
                 }
                 catch (error) {
                     yield this.onSubmit('ROLLBACK;');
-                    yield this.DisposeDb();
                     reject(error);
                 }
                 finally {
@@ -110,9 +104,7 @@ class SqliteDataContext {
     Query(...args) {
         return __awaiter(this, void 0, void 0, function* () {
             if (args.length == 1) {
-                let r = yield this.onSubmit(args[0]);
-                yield this.DisposeDb();
-                return r;
+                return this.onSubmit(args[0]);
             }
             else if (args.length == 2) {
                 let sql = args[0];
@@ -141,7 +133,6 @@ class SqliteDataContext {
                 for (let sql of sqls) {
                     yield this.onSubmit(sql);
                 }
-                yield this.DisposeDb();
                 return resolve(true);
             }));
         });
@@ -156,19 +147,6 @@ class SqliteDataContext {
                 }
                 else {
                     resolve(row);
-                }
-            });
-        });
-    }
-    DisposeDb() {
-        return new Promise((resolve, reject) => {
-            this.db.close(err => {
-                if (err) {
-                    console.log(err);
-                    reject(err);
-                }
-                else {
-                    resolve();
                 }
             });
         });

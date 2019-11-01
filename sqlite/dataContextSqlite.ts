@@ -36,7 +36,6 @@ export class SqliteDataContext implements IDataContext {
         }
         else {
             await this.onSubmit(sqlStr);
-            await this.DisposeDb();
         }
         return (<any>entity).ConverToEntity(entity);
     }
@@ -49,7 +48,6 @@ export class SqliteDataContext implements IDataContext {
         }
         else {
             await this.onSubmit(sqlStr);
-            await this.DisposeDb();
         }
         return (<any>entity).ConverToEntity(entity);
     }
@@ -69,9 +67,7 @@ export class SqliteDataContext implements IDataContext {
             this.querySentence.push(sqlStr);
         }
         else {
-            let r = await this.onSubmit(sqlStr);
-            await this.DisposeDb();
-            return r;
+            return await this.onSubmit(sqlStr);
         }
     }
     BeginTranscation() {
@@ -92,11 +88,9 @@ export class SqliteDataContext implements IDataContext {
                         await this.onSubmit(sql);
                     }
                     await this.onSubmit('COMMIT;');
-                    await this.DisposeDb();
                     resolve();
                 } catch (error) {
                     await this.onSubmit('ROLLBACK;');
-                    await this.DisposeDb();
                     reject(error);
                 }
                 finally {
@@ -107,9 +101,7 @@ export class SqliteDataContext implements IDataContext {
     }
     async Query(...args: any[]): Promise<any> {
         if (args.length == 1) {
-            let r = await this.onSubmit(args[0]);
-            await this.DisposeDb();
-            return r;
+            return this.onSubmit(args[0]);
         }
         else if (args.length == 2) {
             let sql = args[0];
@@ -141,7 +133,6 @@ export class SqliteDataContext implements IDataContext {
                     await this.onSubmit(sql);
                 }
 
-                await this.DisposeDb();
                 return resolve(true);
             });
         });
@@ -162,19 +153,6 @@ export class SqliteDataContext implements IDataContext {
         });
     }
 
-    private DisposeDb() {
-        return new Promise((resolve, reject) => {
-            this.db.close(err => {
-                if (err) {
-                    console.log(err);
-                    reject(err);
-                }
-                else {
-                    resolve();
-                }
-            })
-        });
-    }
     CreateTableSql(entity: IEntityObject) {
         let tableDefine = Define.DataDefine.Current.GetMetedata(entity);
         let columnSqlList = [];
