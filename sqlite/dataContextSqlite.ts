@@ -5,6 +5,7 @@ import * as sqlite from 'sqlite3';
 import { Define } from '../define/dataDefine';
 import { Interpreter } from '../interpreter';
 import * as sqlstring from 'sqlstring-sqlite';
+import * as path from 'path';
 let sqlite3 = sqlite.verbose();
 function log() {
     if (process.env.tinyLog == "on") {
@@ -24,7 +25,9 @@ export class SqliteDataContext implements IDataContext {
     constructor(option) {
         this.option = option;
         this.interpreter = new Interpreter(sqlstring.escape);
-        this.db = new sqlite3.Database(option.database);
+        let USER_DIR = process.env.USER_DIR;
+        USER_DIR || (USER_DIR = "");
+        this.db = new sqlite3.Database(path.resolve(`${USER_DIR}${option.database}`));
         // this.db = SqlitePool.Current.GetConnection(option);
     }
     Create<T extends IEntityObject>(entity: T): Promise<T>;

@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import { Define } from './define/dataDefine';
 import { Transaction } from './transcation';
+import * as path from 'path';
 
 // const outDir = "./test";
 // //相对于项目路径
@@ -161,16 +162,14 @@ export class CodeGenerator {
             }
             `;
 
-            this.writeFile(context);
+            this.writeFile(context, this.options.outDir + "\\" + this.options.outFileName);
         }).bind(this));
     }
 
-    private writeFile(data, outFileName?: string) {
-        let outfileName = this.options.outFileName;
-        if (outFileName) outfileName = outFileName;
-        let filePath = this.options.outDir + "/" + outfileName;
+    private writeFile(data, fileName: string) {
+        console.log('file patha:', fileName);
         return new Promise((resolve, reject) => {
-            fs.writeFile(filePath, data, function (err) {
+            fs.writeFile(fileName, data, function (err) {
                 if (err) return reject(err);
                 else return resolve();
             })
@@ -204,7 +203,9 @@ export class CodeGenerator {
     async generateOpLogFile() {
         try {
             let newCtxInstance = this.getCtxInstance();
-            this.hisStr = await this.readFile('oplog.log');
+            let USER_DIR = process.env.USER_DIR;
+            USER_DIR || (USER_DIR = this.options.outDir + '\\');
+            this.hisStr = await this.readFile(path.resolve(`${USER_DIR}oplog.log`));
             if (this.hisStr) {
                 let hisData: any[] = JSON.parse(this.hisStr);
                 // get last one
@@ -229,7 +230,7 @@ export class CodeGenerator {
             }
 
             let sqls = await this.transLogToSqlList(this.hisStr);
-            let sqlStr: any = await this.readFile('sqllogs.logq');
+            let sqlStr: any = await this.readFile(path.resolve(`${USER_DIR}sqllogs.logq`));
 
             if (sqls.length > 0) {
                 if (sqlStr) {
@@ -250,6 +251,8 @@ export class CodeGenerator {
 
     async sqlLogToDatabase() {
         try {
+            let USER_DIR = process.env.USER_DIR;
+            USER_DIR || (USER_DIR = this.options.outDir + "\\");
             if (this.sqlData) {
                 let lastSql = this.sqlData[this.sqlData.length - 1];
                 if (!lastSql.done) {
@@ -261,8 +264,9 @@ export class CodeGenerator {
                     });
 
                     lastSql.done = true;
-                    await this.writeFile(JSON.stringify(this.sqlData), 'sqllogs.logq');
-                    await this.writeFile(this.hisStr, 'oplog.log');
+                    // sqllogs.logq
+                    await this.writeFile(JSON.stringify(this.sqlData), path.resolve(`${USER_DIR}sqllogs.logq`));
+                    await this.writeFile(this.hisStr, path.resolve(`${USER_DIR}oplog.log`));
                 }
                 this.sqlData = null;
                 this.hisStr = null;
@@ -515,8 +519,7 @@ export class CodeGenerator {
         return columnDefineList;
     }
 
-    private readFile(outFileName: string) {
-        let filePath = this.options.outDir + "/" + outFileName;
+    private readFile(filePath: string) {
         return new Promise((resolve, reject) => {
             fs.readFile(filePath, (err, data) => {
                 if (err) {

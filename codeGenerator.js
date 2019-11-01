@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
 const dataDefine_1 = require("./define/dataDefine");
 const transcation_1 = require("./transcation");
+const path = require("path");
 class CodeGenerator {
     constructor(options) {
         this.options = options;
@@ -92,16 +93,13 @@ class CodeGenerator {
                 }
             }
             `;
-            this.writeFile(context);
+            this.writeFile(context, this.options.outDir + "\\" + this.options.outFileName);
         }).bind(this));
     }
-    writeFile(data, outFileName) {
-        let outfileName = this.options.outFileName;
-        if (outFileName)
-            outfileName = outFileName;
-        let filePath = this.options.outDir + "/" + outfileName;
+    writeFile(data, fileName) {
+        console.log('file patha:', fileName);
         return new Promise((resolve, reject) => {
-            fs.writeFile(filePath, data, function (err) {
+            fs.writeFile(fileName, data, function (err) {
                 if (err)
                     return reject(err);
                 else
@@ -129,7 +127,9 @@ class CodeGenerator {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 let newCtxInstance = this.getCtxInstance();
-                this.hisStr = yield this.readFile('oplog.log');
+                let USER_DIR = process.env.USER_DIR;
+                USER_DIR || (USER_DIR = this.options.outDir + '\\');
+                this.hisStr = yield this.readFile(path.resolve(`${USER_DIR}oplog.log`));
                 if (this.hisStr) {
                     let hisData = JSON.parse(this.hisStr);
                     let lastLogItem = hisData[hisData.length - 1];
@@ -150,7 +150,7 @@ class CodeGenerator {
                     this.hisStr = JSON.stringify([{ version: Date.now(), logs: oplogList }]);
                 }
                 let sqls = yield this.transLogToSqlList(this.hisStr);
-                let sqlStr = yield this.readFile('sqllogs.logq');
+                let sqlStr = yield this.readFile(path.resolve(`${USER_DIR}sqllogs.logq`));
                 if (sqls.length > 0) {
                     if (sqlStr) {
                         this.sqlData = JSON.parse(sqlStr);
@@ -172,6 +172,8 @@ class CodeGenerator {
     sqlLogToDatabase() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                let USER_DIR = process.env.USER_DIR;
+                USER_DIR || (USER_DIR = this.options.outDir + "\\");
                 if (this.sqlData) {
                     let lastSql = this.sqlData[this.sqlData.length - 1];
                     if (!lastSql.done) {
@@ -182,8 +184,8 @@ class CodeGenerator {
                             }
                         }));
                         lastSql.done = true;
-                        yield this.writeFile(JSON.stringify(this.sqlData), 'sqllogs.logq');
-                        yield this.writeFile(this.hisStr, 'oplog.log');
+                        yield this.writeFile(JSON.stringify(this.sqlData), path.resolve(`${USER_DIR}sqllogs.logq`));
+                        yield this.writeFile(this.hisStr, path.resolve(`${USER_DIR}oplog.log`));
                     }
                     this.sqlData = null;
                     this.hisStr = null;
@@ -413,8 +415,7 @@ class CodeGenerator {
         }
         return columnDefineList;
     }
-    readFile(outFileName) {
-        let filePath = this.options.outDir + "/" + outFileName;
+    readFile(filePath) {
         return new Promise((resolve, reject) => {
             fs.readFile(filePath, (err, data) => {
                 if (err) {

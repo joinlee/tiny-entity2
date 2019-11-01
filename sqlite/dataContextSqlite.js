@@ -13,6 +13,7 @@ const sqlite = require("sqlite3");
 const dataDefine_1 = require("../define/dataDefine");
 const interpreter_1 = require("../interpreter");
 const sqlstring = require("sqlstring-sqlite");
+const path = require("path");
 let sqlite3 = sqlite.verbose();
 function log() {
     if (process.env.tinyLog == "on") {
@@ -26,7 +27,9 @@ class SqliteDataContext {
         this.transStatus = [];
         this.option = option;
         this.interpreter = new interpreter_1.Interpreter(sqlstring.escape);
-        this.db = new sqlite3.Database(option.database);
+        let USER_DIR = process.env.USER_DIR;
+        USER_DIR || (USER_DIR = "");
+        this.db = new sqlite3.Database(path.resolve(`${USER_DIR}${option.database}`));
     }
     Create(entity, excludeFields) {
         return __awaiter(this, void 0, void 0, function* () {
