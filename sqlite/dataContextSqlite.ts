@@ -36,6 +36,7 @@ export class SqliteDataContext implements IDataContext {
         }
         else {
             await this.onSubmit(sqlStr);
+            await this.DisposeDb();
         }
         return (<any>entity).ConverToEntity(entity);
     }
@@ -48,12 +49,13 @@ export class SqliteDataContext implements IDataContext {
         }
         else {
             await this.onSubmit(sqlStr);
+            await this.DisposeDb();
         }
         return (<any>entity).ConverToEntity(entity);
     }
     Delete(entity: IEntityObject);
     Delete<T extends IEntityObject>(func: IQuerySelector<T>, entity: T, params?: IQueryParameter);
-    Delete(func: any, entity?: any, params?: any) {
+    async Delete(func: any, entity?: any, params?: any) {
         if (arguments.length > 1) {
             func = arguments[0];
             entity = arguments[1];
@@ -67,7 +69,9 @@ export class SqliteDataContext implements IDataContext {
             this.querySentence.push(sqlStr);
         }
         else {
-            return this.onSubmit(sqlStr);
+            let r = await this.onSubmit(sqlStr);
+            await this.DisposeDb();
+            return r;
         }
     }
     BeginTranscation() {
@@ -88,9 +92,11 @@ export class SqliteDataContext implements IDataContext {
                         await this.onSubmit(sql);
                     }
                     await this.onSubmit('COMMIT;');
+                    await this.DisposeDb();
                     resolve();
                 } catch (error) {
                     await this.onSubmit('ROLLBACK;');
+                    await this.DisposeDb();
                     reject(error);
                 }
                 finally {
@@ -100,8 +106,11 @@ export class SqliteDataContext implements IDataContext {
         })
     }
     async Query(...args: any[]): Promise<any> {
-        if (args.length == 1)
-            return this.onSubmit(args[0]);
+        if (args.length == 1) {
+            let r = await this.onSubmit(args[0]);
+            await this.DisposeDb();
+            return r;
+        }
         else if (args.length == 2) {
             let sql = args[0];
             try {
@@ -132,6 +141,7 @@ export class SqliteDataContext implements IDataContext {
                     await this.onSubmit(sql);
                 }
 
+                await this.DisposeDb();
                 return resolve(true);
             });
         });
@@ -147,6 +157,20 @@ export class SqliteDataContext implements IDataContext {
                 }
                 else {
                     resolve(row);
+                }
+            });
+        });
+    }
+
+    private DisposeDb() {
+        return new Promise((resolve, reject) => {
+            this.db.close(err => {
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                }
+                else {
+                    resolve();
                 }
             })
         });

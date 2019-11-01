@@ -1,17 +1,18 @@
 {
   "compilerOptions": {
-      "target": "es6",
-      "module": "commonjs",
-      "moduleResolution": "node",
-      "sourceMap": true,
-      "emitDecoratorMetadata": true,
-      "experimentalDecorators": true,
-      "removeComments": true,
-      "noImplicitAny": false,
-      "strictNullChecks": false
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "removeComments": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false
   },
   "exclude": [
-      "node_modules",
-      "publish"
+    "node_modules",
+    "publish",
+    "build"
   ]
 }

@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -35,6 +36,7 @@ class SqliteDataContext {
             }
             else {
                 yield this.onSubmit(sqlStr);
+                yield this.DisposeDb();
             }
             return entity.ConverToEntity(entity);
         });
@@ -47,26 +49,31 @@ class SqliteDataContext {
             }
             else {
                 yield this.onSubmit(sqlStr);
+                yield this.DisposeDb();
             }
             return entity.ConverToEntity(entity);
         });
     }
     Delete(func, entity, params) {
-        if (arguments.length > 1) {
-            func = arguments[0];
-            entity = arguments[1];
-        }
-        else {
-            func = null;
-            entity = arguments[0];
-        }
-        let sqlStr = this.interpreter.TransToDeleteSql(func, entity, params);
-        if (this.transactionOn) {
-            this.querySentence.push(sqlStr);
-        }
-        else {
-            return this.onSubmit(sqlStr);
-        }
+        return __awaiter(this, arguments, void 0, function* () {
+            if (arguments.length > 1) {
+                func = arguments[0];
+                entity = arguments[1];
+            }
+            else {
+                func = null;
+                entity = arguments[0];
+            }
+            let sqlStr = this.interpreter.TransToDeleteSql(func, entity, params);
+            if (this.transactionOn) {
+                this.querySentence.push(sqlStr);
+            }
+            else {
+                let r = yield this.onSubmit(sqlStr);
+                yield this.DisposeDb();
+                return r;
+            }
+        });
     }
     BeginTranscation() {
         this.transactionOn = "on";
@@ -86,10 +93,12 @@ class SqliteDataContext {
                         yield this.onSubmit(sql);
                     }
                     yield this.onSubmit('COMMIT;');
+                    yield this.DisposeDb();
                     resolve();
                 }
                 catch (error) {
                     yield this.onSubmit('ROLLBACK;');
+                    yield this.DisposeDb();
                     reject(error);
                 }
                 finally {
@@ -100,8 +109,11 @@ class SqliteDataContext {
     }
     Query(...args) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (args.length == 1)
-                return this.onSubmit(args[0]);
+            if (args.length == 1) {
+                let r = yield this.onSubmit(args[0]);
+                yield this.DisposeDb();
+                return r;
+            }
             else if (args.length == 2) {
                 let sql = args[0];
                 try {
@@ -129,6 +141,7 @@ class SqliteDataContext {
                 for (let sql of sqls) {
                     yield this.onSubmit(sql);
                 }
+                yield this.DisposeDb();
                 return resolve(true);
             }));
         });
@@ -143,6 +156,19 @@ class SqliteDataContext {
                 }
                 else {
                     resolve(row);
+                }
+            });
+        });
+    }
+    DisposeDb() {
+        return new Promise((resolve, reject) => {
+            this.db.close(err => {
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                }
+                else {
+                    resolve();
                 }
             });
         });
