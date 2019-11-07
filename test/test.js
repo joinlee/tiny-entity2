@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -19,7 +20,7 @@ describe("query data", () => {
     let ctx = new testDataContext_1.TestDataContext();
     let ctx1 = new testDataContext_1.TestDataContext();
     let personList = [];
-    before(() => __awaiter(this, void 0, void 0, function* () {
+    before(() => __awaiter(void 0, void 0, void 0, function* () {
         for (let i = 0; i < 10; i++) {
             let person = new person_1.Person();
             person.id = guid_1.Guid.GetGuid();
@@ -35,40 +36,40 @@ describe("query data", () => {
             personList.push(person);
         }
     }));
-    it("no query criteria", () => __awaiter(this, void 0, void 0, function* () {
+    it("no query criteria", () => __awaiter(void 0, void 0, void 0, function* () {
         let list = yield ctx.Person.ToList();
         assert.equal(list.length, 10);
     }));
-    it("inculde query criteria", () => __awaiter(this, void 0, void 0, function* () {
+    it("inculde query criteria", () => __awaiter(void 0, void 0, void 0, function* () {
         let age = 35;
         let list = yield ctx.Person.Where(x => x.age > age, { age }).ToList();
         assert.equal(list.length, personList.filter(x => x.age > age).length);
         assert.equal(list.filter(x => x.age < 35), 0);
     }));
-    it("fuzzy query ", () => __awaiter(this, void 0, void 0, function* () {
+    it("fuzzy query ", () => __awaiter(void 0, void 0, void 0, function* () {
         let params = {
             name: "likecheng"
         };
         let list = yield ctx.Person.Where(x => x.name.indexOf($args1), { $args1: params.name }).ToList();
         assert.equal(list.length, 10);
     }));
-    it("using Select()", () => __awaiter(this, void 0, void 0, function* () {
+    it("using Select()", () => __awaiter(void 0, void 0, void 0, function* () {
         let age = 35;
         let list = yield ctx.Person.Where(x => x.age > age, { age }).Select(x => x.name).ToList();
         assert.equal(list.filter(x => x.name != null).length, 4);
         assert.equal(list.filter(x => x.id != null).length, 0);
     }));
-    it("using Contains() ", () => __awaiter(this, void 0, void 0, function* () {
+    it("using Contains() ", () => __awaiter(void 0, void 0, void 0, function* () {
         let values = [30, 31, 32, 20];
         let list = yield ctx.Person.Contains(x => x.age, values).ToList();
         assert.equal(list.length, 3);
     }));
-    it("no data", () => __awaiter(this, void 0, void 0, function* () {
+    it("no data", () => __awaiter(void 0, void 0, void 0, function* () {
         yield ctx.Delete(x => x.id != null, ctx.Person);
         let result = yield ctx.Person.ToList();
         assert.equal(result.length, 0);
     }));
-    after(() => __awaiter(this, void 0, void 0, function* () {
+    after(() => __awaiter(void 0, void 0, void 0, function* () {
         yield ctx.Delete(x => x.id != null, ctx.Person);
     }));
 });
@@ -83,7 +84,7 @@ describe("using left join key work query multi tables ", () => {
     person2.name = "dong fang bu bai";
     person2.age = 20;
     let accountRecord = [];
-    before(() => __awaiter(this, void 0, void 0, function* () {
+    before(() => __awaiter(void 0, void 0, void 0, function* () {
         yield ctx.Create(person);
         yield ctx.Create(person2);
         for (let i = 0; i < 10; i++) {
@@ -101,7 +102,7 @@ describe("using left join key work query multi tables ", () => {
             accountRecord.push(ac);
         }
     }));
-    it("left join one table,account and ToList()", () => __awaiter(this, void 0, void 0, function* () {
+    it("left join one table,account and ToList()", () => __awaiter(void 0, void 0, void 0, function* () {
         let list = yield ctx.Person
             .Join(ctx.Account).On((m, f) => m.id == f.personId)
             .Where(x => x.id == $args1, { $args1: person.id })
@@ -117,19 +118,19 @@ describe("using left join key work query multi tables ", () => {
             .ToList();
         assert.equal(list2.length, 2);
     }));
-    it("using Select() ", () => __awaiter(this, void 0, void 0, function* () {
+    it("using Select() ", () => __awaiter(void 0, void 0, void 0, function* () {
         let list = yield ctx.Person.Join(ctx.Account).On((m, f) => m.id == f.personId).Select(x => x.id).ToList();
         assert.equal(list.length, 20);
     }));
-    after(() => __awaiter(this, void 0, void 0, function* () {
+    after(() => __awaiter(void 0, void 0, void 0, function* () {
         yield ctx.Delete(x => x.id != null, ctx.Person);
         yield ctx.Delete(x => x.id != null, ctx.Account);
     }));
 });
 describe("transaction", () => {
-    it('事务处理失败回滚', () => __awaiter(this, void 0, void 0, function* () {
+    it('事务处理失败回滚', () => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            yield transcation_1.Transaction(new testDataContext_1.TestDataContext(), (ctx) => __awaiter(this, void 0, void 0, function* () {
+            yield transcation_1.Transaction(new testDataContext_1.TestDataContext(), (ctx) => __awaiter(void 0, void 0, void 0, function* () {
                 for (let i = 0; i < 10; i++) {
                     let person = new person_1.Person();
                     person.id = guid_1.Guid.GetGuid();
@@ -151,10 +152,10 @@ describe("transaction", () => {
             assert.equal(count, 0);
         }
     }));
-    it('事务处理成功', () => __awaiter(this, void 0, void 0, function* () {
+    it('事务处理成功', () => __awaiter(void 0, void 0, void 0, function* () {
         let handlers = [];
         try {
-            yield transcation_1.Transaction(new testDataContext_1.TestDataContext(), (ctx) => __awaiter(this, void 0, void 0, function* () {
+            yield transcation_1.Transaction(new testDataContext_1.TestDataContext(), (ctx) => __awaiter(void 0, void 0, void 0, function* () {
                 for (let i = 0; i < 10; i++) {
                     let person = new person_1.Person();
                     person.id = guid_1.Guid.GetGuid();
@@ -174,15 +175,15 @@ describe("transaction", () => {
             assert.equal(count, 10);
         }
     }));
-    it('Query方法的事物处理', () => __awaiter(this, void 0, void 0, function* () {
+    it('Query方法的事物处理', () => __awaiter(void 0, void 0, void 0, function* () {
         let ctx = new testDataContext_1.TestDataContext();
-        yield transcation_1.Transaction(ctx, (ctx) => __awaiter(this, void 0, void 0, function* () {
+        yield transcation_1.Transaction(ctx, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
             let result = yield ctx.Query('select * from Person;', true);
             console.log(result);
         }));
         assert.equal(true, true);
     }));
-    after(() => __awaiter(this, void 0, void 0, function* () {
+    after(() => __awaiter(void 0, void 0, void 0, function* () {
         let ctx = new testDataContext_1.TestDataContext();
         yield ctx.Delete(x => x.id != null, ctx.Person);
     }));

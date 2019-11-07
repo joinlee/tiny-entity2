@@ -204,7 +204,7 @@ export class CodeGenerator {
         try {
             let newCtxInstance = this.getCtxInstance();
             let USER_DIR = process.env.USER_DIR;
-            USER_DIR || (USER_DIR = this.options.outDir + '\\');
+            USER_DIR || (USER_DIR = this.options.outDir + '/');
             this.hisStr = await this.readFile(path.resolve(`${USER_DIR}oplog.log`));
             if (this.hisStr) {
                 let hisData: any[] = JSON.parse(this.hisStr);
@@ -252,7 +252,7 @@ export class CodeGenerator {
     async sqlLogToDatabase() {
         try {
             let USER_DIR = process.env.USER_DIR;
-            USER_DIR || (USER_DIR = this.options.outDir + "\\");
+            USER_DIR || (USER_DIR = this.options.outDir + "/");
             if (this.sqlData) {
                 let lastSql = this.sqlData[this.sqlData.length - 1];
                 if (!lastSql.done) {
