@@ -162,7 +162,7 @@ export class CodeGenerator {
             }
             `;
 
-            this.writeFile(context, this.options.outDir + "\\" + this.options.outFileName);
+            this.writeFile(context, this.options.outDir + "/" + this.options.outFileName);
         }).bind(this));
     }
 
