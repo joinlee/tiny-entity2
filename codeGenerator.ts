@@ -258,9 +258,7 @@ export class CodeGenerator {
                 if (!lastSql.done) {
                     let newCtxInstance = this.getCtxInstance();
                     await Transaction(newCtxInstance, async ctx => {
-                        for (let query of lastSql.sql) {
-                            await newCtxInstance.Query(query, true);
-                        }
+                        await newCtxInstance.Query(lastSql.sql, true);
                     });
 
                     lastSql.done = true;
@@ -287,6 +285,7 @@ export class CodeGenerator {
                 let tempColumn: Define.PropertyDefineOption = {};
                 tempColumn.DataType = item.DataType;
                 tempColumn.DataLength = item.DataLength;
+                tempColumn.ColumnName = item.ColumnName;
                 if (oldItem.DecimalPoint != item.DecimalPoint) {
                     isDiff = true;
                     tempColumn.DecimalPoint = item.DecimalPoint;
@@ -363,7 +362,6 @@ export class CodeGenerator {
 
         for (let cItem of currentTableList) {
             let lastHisItem;
-            let has = false;
             let cMeta = newCtxInstance.CreateOperateLog(cItem);
             for (let hisItem of hisData) {
                 if (hisItem.content.tableName == cMeta.tableName) {
@@ -448,12 +446,8 @@ export class CodeGenerator {
 
                         if (diffItem.oldItem && diffItem.newItem) {
                             let columnDefineList = this.getColumnsSqlList(diffItem, 'alter');
-                            let clName = diffItem.newItem.ColumnName;
-                            if (!clName) {
-                                clName = diffItem.oldItem.ColumnName;
-                            }
 
-                            sqls.push(`ALTER TABLE \`${logItem.diffContent.tableName}\` CHANGE \`${diffItem.oldItem.ColumnName}\` \`${clName}\` ${columnDefineList.join(' ')};`);
+                            sqls.push(`ALTER TABLE \`${logItem.diffContent.tableName}\` CHANGE \`${diffItem.oldItem.ColumnName}\` \`${diffItem.newItem.ColumnName}\` ${columnDefineList.join(' ')};`);
                         }
                     }
                 }
@@ -503,10 +497,10 @@ export class CodeGenerator {
         else if (action == 'alter') {
             if (c.IsIndex) {
                 let indexSql = '';
-                if (diffItem.oldItem && !diffItem.oldItem.IsIndex) {
-                    indexSql = ',DROP INDEX `idx_' + diffItem.oldItem.ColumnName + '`,';
+                if (diffItem.oldItem && diffItem.oldItem.IsIndex) {
+                    indexSql = ',DROP INDEX `idx_' + diffItem.oldItem.ColumnName;
                 }
-                indexSql += 'ADD INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE';
+                indexSql += ', ADD INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE';
                 columnDefineList.push(indexSql);
             }
             else {

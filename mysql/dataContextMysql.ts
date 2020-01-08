@@ -125,9 +125,11 @@ export class MysqlDataContext implements IDataContext {
             return this.onSubmit(args[0]);
         }
         else if (args.length == 2) {
-            let sql = args[0];
+            let sqls = args[0];
             if (this.transactionOn == 'on') {
-                this.querySentence.push(sql);
+                for (let sql of sqls) {
+                    this.querySentence.push(sql);
+                }
             }
             else {
                 return this.onSubmit(args[0]);
