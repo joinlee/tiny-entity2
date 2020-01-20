@@ -107,15 +107,14 @@ export class SqliteDataContext implements IDataContext {
             return this.onSubmit(args[0]);
         }
         else if (args.length == 2) {
-            let sql = args[0];
-            try {
-                this.BeginTranscation();
-                this.querySentence.push(sql);
-                await this.Commit();
+            let sqls = args[0];
+            if (this.transactionOn == 'on') {
+                for (let sql of sqls) {
+                    this.querySentence.push(sql);
+                }
             }
-            catch (error) {
-                await this.RollBack();
-                throw error;
+            else {
+                return this.onSubmit(args[0]);
             }
         }
     }
