@@ -20,33 +20,45 @@ class CodeGenerator {
         if (!options.packageName)
             this.options.packageName = 'tiny-entity2';
     }
-    loadEntityModels(callback) {
-        let that = this;
-        fs.readdir(this.options.modelLoadPath, function (err, files) {
-            if (err) {
-                console.log(err);
-                return;
+    loadEntityModels() {
+        return __awaiter(this, void 0, void 0, function* () {
+            for (let i = 0; i < this.options.modelLoadPath.length; i++) {
+                let modelPath = this.options.modelLoadPath[i];
+                let exportPath = this.options.modelExportPath[i];
+                yield this.readModelFile(modelPath, exportPath);
             }
-            for (let file of files) {
-                if (file.indexOf(".map") > -1)
-                    continue;
-                if (file.indexOf(".ts") > -1)
-                    continue;
-                if (file.indexOf("index") > -1)
-                    continue;
-                let model = require(that.options.modelLoadPath + "/" + file);
-                let keys = Object.keys(model);
-                let modelClassName = keys[0];
-                that.modelList.push({
-                    className: modelClassName,
-                    filePath: that.options.modelExportPath + "/" + file.split(".")[0]
-                });
-            }
-            callback();
+        });
+    }
+    readModelFile(modelPath, exportPath) {
+        return new Promise((resolve, reject) => {
+            fs.readdir(modelPath, (err, files) => {
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                    return;
+                }
+                for (let file of files) {
+                    if (file.indexOf(".map") > -1)
+                        continue;
+                    if (file.indexOf(".ts") > -1)
+                        continue;
+                    if (file.indexOf("index") > -1)
+                        continue;
+                    let model = require(modelPath + "/" + file);
+                    let keys = Object.keys(model);
+                    let modelClassName = keys[0];
+                    this.modelList.push({
+                        className: modelClassName,
+                        filePath: exportPath + "/" + file.split(".")[0]
+                    });
+                }
+                resolve();
+            });
         });
     }
     generateCtxFile() {
-        this.loadEntityModels((() => {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.loadEntityModels();
             let importList = [];
             let baseCtx = "";
             importList.push(`const config = require("${this.options.configFilePath}");`);
@@ -94,7 +106,7 @@ class CodeGenerator {
             }
             `;
             this.writeFile(context, this.options.outDir + "/" + this.options.outFileName);
-        }).bind(this));
+        });
     }
     writeFile(data, fileName) {
         console.log('file patha:', fileName);

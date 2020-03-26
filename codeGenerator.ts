@@ -30,14 +30,14 @@ export interface ICodeGeneratorOptions {
      * @type {string}
      * @memberof ICodeGeneratorOptions
      */
-    modelLoadPath: string;
+    modelLoadPath: string[];
     /**
      * 相对于outDir路径
      * 
      * @type {string}
      * @memberof ICodeGeneratorOptions
      */
-    modelExportPath: string;
+    modelExportPath: string[];
     /**
      * 相对于outDir路径
      * 
@@ -82,27 +82,36 @@ export class CodeGenerator {
     constructor(private options: ICodeGeneratorOptions) {
         if (!options.packageName) this.options.packageName = 'tiny-entity2';
     }
-    private loadEntityModels(callback) {
-        let that = this;
-        fs.readdir(this.options.modelLoadPath, function (err, files) {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            for (let file of files) {
-                if (file.indexOf(".map") > -1) continue;
-                if (file.indexOf(".ts") > -1) continue;
-                if (file.indexOf("index") > -1) continue;
-                let model = require(that.options.modelLoadPath + "/" + file);
-                let keys = Object.keys(model);
-                let modelClassName = keys[0];
-                that.modelList.push({
-                    className: modelClassName,
-                    filePath: that.options.modelExportPath + "/" + file.split(".")[0]
-                });
-            }
+    private async loadEntityModels() {
+        for (let i = 0; i < this.options.modelLoadPath.length; i++){
+            let modelPath = this.options.modelLoadPath[i];
+            let exportPath = this.options.modelExportPath[i];
+            await this.readModelFile(modelPath, exportPath);
+        }
+    }
 
-            callback();
+    private readModelFile(modelPath, exportPath) {
+        return new Promise((resolve, reject) => {
+            fs.readdir(modelPath, (err, files) => {
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                    return;
+                }
+                for (let file of files) {
+                    if (file.indexOf(".map") > -1) continue;
+                    if (file.indexOf(".ts") > -1) continue;
+                    if (file.indexOf("index") > -1) continue;
+                    let model = require(modelPath + "/" + file);
+                    let keys = Object.keys(model);
+                    let modelClassName = keys[0];
+                    this.modelList.push({
+                        className: modelClassName,
+                        filePath: exportPath + "/" + file.split(".")[0]
+                    });
+                }
+                resolve();
+            });
         });
     }
     /**
@@ -111,35 +120,35 @@ export class CodeGenerator {
      * @returns 
      * @memberof CodeGenerator
      */
-    generateCtxFile() {
-        this.loadEntityModels((() => {
-            let importList = [];
-            let baseCtx = "";
-            importList.push(`const config = require("${this.options.configFilePath}");`);
-            if (this.options.databaseType == "mysql") {
-                baseCtx = "MysqlDataContext";
-                importList.push(`import { ${baseCtx} } from "${this.options.packageName}"`);
-            }
-            else if (this.options.databaseType == "sqlite") {
-                baseCtx = "SqliteDataContext";
-                importList.push(`import { ${baseCtx} } from "${this.options.packageName}"`);
-            }
-            this.modelList.forEach(item => {
-                importList.push(`import { ${item.className} } from "${item.filePath}"`);
-            })
+    async generateCtxFile() {
+        await this.loadEntityModels();
+        let importList = [];
+        let baseCtx = "";
+        importList.push(`const config = require("${this.options.configFilePath}");`);
+        if (this.options.databaseType == "mysql") {
+            baseCtx = "MysqlDataContext";
+            importList.push(`import { ${baseCtx} } from "${this.options.packageName}"`);
+        }
+        else if (this.options.databaseType == "sqlite") {
+            baseCtx = "SqliteDataContext";
+            importList.push(`import { ${baseCtx} } from "${this.options.packageName}"`);
+        }
+        this.modelList.forEach(item => {
+            importList.push(`import { ${item.className} } from "${item.filePath}"`);
+        })
 
-            let fileName = this.upperFirstLetter(this.options.outFileName.split('.')[0]);
-            let tempList = [];
-            this.modelList.forEach(item => {
-                tempList.push({
-                    feild: "private " + this.lowerFirstLetter(item.className) + ": " + item.className + ";",
-                    property: "get " + item.className + "() { return this." + this.lowerFirstLetter(item.className) + "; }",
-                    constructorMethod: "this." + this.lowerFirstLetter(item.className) + " = new " + item.className + "(this);",
-                    createDatabaseMethod: "await super.CreateTable(this." + this.lowerFirstLetter(item.className) + ");"
-                });
+        let fileName = this.upperFirstLetter(this.options.outFileName.split('.')[0]);
+        let tempList = [];
+        this.modelList.forEach(item => {
+            tempList.push({
+                feild: "private " + this.lowerFirstLetter(item.className) + ": " + item.className + ";",
+                property: "get " + item.className + "() { return this." + this.lowerFirstLetter(item.className) + "; }",
+                constructorMethod: "this." + this.lowerFirstLetter(item.className) + " = new " + item.className + "(this);",
+                createDatabaseMethod: "await super.CreateTable(this." + this.lowerFirstLetter(item.className) + ");"
             });
+        });
 
-            let context = `
+        let context = `
             ${importList.join('\n')}
             export class ${fileName} extends ${baseCtx} {
                 ${tempList.map(x => x.feild).join('\n')}
@@ -156,14 +165,13 @@ export class CodeGenerator {
 
                 GetEntityObjectList(){
                     return [${this.modelList.map(item => {
-                return "this." + this.lowerFirstLetter(item.className);
-            }).join(',')}];
+            return "this." + this.lowerFirstLetter(item.className);
+        }).join(',')}];
                 }
             }
             `;
 
-            this.writeFile(context, this.options.outDir + "/" + this.options.outFileName);
-        }).bind(this));
+        this.writeFile(context, this.options.outDir + "/" + this.options.outFileName);
     }
 
     private writeFile(data, fileName: string) {
