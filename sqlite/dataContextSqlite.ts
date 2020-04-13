@@ -194,10 +194,10 @@ export class SqliteDataContext implements IDataContext {
                 primaryKey = 'PRIMARY KEY';
             }
 
-            let cs = `${item.ColumnName} ${dataType}${lengthStr} ${primaryKey} ${valueStr}`;
+            let cs = `\`${item.ColumnName}\` ${dataType}${lengthStr} ${primaryKey} ${valueStr}`;
 
             if (item.ForeignKey && item.ForeignKey.IsPhysics) {
-                let f = `FOREIGN KEY(${item.ColumnName}) REFERENCES ${item.ForeignKey.ForeignTable}(${item.ForeignKey.ForeignColumn})`;
+                let f = `FOREIGN KEY(\`${item.ColumnName}\`) REFERENCES ${item.ForeignKey.ForeignTable}(${item.ForeignKey.ForeignColumn})`;
                 columnSqlList.push(f);
             }
             if (item.IsIndex) {
@@ -207,14 +207,8 @@ export class SqliteDataContext implements IDataContext {
             columnSqlList.push(cs);
         }
 
-        let sql = `
-        CREATE TABLE ${entity.TableName()}(
-            ${columnSqlList.join(',\n')}
-        );
-
-        ${indexColumns.join('\n')}
-        `;
-
+        let sql = `CREATE TABLE \`${entity.TableName()}\`( ${columnSqlList.join(', ')} ); `;
+        sql += ` ${indexColumns.join(' ')}`;
         return sql;
     }
     DeleteTableSql(entity: IEntityObject) {

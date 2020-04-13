@@ -1,3 +1,5 @@
+import { MysqlDataContext } from './mysql/dataContextMysql';
+import { SqliteDataContext } from './sqlite/dataContextSqlite';
 import * as fs from 'fs';
 import { Define } from './define/dataDefine';
 import { Transaction } from './transcation';
@@ -83,7 +85,7 @@ export class CodeGenerator {
         if (!options.packageName) this.options.packageName = 'tiny-entity2';
     }
     private async loadEntityModels() {
-        for (let i = 0; i < this.options.modelLoadPath.length; i++){
+        for (let i = 0; i < this.options.modelLoadPath.length; i++) {
             let modelPath = this.options.modelLoadPath[i];
             let exportPath = this.options.modelExportPath[i];
             await this.readModelFile(modelPath, exportPath);
@@ -468,6 +470,15 @@ export class CodeGenerator {
     }
 
     private getColumnsSqlList(diffItem, action: string) {
+        let newCtxInstance = this.getCtxInstance();
+        let dataBaseType = '';
+        if (newCtxInstance instanceof SqliteDataContext) {
+            dataBaseType == 'sqlite';
+        }
+        else if (newCtxInstance instanceof MysqlDataContext) {
+            dataBaseType = 'mysql';
+        }
+
         let columnDefineList = [];
         let c: Define.PropertyDefineOption = diffItem.newItem;
 
@@ -481,7 +492,9 @@ export class CodeGenerator {
             c.DataType = Define.DataType.TEXT;
         }
         columnDefineList.push(Define.DataType[c.DataType] + lengthStr);
-        columnDefineList.push(c.NotAllowNULL ? 'NOT NULL' : 'NULL');
+        if (dataBaseType == 'mysql') {
+            columnDefineList.push(c.NotAllowNULL ? 'NOT NULL' : 'NULL');
+        }
 
         let valueStr = '';
         if (c.DefaultValue != undefined) {
@@ -498,7 +511,7 @@ export class CodeGenerator {
         columnDefineList.push(valueStr);
 
         if (action == 'add') {
-            if (c.IsIndex) {
+            if (c.IsIndex && dataBaseType == 'mysql') {
                 columnDefineList.push(', Add INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE');
             }
         }
@@ -508,8 +521,11 @@ export class CodeGenerator {
                 if (diffItem.oldItem && diffItem.oldItem.IsIndex) {
                     indexSql = ',DROP INDEX `idx_' + diffItem.oldItem.ColumnName;
                 }
-                indexSql += ', ADD INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE';
-                columnDefineList.push(indexSql);
+                if (dataBaseType == 'mysql') {
+                    indexSql += ', ADD INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE';
+                    columnDefineList.push(indexSql);
+                }
+
             }
             else {
                 if (diffItem.oldItem && !diffItem.oldItem.IsIndex) {

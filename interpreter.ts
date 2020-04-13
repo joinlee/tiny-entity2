@@ -1,5 +1,5 @@
 import { Define } from './define/dataDefine';
-import { IJoinChildQueryObject, IQueryParameter } from './queryObject';
+import { IQueryParameter } from './queryObject';
 export class Interpreter {
     private escape: any;
     private partOfWhere: string[] = [];

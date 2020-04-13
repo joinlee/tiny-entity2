@@ -9,6 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const dataContextMysql_1 = require("./mysql/dataContextMysql");
+const dataContextSqlite_1 = require("./sqlite/dataContextSqlite");
 const fs = require("fs");
 const dataDefine_1 = require("./define/dataDefine");
 const transcation_1 = require("./transcation");
@@ -377,6 +379,14 @@ class CodeGenerator {
         });
     }
     getColumnsSqlList(diffItem, action) {
+        let newCtxInstance = this.getCtxInstance();
+        let dataBaseType = '';
+        if (newCtxInstance instanceof dataContextSqlite_1.SqliteDataContext) {
+            dataBaseType == 'sqlite';
+        }
+        else if (newCtxInstance instanceof dataContextMysql_1.MysqlDataContext) {
+            dataBaseType = 'mysql';
+        }
         let columnDefineList = [];
         let c = diffItem.newItem;
         let lengthStr = '';
@@ -388,7 +398,9 @@ class CodeGenerator {
             c.DataType = dataDefine_1.Define.DataType.TEXT;
         }
         columnDefineList.push(dataDefine_1.Define.DataType[c.DataType] + lengthStr);
-        columnDefineList.push(c.NotAllowNULL ? 'NOT NULL' : 'NULL');
+        if (dataBaseType == 'mysql') {
+            columnDefineList.push(c.NotAllowNULL ? 'NOT NULL' : 'NULL');
+        }
         let valueStr = '';
         if (c.DefaultValue != undefined) {
             if (c.DataType >= 0 && c.DataType <= 1) {
@@ -400,7 +412,7 @@ class CodeGenerator {
         }
         columnDefineList.push(valueStr);
         if (action == 'add') {
-            if (c.IsIndex) {
+            if (c.IsIndex && dataBaseType == 'mysql') {
                 columnDefineList.push(', Add INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE');
             }
         }
@@ -410,8 +422,10 @@ class CodeGenerator {
                 if (diffItem.oldItem && diffItem.oldItem.IsIndex) {
                     indexSql = ',DROP INDEX `idx_' + diffItem.oldItem.ColumnName;
                 }
-                indexSql += ', ADD INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE';
-                columnDefineList.push(indexSql);
+                if (dataBaseType == 'mysql') {
+                    indexSql += ', ADD INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE';
+                    columnDefineList.push(indexSql);
+                }
             }
             else {
                 if (diffItem.oldItem && !diffItem.oldItem.IsIndex) {
