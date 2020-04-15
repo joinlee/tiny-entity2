@@ -92,12 +92,31 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
         return this;
     }
 
-    OrderBy(func: IQueryEnumerable<T>): IQueryObject<T> {
-        this.interpreter.TransTOSQLOfGroup(func, this.TableName());
+    OrderBy(func: IQueryEnumerable<T>): IQueryObject<T>;
+    OrderBy<K extends IEntityObject>(func: IQueryEnumerable<T>, entity: K): IResultQueryObject<T>;
+    OrderBy(func: IQueryEnumerable<T>, entity?: any): IQueryObject<T> {
+        let tableName;
+        if (entity) {
+            tableName = entity.TableName();
+        }
+        else {
+            tableName = this.TableName();
+        }
+        this.interpreter.TransTOSQLOfGroup(func, tableName);
         return this;
     }
-    OrderByDesc(func: IQueryEnumerable<T>): IQueryObject<T> {
-        this.interpreter.TransTOSQLOfGroup(func, this.TableName(), true);
+
+    OrderByDesc(func: IQueryEnumerable<T>): IQueryObject<T>;
+    OrderByDesc<K extends IEntityObject>(func: IQueryEnumerable<T>, entity: K): IResultQueryObject<T>;
+    OrderByDesc(func: IQueryEnumerable<T>, entity?: any): IQueryObject<T> {
+        let tableName;
+        if (entity) {
+            tableName = entity.TableName();
+        }
+        else {
+            tableName = this.TableName();
+        }
+        this.interpreter.TransTOSQLOfGroup(func, tableName, true);
         return this;
     }
 
@@ -231,7 +250,7 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
 
                 obj[kv[0]][kv[1]] = row[key];
             }
-            for(let item in obj){
+            for (let item in obj) {
                 obj[item].ConverToEntity(obj[item]);
             }
             resultList.push(obj);

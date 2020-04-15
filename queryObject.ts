@@ -6,7 +6,9 @@ export interface IQueryObject<T> extends IResultQueryObject<T>, IAssembleResultQ
     Where<K extends IEntityObject>(func: IQuerySelector<K>, params: IQueryParameter, entityObj: K): IQueryObject<T>;
     Select(func: IQueryEnumerable<T>): IResultQueryObject<T>;
     OrderBy(func: IQueryEnumerable<T>): IQueryObject<T>
+    OrderBy<K extends IEntityObject>(func: IQueryEnumerable<K>, entity: K): IQueryObject<T>
     OrderByDesc(func: IQueryEnumerable<T>): IQueryObject<T>;
+    OrderByDesc<K extends IEntityObject>(func: IQueryEnumerable<K>, entity: K): IQueryObject<T>;
     GroupBy(func: IQueryEnumerable<T>): IResultQueryObject<T>;
     Contains(func: IQueryEnumerable<T>, values: any[]): IResultQueryObject<T>;
     Contains<K extends IEntityObject>(func: IQueryEnumerable<K>, values: any[], entity: K): IResultQueryObject<T>;

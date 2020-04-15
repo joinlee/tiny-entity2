@@ -82,12 +82,26 @@ class EntityObjectSqlite extends entityObject_1.EntityObject {
         this.joinEntities = [];
         return this;
     }
-    OrderBy(func) {
-        this.interpreter.TransTOSQLOfGroup(func, this.TableName());
+    OrderBy(func, entity) {
+        let tableName;
+        if (entity) {
+            tableName = entity.TableName();
+        }
+        else {
+            tableName = this.TableName();
+        }
+        this.interpreter.TransTOSQLOfGroup(func, tableName);
         return this;
     }
-    OrderByDesc(func) {
-        this.interpreter.TransTOSQLOfGroup(func, this.TableName(), true);
+    OrderByDesc(func, entity) {
+        let tableName;
+        if (entity) {
+            tableName = entity.TableName();
+        }
+        else {
+            tableName = this.TableName();
+        }
+        this.interpreter.TransTOSQLOfGroup(func, tableName, true);
         return this;
     }
     Join(fEntity) {
