@@ -9,8 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const dataContextMysql_1 = require("./mysql/dataContextMysql");
-const dataContextSqlite_1 = require("./sqlite/dataContextSqlite");
 const fs = require("fs");
 const dataDefine_1 = require("./define/dataDefine");
 const transcation_1 = require("./transcation");
@@ -381,10 +379,10 @@ class CodeGenerator {
     getColumnsSqlList(diffItem, action) {
         let newCtxInstance = this.getCtxInstance();
         let dataBaseType = '';
-        if (newCtxInstance instanceof dataContextSqlite_1.SqliteDataContext) {
+        if (newCtxInstance.ObjectName == 'SqliteDataContext') {
             dataBaseType == 'sqlite';
         }
-        else if (newCtxInstance instanceof dataContextMysql_1.MysqlDataContext) {
+        else if (newCtxInstance.ObjectName == 'MysqlDataContext') {
             dataBaseType = 'mysql';
         }
         let columnDefineList = [];

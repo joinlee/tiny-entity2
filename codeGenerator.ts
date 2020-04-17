@@ -1,5 +1,3 @@
-import { MysqlDataContext } from './mysql/dataContextMysql';
-import { SqliteDataContext } from './sqlite/dataContextSqlite';
 import * as fs from 'fs';
 import { Define } from './define/dataDefine';
 import { Transaction } from './transcation';
@@ -472,10 +470,10 @@ export class CodeGenerator {
     private getColumnsSqlList(diffItem, action: string) {
         let newCtxInstance = this.getCtxInstance();
         let dataBaseType = '';
-        if (newCtxInstance instanceof SqliteDataContext) {
+        if (newCtxInstance.ObjectName == 'SqliteDataContext') {
             dataBaseType == 'sqlite';
         }
-        else if (newCtxInstance instanceof MysqlDataContext) {
+        else if (newCtxInstance.ObjectName == 'MysqlDataContext') {
             dataBaseType = 'mysql';
         }
 
