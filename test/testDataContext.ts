@@ -7,7 +7,8 @@ import { Person } from "./models/person"
 import { DeskTable } from "./models/table"
 import { TableParty } from "./models/tableParty"
 import { Users } from "./models/user"
-            export class TestDataContext extends MysqlDataContext {
+import { SqlJSDataContext } from "../sqljs";
+            export class TestDataContext extends SqlJSDataContext {
                 private account: Account;
 private order: Order;
 private person: Person;
