@@ -15,7 +15,9 @@ function log() {
 const logger: (...args) => void = log;
 
 export class SqliteDataContext implements IDataContext {
-
+    get ObjectName() {
+        return 'SqliteDataContext';
+    }
     private db: sqlite.Database;
     private option;
     private querySentence: any[] = [];

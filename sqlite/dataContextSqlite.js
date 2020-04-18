@@ -31,6 +31,9 @@ class SqliteDataContext {
         USER_DIR || (USER_DIR = "");
         this.db = new sqlite3.Database(path.resolve(`${USER_DIR}${option.database}`));
     }
+    get ObjectName() {
+        return 'SqliteDataContext';
+    }
     Create(entity, excludeFields) {
         return __awaiter(this, void 0, void 0, function* () {
             let sqlStr = this.interpreter.TransToInsertSql(entity);

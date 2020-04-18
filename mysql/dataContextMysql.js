@@ -28,6 +28,9 @@ class MysqlDataContext {
         this.interpreter = new interpreter_1.Interpreter(mysql.escape);
         this.option = option;
     }
+    get ObjectName() {
+        return 'MysqlDataContext';
+    }
     Create(entity, excludeFields) {
         return __awaiter(this, void 0, void 0, function* () {
             let sqlStr = this.interpreter.TransToInsertSql(entity);

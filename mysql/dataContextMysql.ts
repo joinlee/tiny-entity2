@@ -15,6 +15,9 @@ function log() {
 const logger: (...args) => void = log;
 
 export class MysqlDataContext implements IDataContext {
+    get ObjectName() {
+        return 'MysqlDataContext';
+    }
     private querySentence: any[] = [];
     private transStatus: any = [];
     private transactionOn: string;
@@ -119,7 +122,7 @@ export class MysqlDataContext implements IDataContext {
             });
         });
     }
-    
+
     async Query(...args: any[]): Promise<any> {
         if (args.length == 1) {
             return this.onSubmit(args[0]);
