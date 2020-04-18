@@ -1,16 +1,14 @@
 import { IDataContext } from '../dataContext';
 import { IEntityObject } from '../entityObject';
 import { IQueryParameter, IQuerySelector } from '../queryObject';
-import * as sqlite from 'sqlite3';
 import { Define } from '../define/dataDefine';
 import { Interpreter } from '../interpreter';
 import * as sqlstring from 'sqlstring-sqlite';
 import * as path from 'path';
-let sqlite3 = sqlite.verbose();
 
 import * as initSqlJs from 'sql.js';
 import * as fs from 'fs';
-// import * as initSqlJs from 'sql-wasm.js';
+// import * as initSqlJs from '../node_modules/sql.js/dist/sql-wasm.js';
 
 function log() {
     if (process.env.tinyLog == "on") {
@@ -20,7 +18,10 @@ function log() {
 const logger: (...args) => void = log;
 
 export class SqlJSDataContext implements IDataContext {
-    private db: sqlite.Database;
+    get ObjectName() {
+        return 'SqlJSDataContext';
+    }
+    private db: any;
     private option;
     private querySentence: any[] = [];
     private transactionOn: string;
@@ -44,6 +45,7 @@ export class SqlJSDataContext implements IDataContext {
         }
         else {
             await this.onSubmit(sqlStr);
+            this.exportToDb();
         }
         return (<any>entity).ConverToEntity(entity);
     }
@@ -56,6 +58,7 @@ export class SqlJSDataContext implements IDataContext {
         }
         else {
             await this.onSubmit(sqlStr);
+            this.exportToDb();
         }
         return (<any>entity).ConverToEntity(entity);
     }
@@ -75,37 +78,40 @@ export class SqlJSDataContext implements IDataContext {
             this.querySentence.push(sqlStr);
         }
         else {
-            return await this.onSubmit(sqlStr);
+            let r = await this.onSubmit(sqlStr);
+            this.exportToDb();
+            return r;
         }
     }
     BeginTranscation() {
         this.transactionOn = "on";
         this.transStatus.push({ key: new Date().getTime() });
     }
-    Commit() {
+    async Commit() {
         if (this.transStatus.length > 1) {
             logger("transaction is pedding!");
             this.transStatus.splice(0, 1);
             return false;
         }
-        return new Promise((resolve, reject) => {
-            this.db.serialize(async () => {
-                try {
-                    await this.onSubmit('BEGIN;');
-                    for (let sql of this.querySentence) {
-                        await this.onSubmit(sql);
-                    }
-                    await this.onSubmit('COMMIT;');
-                    resolve();
-                } catch (error) {
-                    await this.onSubmit('ROLLBACK;');
-                    reject(error);
-                }
-                finally {
-                    this.CleanTransactionStatus();
-                }
-            });
-        })
+        await this.GetDB();
+        try {
+            let sqlall = `BEGIN;`;
+            // await this.onSubmit('BEGIN;');
+            for (let sql of this.querySentence) {
+                // await this.onSubmit(sql);
+                sqlall += sql;
+            }
+            sqlall += 'COMMIT;';
+            await this.onSubmit(sqlall);
+            // await this.onSubmit('COMMIT;');
+            this.exportToDb();
+        } catch (error) {
+            console.log(error);
+            await this.onSubmit('ROLLBACK;');
+        }
+        finally {
+            this.CleanTransactionStatus();
+        }
     }
     async Query(...args: any[]): Promise<any> {
         if (args.length == 1) {
@@ -128,44 +134,44 @@ export class SqlJSDataContext implements IDataContext {
     }
     CreateDatabase() {
         // throw new Error("Method not implemented.");
-        return this.GetDB();
+        this.GetDB();
     }
-    CreateTable(entity: IEntityObject) {
-        return new Promise((resolve, reject) => {
-            this.db.serialize(async () => {
-                let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
-                let result = this.CreateTableSql(entity);
-                sqls.push(result);
+    async CreateTable(entity: IEntityObject) {
+        let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
+        let result = this.CreateTableSql(entity);
+        sqls.push(result);
 
-                for (let sql of sqls) {
-                    await this.onSubmit(sql);
-                }
+        for (let sql of sqls) {
+            await this.onSubmit(sql);
+        }
 
-                return resolve(true);
-            });
-        });
+        return true;
     }
 
     private async GetDB() {
-        let SQL = await initSqlJs();
-        let buf = fs.readFileSync(this.dbPath);
-        this.db = new SQL.Database(buf);
+        if (!this.db) {
+            let SQL = await initSqlJs();
+            if (fs.existsSync(this.dbPath)) {
+                let buf = fs.readFileSync(this.dbPath);
+                this.db = new SQL.Database(buf);
+            }
+            else {
+                this.db = new SQL.Database();
+            }
+        }
+
+    }
+
+    private exportToDb() {
+        let data = this.db.export();
+        let buffer = Buffer.from(data, 'binary');
+        fs.writeFileSync(this.dbPath, buffer);
     }
 
     private async onSubmit(sql: string) {
         await this.GetDB();
-        return new Promise((resolve, reject) => {
-            this.db.all(sql, (err, row) => {
-                logger(sql);
-                if (err) {
-                    console.log(err);
-                    reject(err);
-                }
-                else {
-                    resolve(row);
-                }
-            });
-        });
+        let res = this.db.exec(sql);
+        return res;
     }
 
     CreateTableSql(entity: IEntityObject) {
@@ -214,7 +220,7 @@ export class SqlJSDataContext implements IDataContext {
                 columnSqlList.push(f);
             }
             if (item.IsIndex) {
-                indexColumns.push(`CREATE INDEX idx_${item.ColumnName} ON ${entity.TableName()}(${item.ColumnName});`);
+                indexColumns.push(`CREATE INDEX idx_${item.ColumnName}_${entity.TableName()} ON ${entity.TableName()}(${item.ColumnName});`);
             }
 
             columnSqlList.push(cs);
@@ -253,17 +259,5 @@ export class SqlJSDataContext implements IDataContext {
         this.querySentence = [];
         this.transactionOn = null;
         this.transStatus = [];
-    }
-}
-
-class SqlitePool {
-    static Current: SqlitePool = new SqlitePool();
-    private db: sqlite.Database;
-    GetConnection(option): sqlite.Database {
-        if (!this.db) {
-            this.db = new sqlite3.Database(option.database);
-        }
-
-        return this.db;
     }
 }

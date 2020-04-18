@@ -17,36 +17,34 @@ const person_1 = require("./models/person");
 const transcation_1 = require("../transcation");
 process.env.tinyLog = "on";
 describe("query data", () => {
-    let ctx = new testDataContext_1.TestDataContext();
-    let ctx1 = new testDataContext_1.TestDataContext();
     let personList = [];
     before(() => __awaiter(void 0, void 0, void 0, function* () {
+        let ctx = new testDataContext_1.TestDataContext();
         for (let i = 0; i < 10; i++) {
             let person = new person_1.Person();
             person.id = guid_1.Guid.GetGuid();
             person.name = "likecheng" + i;
             person.age = 30 + i;
             person.birth = new Date("1987-12-1").getTime();
-            if (i == 1) {
-                yield ctx1.Create(person);
-            }
-            else {
-                yield ctx.Create(person);
-            }
+            yield ctx.Create(person);
             personList.push(person);
         }
+        console.log('personList', personList.length);
     }));
     it("no query criteria", () => __awaiter(void 0, void 0, void 0, function* () {
-        let list = yield ctx.Person.ToList();
+        let ctx2 = new testDataContext_1.TestDataContext();
+        let list = yield ctx2.Person.ToList();
         assert.equal(list.length, 10);
     }));
     it("inculde query criteria", () => __awaiter(void 0, void 0, void 0, function* () {
+        let ctx = new testDataContext_1.TestDataContext();
         let age = 35;
         let list = yield ctx.Person.Where(x => x.age > age, { age }).ToList();
         assert.equal(list.length, personList.filter(x => x.age > age).length);
         assert.equal(list.filter(x => x.age < 35), 0);
     }));
     it("fuzzy query ", () => __awaiter(void 0, void 0, void 0, function* () {
+        let ctx = new testDataContext_1.TestDataContext();
         let params = {
             name: "likecheng"
         };
@@ -54,22 +52,26 @@ describe("query data", () => {
         assert.equal(list.length, 10);
     }));
     it("using Select()", () => __awaiter(void 0, void 0, void 0, function* () {
+        let ctx = new testDataContext_1.TestDataContext();
         let age = 35;
         let list = yield ctx.Person.Where(x => x.age > age, { age }).Select(x => x.name).ToList();
         assert.equal(list.filter(x => x.name != null).length, 4);
         assert.equal(list.filter(x => x.id != null).length, 0);
     }));
     it("using Contains() ", () => __awaiter(void 0, void 0, void 0, function* () {
+        let ctx = new testDataContext_1.TestDataContext();
         let values = [30, 31, 32, 20];
         let list = yield ctx.Person.Contains(x => x.age, values).ToList();
         assert.equal(list.length, 3);
     }));
     it("no data", () => __awaiter(void 0, void 0, void 0, function* () {
+        let ctx = new testDataContext_1.TestDataContext();
         yield ctx.Delete(x => x.id != null, ctx.Person);
         let result = yield ctx.Person.ToList();
         assert.equal(result.length, 0);
     }));
     after(() => __awaiter(void 0, void 0, void 0, function* () {
+        let ctx = new testDataContext_1.TestDataContext();
         yield ctx.Delete(x => x.id != null, ctx.Person);
     }));
 });

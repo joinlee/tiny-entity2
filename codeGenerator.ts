@@ -127,12 +127,14 @@ export class CodeGenerator {
         importList.push(`const config = require("${this.options.configFilePath}");`);
         if (this.options.databaseType == "mysql") {
             baseCtx = "MysqlDataContext";
-            importList.push(`import { ${baseCtx} } from "${this.options.packageName}"`);
         }
         else if (this.options.databaseType == "sqlite") {
             baseCtx = "SqliteDataContext";
-            importList.push(`import { ${baseCtx} } from "${this.options.packageName}"`);
         }
+        else if (this.options.databaseType == 'sqljs') {
+            baseCtx = "SqlJSDataContext";
+        }
+        importList.push(`import { ${baseCtx} } from "${this.options.packageName}"`);
         this.modelList.forEach(item => {
             importList.push(`import { ${item.className} } from "${item.filePath}"`);
         })
@@ -265,10 +267,11 @@ export class CodeGenerator {
                 let lastSql = this.sqlData[this.sqlData.length - 1];
                 if (!lastSql.done) {
                     let newCtxInstance = this.getCtxInstance();
+                    console.log(newCtxInstance.ObjectName);
                     await Transaction(newCtxInstance, async ctx => {
                         await newCtxInstance.Query(lastSql.sql, true);
                     });
-
+                    console.log('nnnnnnnnnnnnnnnnnn');
                     lastSql.done = true;
                     // sqllogs.logq
                     await this.writeFile(JSON.stringify(this.sqlData), path.resolve(`${USER_DIR}sqllogs.logq`));

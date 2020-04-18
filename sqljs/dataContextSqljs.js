@@ -9,12 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const sqlite = require("sqlite3");
 const dataDefine_1 = require("../define/dataDefine");
 const interpreter_1 = require("../interpreter");
 const sqlstring = require("sqlstring-sqlite");
 const path = require("path");
-let sqlite3 = sqlite.verbose();
 const initSqlJs = require("sql.js");
 const fs = require("fs");
 function log() {
@@ -33,6 +31,9 @@ class SqlJSDataContext {
         USER_DIR || (USER_DIR = "");
         this.dbPath = path.resolve(`${USER_DIR}${option.database}`);
     }
+    get ObjectName() {
+        return 'SqlJSDataContext';
+    }
     Create(entity, excludeFields) {
         return __awaiter(this, void 0, void 0, function* () {
             let sqlStr = this.interpreter.TransToInsertSql(entity);
@@ -41,6 +42,7 @@ class SqlJSDataContext {
             }
             else {
                 yield this.onSubmit(sqlStr);
+                this.exportToDb();
             }
             return entity.ConverToEntity(entity);
         });
@@ -53,6 +55,7 @@ class SqlJSDataContext {
             }
             else {
                 yield this.onSubmit(sqlStr);
+                this.exportToDb();
             }
             return entity.ConverToEntity(entity);
         });
@@ -72,7 +75,9 @@ class SqlJSDataContext {
                 this.querySentence.push(sqlStr);
             }
             else {
-                return yield this.onSubmit(sqlStr);
+                let r = yield this.onSubmit(sqlStr);
+                this.exportToDb();
+                return r;
             }
         });
     }
@@ -81,29 +86,29 @@ class SqlJSDataContext {
         this.transStatus.push({ key: new Date().getTime() });
     }
     Commit() {
-        if (this.transStatus.length > 1) {
-            logger("transaction is pedding!");
-            this.transStatus.splice(0, 1);
-            return false;
-        }
-        return new Promise((resolve, reject) => {
-            this.db.serialize(() => __awaiter(this, void 0, void 0, function* () {
-                try {
-                    yield this.onSubmit('BEGIN;');
-                    for (let sql of this.querySentence) {
-                        yield this.onSubmit(sql);
-                    }
-                    yield this.onSubmit('COMMIT;');
-                    resolve();
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.transStatus.length > 1) {
+                logger("transaction is pedding!");
+                this.transStatus.splice(0, 1);
+                return false;
+            }
+            yield this.GetDB();
+            try {
+                let sqlall = `BEGIN;`;
+                for (let sql of this.querySentence) {
+                    sqlall += sql;
                 }
-                catch (error) {
-                    yield this.onSubmit('ROLLBACK;');
-                    reject(error);
-                }
-                finally {
-                    this.CleanTransactionStatus();
-                }
-            }));
+                sqlall += 'COMMIT;';
+                yield this.onSubmit(sqlall);
+                this.exportToDb();
+            }
+            catch (error) {
+                console.log(error);
+                yield this.onSubmit('ROLLBACK;');
+            }
+            finally {
+                this.CleanTransactionStatus();
+            }
         });
     }
     Query(...args) {
@@ -127,43 +132,43 @@ class SqlJSDataContext {
     RollBack() {
     }
     CreateDatabase() {
-        return this.GetDB();
+        this.GetDB();
     }
     CreateTable(entity) {
-        return new Promise((resolve, reject) => {
-            this.db.serialize(() => __awaiter(this, void 0, void 0, function* () {
-                let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
-                let result = this.CreateTableSql(entity);
-                sqls.push(result);
-                for (let sql of sqls) {
-                    yield this.onSubmit(sql);
-                }
-                return resolve(true);
-            }));
+        return __awaiter(this, void 0, void 0, function* () {
+            let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
+            let result = this.CreateTableSql(entity);
+            sqls.push(result);
+            for (let sql of sqls) {
+                yield this.onSubmit(sql);
+            }
+            return true;
         });
     }
     GetDB() {
         return __awaiter(this, void 0, void 0, function* () {
-            let SQL = yield initSqlJs();
-            let buf = fs.readFileSync(this.dbPath);
-            this.db = new SQL.Database(buf);
+            if (!this.db) {
+                let SQL = yield initSqlJs();
+                if (fs.existsSync(this.dbPath)) {
+                    let buf = fs.readFileSync(this.dbPath);
+                    this.db = new SQL.Database(buf);
+                }
+                else {
+                    this.db = new SQL.Database();
+                }
+            }
         });
+    }
+    exportToDb() {
+        let data = this.db.export();
+        let buffer = Buffer.from(data, 'binary');
+        fs.writeFileSync(this.dbPath, buffer);
     }
     onSubmit(sql) {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.GetDB();
-            return new Promise((resolve, reject) => {
-                this.db.all(sql, (err, row) => {
-                    logger(sql);
-                    if (err) {
-                        console.log(err);
-                        reject(err);
-                    }
-                    else {
-                        resolve(row);
-                    }
-                });
-            });
+            let res = this.db.exec(sql);
+            return res;
         });
     }
     CreateTableSql(entity) {
@@ -204,7 +209,7 @@ class SqlJSDataContext {
                 columnSqlList.push(f);
             }
             if (item.IsIndex) {
-                indexColumns.push(`CREATE INDEX idx_${item.ColumnName} ON ${entity.TableName()}(${item.ColumnName});`);
+                indexColumns.push(`CREATE INDEX idx_${item.ColumnName}_${entity.TableName()} ON ${entity.TableName()}(${item.ColumnName});`);
             }
             columnSqlList.push(cs);
         }
@@ -241,13 +246,4 @@ class SqlJSDataContext {
     }
 }
 exports.SqlJSDataContext = SqlJSDataContext;
-class SqlitePool {
-    GetConnection(option) {
-        if (!this.db) {
-            this.db = new sqlite3.Database(option.database);
-        }
-        return this.db;
-    }
-}
-SqlitePool.Current = new SqlitePool();
 //# sourceMappingURL=dataContextSqljs.js.map

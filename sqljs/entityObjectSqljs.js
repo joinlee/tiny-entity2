@@ -53,8 +53,8 @@ class EntityObjectSqlJS extends entityObject_1.EntityObject {
             let sql = this.interpreter.GetFinalSql(this.TableName());
             let r = yield this.ctx.Query(sql);
             let result = 0;
-            for (let key of Object.keys(r[0])) {
-                result = r[0][key];
+            for (let key of Object.keys(r[0].values[0])) {
+                result = r[0].values[0][key];
             }
             this.Disposed();
             return result;
@@ -125,6 +125,10 @@ class EntityObjectSqlJS extends entityObject_1.EntityObject {
         return __awaiter(this, void 0, void 0, function* () {
             let sql = this.interpreter.GetFinalSql(this.TableName());
             let rows = yield this.ctx.Query(sql);
+            if (rows.length == 0) {
+                return [];
+            }
+            rows = this.TransToRowObj(rows);
             let resultList = [];
             if (this.joinEntities.length > 0) {
                 if (rows.length > 0) {
@@ -208,6 +212,19 @@ class EntityObjectSqlJS extends entityObject_1.EntityObject {
             }
         }
         return rList;
+    }
+    TransToRowObj(res) {
+        let resultList = [];
+        let values = res[0].values;
+        let columns = res[0].columns;
+        for (let val of values) {
+            let obj = {};
+            for (let valKey in val) {
+                obj[columns[valKey]] = val[valKey];
+            }
+            resultList.push(obj);
+        }
+        return resultList;
     }
     TransRowToEnity(rows) {
         let resultList = [];

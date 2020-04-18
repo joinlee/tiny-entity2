@@ -8,11 +8,11 @@ import { Transaction } from '../transcation';
 process.env.tinyLog = "on";
 
 describe("query data", () => {
-    let ctx = new TestDataContext();
-    let ctx1 = new TestDataContext();
     let personList: Person[] = [];
 
     before(async () => {
+        let ctx = new TestDataContext();
+        // let ctx1 = new TestDataContext();
         //insert 10 persons to database;
         for (let i = 0; i < 10; i++) {
             let person = new Person();
@@ -21,23 +21,27 @@ describe("query data", () => {
             person.age = 30 + i;
             person.birth = new Date("1987-12-1").getTime();
 
-            if (i == 1) {
-                await ctx1.Create(person);
-            }
-            else {
-                await ctx.Create(person);
-            }
+            // if (i == 1) {
+            //     await ctx1.Create(person);
+            // }
+            // else {
+            //     await ctx.Create(person);
+            // }
+            await ctx.Create(person);
 
             personList.push(person);
         }
+        console.log('personList', personList.length);
     })
 
     it("no query criteria", async () => {
-        let list = await ctx.Person.ToList();
+        let ctx2 = new TestDataContext();
+        let list = await ctx2.Person.ToList();
         assert.equal(list.length, 10);
     })
 
     it("inculde query criteria", async () => {
+        let ctx = new TestDataContext();
         let age = 35;
         let list = await ctx.Person.Where(x => x.age > age, { age }).ToList();
 
@@ -45,6 +49,7 @@ describe("query data", () => {
         assert.equal(list.filter(x => x.age < 35), 0);
     })
     it("fuzzy query ", async () => {
+        let ctx = new TestDataContext();
         let params = {
             name: "likecheng"
         };
@@ -52,6 +57,7 @@ describe("query data", () => {
         assert.equal(list.length, 10);
     })
     it("using Select()", async () => {
+        let ctx = new TestDataContext();
         let age = 35;
         let list = await ctx.Person.Where(x => x.age > age, { age }).Select(x => x.name).ToList();
 
@@ -59,18 +65,21 @@ describe("query data", () => {
         assert.equal(list.filter(x => x.id != null).length, 0);
     })
     it("using Contains() ", async () => {
+        let ctx = new TestDataContext();
         let values = [30, 31, 32, 20];
         let list = await ctx.Person.Contains(x => x.age, values).ToList();
         assert.equal(list.length, 3);
     })
 
     it("no data", async () => {
+        let ctx = new TestDataContext();
         await ctx.Delete<Person>(x => x.id != null, ctx.Person);
         let result = await ctx.Person.ToList();
         assert.equal(result.length, 0);
     })
 
     after(async () => {
+        let ctx = new TestDataContext();
         // clean person table from database;
         await ctx.Delete<Person>(x => x.id != null, ctx.Person);
     })

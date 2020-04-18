@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const dataDefine_1 = require("../../define/dataDefine");
 const entityObjectFactory_1 = require("../../entityObjectFactory");
-const EntityObjectType = entityObjectFactory_1.EntityObjectFactory.GetEntityObjectType('sqlite');
+const EntityObjectType = entityObjectFactory_1.EntityObjectFactory.GetEntityObjectType('sqljs');
 let Account = class Account extends EntityObjectType {
 };
 __decorate([
@@ -29,6 +29,13 @@ __decorate([
     dataDefine_1.Define.Column({ DataType: dataDefine_1.Define.DataType.Decimal, DataLength: 11, DecimalPoint: 3 }),
     __metadata("design:type", Number)
 ], Account.prototype, "amount", void 0);
+__decorate([
+    dataDefine_1.Define.Column({
+        DataType: dataDefine_1.Define.DataType.VARCHAR,
+        IsIndex: true
+    }),
+    __metadata("design:type", String)
+], Account.prototype, "storeId", void 0);
 Account = __decorate([
     dataDefine_1.Define.Table({ TableName: "account" })
 ], Account);

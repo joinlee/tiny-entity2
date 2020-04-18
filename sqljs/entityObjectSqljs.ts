@@ -57,8 +57,8 @@ export class EntityObjectSqlJS<T extends IEntityObject> extends EntityObject<T> 
         let sql = this.interpreter.GetFinalSql(this.TableName());
         let r = await this.ctx.Query(sql);
         let result = 0;
-        for (let key of Object.keys(r[0])) {
-            result = r[0][key];
+        for (let key of Object.keys(r[0].values[0])) {
+            result = r[0].values[0][key];
         }
 
         this.Disposed();
@@ -144,6 +144,10 @@ export class EntityObjectSqlJS<T extends IEntityObject> extends EntityObject<T> 
     async ToList() {
         let sql = this.interpreter.GetFinalSql(this.TableName());
         let rows = await this.ctx.Query(sql);
+        if (rows.length == 0) {
+            return [];
+        }
+        rows = this.TransToRowObj(rows);
         let resultList = [];
 
         if (this.joinEntities.length > 0) {
@@ -236,6 +240,22 @@ export class EntityObjectSqlJS<T extends IEntityObject> extends EntityObject<T> 
         return rList;
     }
 
+    private TransToRowObj(res) {
+        let resultList = [];
+
+        let values = res[0].values;
+        let columns = res[0].columns;
+        for (let val of values) {
+            let obj = {};
+            for (let valKey in val) {
+                obj[columns[valKey]] = val[valKey];
+            }
+            resultList.push(obj);
+        }
+
+        return resultList;
+    }
+
     private TransRowToEnity(rows: any[]) {
         let resultList = [];
 
@@ -254,6 +274,16 @@ export class EntityObjectSqlJS<T extends IEntityObject> extends EntityObject<T> 
             }
             resultList.push(obj);
         }
+
+        // let values = rows[0].values;
+        // let columns = rows[0].columns;
+        // for (let val of values) {
+        //     for (let valKey of val) {
+        //         let obj = {};
+        //         obj[columns[valKey]] = val[valKey];
+        //         resultList.push(obj);
+        //     }
+        // }
 
         return resultList;
     }

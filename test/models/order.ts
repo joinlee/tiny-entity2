@@ -1,6 +1,6 @@
 import { Define } from '../../define/dataDefine';
 import { EntityObjectFactory } from '../../entityObjectFactory';
-const EntityObjectType = EntityObjectFactory.GetEntityObjectType('sqlite');
+const EntityObjectType = EntityObjectFactory.GetEntityObjectType('sqljs');
 
 @Define.Table({ TableName: "orders" })
 export class Order extends EntityObjectType<Order> {
@@ -30,4 +30,10 @@ export class Order extends EntityObjectType<Order> {
 
     @Define.Column()
     creator: { id: string, name: string };
+
+    @Define.Column({
+        DataType: Define.DataType.VARCHAR,
+        IsIndex: true
+    })
+    storeId: string;
 }

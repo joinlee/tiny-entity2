@@ -1,6 +1,6 @@
 import { Define } from '../../define/dataDefine';
 import { EntityObjectFactory } from '../../entityObjectFactory';
-const EntityObjectType = EntityObjectFactory.GetEntityObjectType('sqlite');
+const EntityObjectType = EntityObjectFactory.GetEntityObjectType('sqljs');
 
 @Define.Table({ TableName: "desktable" })
 export class DeskTable extends EntityObjectType<DeskTable> {
