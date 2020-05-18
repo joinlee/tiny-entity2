@@ -1,7 +1,7 @@
 import { EntityObjectMysql } from "./mysql/entityObjectMysql";
 import { EntityObjectSqlite } from "./sqlite/entityObjectSqlite";
 import { EntityObject } from "./entityObject";
-import { EntityObjectSqlJS } from "./sqljs";
+import { EntityObjectSqlJS } from "./sqljs/entityObjectSqljs";
 
 export class EntityObjectFactory {
     static GetEntityObjectType(dbType: string) {

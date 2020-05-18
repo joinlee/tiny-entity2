@@ -526,10 +526,9 @@ export class CodeGenerator {
                     indexSql += ', ADD INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE';
                     columnDefineList.push(indexSql);
                 }
-
             }
             else {
-                if (diffItem.oldItem && !diffItem.oldItem.IsIndex) {
+                if (diffItem.oldItem && diffItem.oldItem.IsIndex) {
                     columnDefineList.push(',DROP INDEX `idx_' + diffItem.oldItem.ColumnName + '`');
                 }
             }

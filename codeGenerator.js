@@ -430,7 +430,7 @@ class CodeGenerator {
                 }
             }
             else {
-                if (diffItem.oldItem && !diffItem.oldItem.IsIndex) {
+                if (diffItem.oldItem && diffItem.oldItem.IsIndex) {
                     columnDefineList.push(',DROP INDEX `idx_' + diffItem.oldItem.ColumnName + '`');
                 }
             }
