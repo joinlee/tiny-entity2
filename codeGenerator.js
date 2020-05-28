@@ -338,6 +338,7 @@ class CodeGenerator {
         return __awaiter(this, void 0, void 0, function* () {
             let sqls = [];
             let newCtxInstance = this.getCtxInstance();
+            let dataBaseType = this.GetDataBaseType(newCtxInstance);
             if (hisStr) {
                 let hisData = JSON.parse(hisStr);
                 let lastLogItem = hisData[hisData.length - 1];
@@ -362,7 +363,9 @@ class CodeGenerator {
                     else if (logItem.action == 'alter') {
                         for (let diffItem of logItem.diffContent.column) {
                             if (diffItem.oldItem && !diffItem.newItem) {
-                                sqls.push('ALTER TABLE `' + logItem.diffContent.tableName + '` DROP `' + diffItem.oldItem.ColumnName + '`;');
+                                if (dataBaseType == 'mysql') {
+                                    sqls.push('ALTER TABLE `' + logItem.diffContent.tableName + '` DROP `' + diffItem.oldItem.ColumnName + '`;');
+                                }
                             }
                             if (!diffItem.oldItem && diffItem.newItem) {
                                 let columnDefineList = this.getColumnsSqlList(diffItem, 'add');
@@ -380,8 +383,7 @@ class CodeGenerator {
             return sqls;
         });
     }
-    getColumnsSqlList(diffItem, action) {
-        let newCtxInstance = this.getCtxInstance();
+    GetDataBaseType(newCtxInstance) {
         let dataBaseType = '';
         if (newCtxInstance.ObjectName == 'SqliteDataContext') {
             dataBaseType == 'sqlite';
@@ -389,6 +391,11 @@ class CodeGenerator {
         else if (newCtxInstance.ObjectName == 'MysqlDataContext') {
             dataBaseType = 'mysql';
         }
+        return dataBaseType;
+    }
+    getColumnsSqlList(diffItem, action) {
+        let newCtxInstance = this.getCtxInstance();
+        let dataBaseType = this.GetDataBaseType(newCtxInstance);
         let columnDefineList = [];
         let c = diffItem.newItem;
         let lengthStr = '';

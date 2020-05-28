@@ -421,6 +421,7 @@ export class CodeGenerator {
     private async transLogToSqlList(hisStr) {
         let sqls = [];
         let newCtxInstance = this.getCtxInstance();
+        let dataBaseType = this.GetDataBaseType(newCtxInstance);
         if (hisStr) {
             let hisData = JSON.parse(hisStr);
             let lastLogItem = hisData[hisData.length - 1];
@@ -446,7 +447,10 @@ export class CodeGenerator {
                 else if (logItem.action == 'alter') {
                     for (let diffItem of logItem.diffContent.column) {
                         if (diffItem.oldItem && !diffItem.newItem) {
-                            sqls.push('ALTER TABLE `' + logItem.diffContent.tableName + '` DROP `' + diffItem.oldItem.ColumnName + '`;');
+                            if (dataBaseType == 'mysql') { 
+                                sqls.push('ALTER TABLE `' + logItem.diffContent.tableName + '` DROP `' + diffItem.oldItem.ColumnName + '`;');
+                            }
+                           
                         }
 
                         if (!diffItem.oldItem && diffItem.newItem) {
@@ -470,8 +474,7 @@ export class CodeGenerator {
         return sqls;
     }
 
-    private getColumnsSqlList(diffItem, action: string) {
-        let newCtxInstance = this.getCtxInstance();
+    private GetDataBaseType(newCtxInstance) {
         let dataBaseType = '';
         if (newCtxInstance.ObjectName == 'SqliteDataContext') {
             dataBaseType == 'sqlite';
@@ -479,6 +482,12 @@ export class CodeGenerator {
         else if (newCtxInstance.ObjectName == 'MysqlDataContext') {
             dataBaseType = 'mysql';
         }
+        return dataBaseType;
+    }
+
+    private getColumnsSqlList(diffItem, action: string) {
+        let newCtxInstance = this.getCtxInstance();
+        let dataBaseType = this.GetDataBaseType(newCtxInstance);
 
         let columnDefineList = [];
         let c: Define.PropertyDefineOption = diffItem.newItem;
