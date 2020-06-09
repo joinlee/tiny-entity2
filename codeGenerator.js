@@ -232,8 +232,12 @@ class CodeGenerator {
                     tempColumn.DefaultValue = item.DefaultValue;
                 }
                 else if (oldItem.IsIndex != item.IsIndex) {
-                    isDiff = true;
-                    tempColumn.IsIndex = item.IsIndex;
+                    let newCtxInstance = this.getCtxInstance();
+                    let dbType = this.GetDataBaseType(newCtxInstance);
+                    if (dbType != 'sqlite') {
+                        isDiff = true;
+                        tempColumn.IsIndex = item.IsIndex;
+                    }
                 }
                 else if (oldItem.NotAllowNULL != item.NotAllowNULL) {
                     isDiff = true;
@@ -358,7 +362,9 @@ class CodeGenerator {
                         sqls.push(newCtxInstance.CreateTableSql(table));
                     }
                     else if (logItem.action == 'drop') {
-                        sqls.push(newCtxInstance.DeleteTableSql(table));
+                        if (table) {
+                            sqls.push(newCtxInstance.DeleteTableSql(table));
+                        }
                     }
                     else if (logItem.action == 'alter') {
                         for (let diffItem of logItem.diffContent.column) {
@@ -386,7 +392,7 @@ class CodeGenerator {
     GetDataBaseType(newCtxInstance) {
         let dataBaseType = '';
         if (newCtxInstance.ObjectName == 'SqliteDataContext') {
-            dataBaseType == 'sqlite';
+            dataBaseType = 'sqlite';
         }
         else if (newCtxInstance.ObjectName == 'MysqlDataContext') {
             dataBaseType = 'mysql';
