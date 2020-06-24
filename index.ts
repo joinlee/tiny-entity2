@@ -4,7 +4,7 @@ export * from './entityObject';
 export * from './dataContext';
 export * from './entityObjectFactory';
 export * from './transcation';
-export * from './mysql';
+// export * from './mysql';
 // export * from './sqlite';
 
 declare global {

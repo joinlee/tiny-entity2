@@ -8,5 +8,4 @@ __export(require("./define/dataDefine"));
 __export(require("./entityObject"));
 __export(require("./entityObjectFactory"));
 __export(require("./transcation"));
-__export(require("./mysql"));
 //# sourceMappingURL=index.js.map

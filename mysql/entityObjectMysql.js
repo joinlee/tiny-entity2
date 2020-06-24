@@ -11,13 +11,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const entityObject_1 = require("./../entityObject");
 const interpreter_1 = require("../interpreter");
-const mysql = require("mysql");
+const sqlstring = require("sqlstring-sqlite");
 const dataDefine_1 = require("../define/dataDefine");
 class EntityObjectMysql extends entityObject_1.EntityObject {
     constructor(ctx) {
         super();
         this.joinEntities = [];
-        this.interpreter = new interpreter_1.Interpreter(mysql.escape);
+        this.interpreter = new interpreter_1.Interpreter(sqlstring.escape);
         this.ctx = arguments[0][0];
     }
     Take(count) {
@@ -236,7 +236,7 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
         return tableName;
     }
     Disposed() {
-        this.interpreter = new interpreter_1.Interpreter(mysql.escape);
+        this.interpreter = new interpreter_1.Interpreter(sqlstring.escape);
         this.joinEntities = [];
     }
 }

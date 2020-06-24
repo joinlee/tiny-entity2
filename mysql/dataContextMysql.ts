@@ -1,6 +1,6 @@
 import { IDataContext } from '../dataContext';
 import { IEntityObject } from '../entityObject';
-import { IMySql, IPool, IPoolConfig, IConnection } from 'mysql';
+import { IPool, IPoolConfig, IConnection } from 'mysql';
 import { Interpreter } from '../interpreter';
 import * as mysql from "mysql";
 import { Define } from '../define/dataDefine';

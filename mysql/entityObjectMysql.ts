@@ -1,7 +1,7 @@
 import { IQueryObject, IJoinChildQueryObject, IQueryParameter, IQuerySelector, IQueryEnumerable, IResultQueryObject, ITakeChildQueryObject, IAssembleResultQuery } from './../queryObject';
 import { IEntityObject, EntityObject } from './../entityObject';
 import { Interpreter } from '../interpreter';
-import * as mysql from "mysql";
+import * as sqlstring from 'sqlstring-sqlite';
 import { MysqlDataContext } from './dataContextMysql';
 import { Define } from '../define/dataDefine';
 
@@ -11,7 +11,7 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
     private joinEntities = [];
     constructor(ctx?: MysqlDataContext) {
         super();
-        this.interpreter = new Interpreter(mysql.escape);
+        this.interpreter = new Interpreter(sqlstring.escape);
         this.ctx = arguments[0][0];
     }
 
@@ -267,7 +267,7 @@ export class EntityObjectMysql<T extends IEntityObject> extends EntityObject<T>{
     }
 
     private Disposed() {
-        this.interpreter = new Interpreter(mysql.escape);
+        this.interpreter = new Interpreter(sqlstring.escape);
         this.joinEntities = [];
     }
 }

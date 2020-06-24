@@ -8,7 +8,6 @@ import * as path from 'path';
 
 import * as initSqlJs from 'sql.js';
 import * as fs from 'fs';
-// import * as initSqlJs from '../node_modules/sql.js/dist/sql-wasm.js';
 
 function log() {
     if (process.env.tinyLog == "on") {
