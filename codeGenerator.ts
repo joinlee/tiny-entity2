@@ -306,8 +306,12 @@ export class CodeGenerator {
                     tempColumn.DefaultValue = item.DefaultValue;
                 }
                 else if (oldItem.IsIndex != item.IsIndex) {
-                    isDiff = true;
-                    tempColumn.IsIndex = item.IsIndex;
+                    let newCtxInstance = this.getCtxInstance();
+                    let dbType = this.GetDataBaseType(newCtxInstance);
+                    if (dbType != 'sqlite') {
+                        isDiff = true;
+                        tempColumn.IsIndex = item.IsIndex;
+                    }
                 }
                 else if (oldItem.NotAllowNULL != item.NotAllowNULL) {
                     isDiff = true;
@@ -442,15 +446,17 @@ export class CodeGenerator {
                     sqls.push(newCtxInstance.CreateTableSql(table));
                 }
                 else if (logItem.action == 'drop') {
-                    sqls.push(newCtxInstance.DeleteTableSql(table));
+                    if (table) {
+                        sqls.push(newCtxInstance.DeleteTableSql(table));
+                    }
                 }
                 else if (logItem.action == 'alter') {
                     for (let diffItem of logItem.diffContent.column) {
                         if (diffItem.oldItem && !diffItem.newItem) {
-                            if (dataBaseType == 'mysql') { 
+                            if (dataBaseType == 'mysql') {
                                 sqls.push('ALTER TABLE `' + logItem.diffContent.tableName + '` DROP `' + diffItem.oldItem.ColumnName + '`;');
                             }
-                           
+
                         }
 
                         if (!diffItem.oldItem && diffItem.newItem) {
@@ -477,7 +483,7 @@ export class CodeGenerator {
     private GetDataBaseType(newCtxInstance) {
         let dataBaseType = '';
         if (newCtxInstance.ObjectName == 'SqliteDataContext') {
-            dataBaseType == 'sqlite';
+            dataBaseType = 'sqlite';
         }
         else if (newCtxInstance.ObjectName == 'MysqlDataContext') {
             dataBaseType = 'mysql';
