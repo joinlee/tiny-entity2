@@ -5,8 +5,9 @@ import { Interpreter } from '../interpreter';
 import * as mysql from "mysql";
 import { Define } from '../define/dataDefine';
 import { IQueryParameter, IQuerySelector } from '../queryObject';
+import { MysqlPoolManager } from './mysqlPoolManager';
 
-let mysqlPool: IPool;
+// let mysqlPool: IPool;
 function log() {
     if (process.env.tinyLog == "on") {
         console.log.apply(this, arguments);
@@ -23,8 +24,14 @@ export class MysqlDataContext implements IDataContext {
     private transactionOn: string;
     private interpreter: Interpreter;
     private option: IPoolConfig;
+    private mysqlPool: IPool;
     constructor(option: IPoolConfig) {
-        if (!mysqlPool) mysqlPool = mysql.createPool(option);
+        let has = MysqlPoolManager.Current.HasPool(option.database);
+        if (!has) {
+            MysqlPoolManager.Current.CreatePool(option.database, mysql.createPool(option));
+        }
+        this.mysqlPool = MysqlPoolManager.Current.GetPool(option.database);
+
         this.interpreter = new Interpreter(mysql.escape);
         this.option = option;
     }
@@ -88,7 +95,7 @@ export class MysqlDataContext implements IDataContext {
             return false;
         }
         return new Promise((resolve, reject) => {
-            mysqlPool.getConnection(async (err, conn) => {
+            this.mysqlPool.getConnection(async (err, conn) => {
                 if (err) {
                     conn.destroy();
                     reject(err);
@@ -276,7 +283,7 @@ export class MysqlDataContext implements IDataContext {
     }
     private onSubmit(sqlStr: string) {
         return new Promise((resolve, reject) => {
-            mysqlPool.getConnection((err, conn) => {
+            this.mysqlPool.getConnection((err, conn) => {
                 logger(sqlStr);
                 if (err) {
                     conn.release();

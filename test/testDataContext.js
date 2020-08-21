@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TestDataContext = void 0;
 const config = require("./config");
 const account_1 = require("./models/account");
 const order_1 = require("./models/order");
@@ -16,8 +17,8 @@ const person_1 = require("./models/person");
 const table_1 = require("./models/table");
 const tableParty_1 = require("./models/tableParty");
 const user_1 = require("./models/user");
-const sqljs_1 = require("../sqljs");
-class TestDataContext extends sqljs_1.SqlJSDataContext {
+const mysql_1 = require("../mysql");
+class TestDataContext extends mysql_1.MysqlDataContext {
     constructor() {
         super(config);
         this.account = new account_1.Account(this);

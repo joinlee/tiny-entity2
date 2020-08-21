@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SqliteDataContext = void 0;
 const sqlite = require("sqlite3");
 const dataDefine_1 = require("../define/dataDefine");
 const interpreter_1 = require("../interpreter");

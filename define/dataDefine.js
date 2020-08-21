@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Define = void 0;
 require("reflect-metadata");
 const tableDefineMetadataKey = Symbol("tableDefine");
 var Define;

@@ -1,7 +1,6 @@
 import { EntityObjectMysql } from "./mysql/entityObjectMysql";
 import { EntityObjectSqlite } from "./sqlite/entityObjectSqlite";
 import { EntityObject } from "./entityObject";
-import { EntityObjectSqlJS } from "./sqljs/entityObjectSqljs";
 
 export class EntityObjectFactory {
     static GetEntityObjectType(dbType: string) {
@@ -17,10 +16,6 @@ export class EntityObjectFactory {
         else if (dbType == "sqlite") {
             let entityObjectSqlite: typeof EntityObject = EntityObjectSqlite;
             return entityObjectSqlite;
-        }
-        else if (dbType == "sqljs") {
-            let entityObjectSqljs: typeof EntityObject = EntityObjectSqlJS;
-            return entityObjectSqljs;
         }
     }
 }

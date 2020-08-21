@@ -9,10 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MysqlDataContext = void 0;
 const interpreter_1 = require("../interpreter");
 const mysql = require("mysql");
 const dataDefine_1 = require("../define/dataDefine");
-let mysqlPool;
+const mysqlPoolManager_1 = require("./mysqlPoolManager");
 function log() {
     if (process.env.tinyLog == "on") {
         console.log.apply(this, arguments);
@@ -23,8 +24,11 @@ class MysqlDataContext {
     constructor(option) {
         this.querySentence = [];
         this.transStatus = [];
-        if (!mysqlPool)
-            mysqlPool = mysql.createPool(option);
+        let has = mysqlPoolManager_1.MysqlPoolManager.Current.HasPool(option.database);
+        if (!has) {
+            mysqlPoolManager_1.MysqlPoolManager.Current.CreatePool(option.database, mysql.createPool(option));
+        }
+        this.mysqlPool = mysqlPoolManager_1.MysqlPoolManager.Current.GetPool(option.database);
         this.interpreter = new interpreter_1.Interpreter(mysql.escape);
         this.option = option;
     }
@@ -83,7 +87,7 @@ class MysqlDataContext {
             return false;
         }
         return new Promise((resolve, reject) => {
-            mysqlPool.getConnection((err, conn) => __awaiter(this, void 0, void 0, function* () {
+            this.mysqlPool.getConnection((err, conn) => __awaiter(this, void 0, void 0, function* () {
                 if (err) {
                     conn.destroy();
                     reject(err);
@@ -259,7 +263,7 @@ class MysqlDataContext {
     }
     onSubmit(sqlStr) {
         return new Promise((resolve, reject) => {
-            mysqlPool.getConnection((err, conn) => {
+            this.mysqlPool.getConnection((err, conn) => {
                 logger(sqlStr);
                 if (err) {
                     conn.release();
