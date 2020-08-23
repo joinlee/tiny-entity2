@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MysqlDataContext = void 0;
 const interpreter_1 = require("../interpreter");
 const mysql = require("mysql");
 const dataDefine_1 = require("../define/dataDefine");

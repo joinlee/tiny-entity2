@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CodeGenerator = void 0;
 const fs = require("fs");
 const dataDefine_1 = require("./define/dataDefine");
 const transcation_1 = require("./transcation");

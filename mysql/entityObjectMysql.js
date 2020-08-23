@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EntityObjectMysql = void 0;
 const entityObject_1 = require("./../entityObject");
 const interpreter_1 = require("../interpreter");
 const sqlstring = require("sqlstring-sqlite");

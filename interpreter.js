@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Interpreter = void 0;
 const dataDefine_1 = require("./define/dataDefine");
 class Interpreter {
     constructor(escape) {

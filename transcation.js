@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Transaction = void 0;
 function Transaction(ctx, action) {
     return __awaiter(this, void 0, void 0, function* () {
         ctx.BeginTranscation();
