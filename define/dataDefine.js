@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Define = void 0;
 require("reflect-metadata");
 const tableDefineMetadataKey = Symbol("tableDefine");
 var Define;
@@ -31,7 +32,12 @@ var Define;
                                 this[item.ColumnName] = data.split(',');
                             }
                             else if (item.DataType == DataType.JSON && typeof (data) == 'string') {
-                                this[item.ColumnName] = JSON.parse(data);
+                                try {
+                                    this[item.ColumnName] = JSON.parse(data);
+                                }
+                                catch (error) {
+                                    this[item.ColumnName] = data;
+                                }
                             }
                             else {
                                 this[item.ColumnName] = data;

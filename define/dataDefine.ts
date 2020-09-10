@@ -34,7 +34,11 @@ export namespace Define {
                                 this[item.ColumnName] = data.split(',');
                             }
                             else if (item.DataType == DataType.JSON && typeof (data) == 'string') {
-                                this[item.ColumnName] = JSON.parse(data);
+                                try {
+                                    this[item.ColumnName] = JSON.parse(data);
+                                } catch (error) {
+                                    this[item.ColumnName] = data;
+                                }
                             }
                             else {
                                 this[item.ColumnName] = data;
@@ -98,13 +102,13 @@ export namespace Define {
             }
         }
 
-        if(opt.DataType === DataType.INT){
+        if (opt.DataType === DataType.INT) {
             if (opt.DataLength === undefined || opt.DataLength === null) {
                 opt.DataLength = 10;
             }
         }
 
-        if(opt.DataType === DataType.Decimal){
+        if (opt.DataType === DataType.Decimal) {
             if (opt.DataLength === undefined || opt.DataLength === null) {
                 opt.DataLength = 10;
                 opt.DecimalPoint = 2;
@@ -143,7 +147,7 @@ export namespace Define {
             for (let key in entity) {
                 if (typeof (entity[key]) == "function" || key === "interpreter" || key === "ctx" || key === "joinEntities") continue;
                 let s = Reflect.getMetadata(tableName + "_metadataKey", target, key);
-                if(s) list.push(JSON.parse(s));
+                if (s) list.push(JSON.parse(s));
             }
 
             return list;

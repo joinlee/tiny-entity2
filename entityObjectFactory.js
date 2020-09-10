@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.EntityObjectFactory = void 0;
 const entityObjectMysql_1 = require("./mysql/entityObjectMysql");
 const entityObjectSqlite_1 = require("./sqlite/entityObjectSqlite");
 class EntityObjectFactory {
