@@ -210,6 +210,12 @@ class MysqlDataContext {
             }
             else if (item.DataType == dataDefine_1.Define.DataType.JSON) {
                 dataType = 'TEXT';
+                if (this.option.dbVersion) {
+                    let dbVersionTmp = this.option.dbVersion.split('.');
+                    if (parseInt(dbVersionTmp[0]) >= 8) {
+                        dataType = 'JSON';
+                    }
+                }
             }
             let cs = "`" + item.ColumnName + "` " + dataType + lengthStr + " COLLATE " + this.option.collate + " " + valueStr;
             if (item.IsPrimaryKey) {

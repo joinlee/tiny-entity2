@@ -39,6 +39,14 @@ var Define;
                                     this[item.ColumnName] = data;
                                 }
                             }
+                            else if (item.DataType == DataType.BOOL) {
+                                if (data) {
+                                    this[item.ColumnName] = true;
+                                }
+                                else {
+                                    this[item.ColumnName] = false;
+                                }
+                            }
                             else {
                                 this[item.ColumnName] = data;
                             }

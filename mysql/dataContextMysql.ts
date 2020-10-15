@@ -23,9 +23,9 @@ export class MysqlDataContext implements IDataContext {
     private transStatus: any = [];
     private transactionOn: string;
     private interpreter: Interpreter;
-    private option: IPoolConfig;
+    private option: IMysqlDataOption;
     private mysqlPool: IPool;
-    constructor(option: IPoolConfig) {
+    constructor(option: IMysqlDataOption) {
         let has = MysqlPoolManager.Current.HasPool(option.database);
         if (!has) {
             MysqlPoolManager.Current.CreatePool(option.database, mysql.createPool(option));
@@ -224,6 +224,12 @@ export class MysqlDataContext implements IDataContext {
             }
             else if (item.DataType == Define.DataType.JSON) {
                 dataType = 'TEXT';
+                if (this.option.dbVersion) {
+                    let dbVersionTmp = this.option.dbVersion.split('.');
+                    if (parseInt(dbVersionTmp[0]) >= 8) {
+                        dataType = 'JSON';
+                    }
+                }
             }
 
             let cs = "`" + item.ColumnName + "` " + dataType + lengthStr + " COLLATE " + (<any>this.option).collate + " " + valueStr;
@@ -303,4 +309,8 @@ export class MysqlDataContext implements IDataContext {
         this.transStatus = [];
     }
 
+}
+
+export interface IMysqlDataOption extends IPoolConfig {
+    dbVersion?: string;
 }
