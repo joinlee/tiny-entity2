@@ -31,27 +31,8 @@
 
 // // const databaseType = "mysql";
 
-// gulp.task('gctx', () => {
-//     g.generateCtxFile();
-// });
-// gulp.task('gdb', () => {
-//     g.entityToDatabase();
-// });
-
-// gulp.task('gop', () => {
-//     g.generateOpLogFile().then(() => {
-//         g.sqlLogToDatabase().then(()=>{
-//             console.log('gop sucessful!');
-//         });
-//     }).catch(err => {
-//         console.log(err);
-//     });
-
-// });
-
 
 const gulp = require('gulp');
-import * as fs from 'fs';
 import * as path from 'path';
 import { CodeGenerator } from '.';
 process.env.tinyLog = 'on';

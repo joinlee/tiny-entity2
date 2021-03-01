@@ -1,0 +1,14 @@
+{
+    "outDir": "./test",
+    "modelLoadPath": [
+        "./test/models"
+    ],
+    "modelExportPath": [
+        "./models"
+    ],
+    "ctxExportPath": "",
+    "configFilePath": "./config",
+    "outFileName": "testDataContext.ts",
+    "databaseType": "mysql",
+    "packageName": "../mysql/dataContextMysql"
+}

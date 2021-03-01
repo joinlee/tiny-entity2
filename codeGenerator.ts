@@ -201,9 +201,9 @@ export class CodeGenerator {
      * 
      * @memberof CodeGenerator
      */
-    entityToDatabase() {
+    entityToDatabase(): Promise<any> {
         let newCtxInstance = this.getCtxInstance();
-        newCtxInstance.CreateDatabase().then((r) => {
+        return newCtxInstance.CreateDatabase().then((r) => {
             console.log("map to database success!");
         }).catch(err => {
             console.log(err);
