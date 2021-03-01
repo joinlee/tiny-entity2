@@ -249,7 +249,9 @@ export class MysqlDataContext implements IDataContext {
             columnSqlList.push(cs);
         }
 
-        return "CREATE TABLE `" + entity.TableName() + "` ( " + columnSqlList.join(",") + " ) ENGINE=InnoDB DEFAULT CHARSET=" + this.option.charset + " COLLATE=" + (<any>this.option).collate + ";";
+        return `CREATE TABLE \`${entity.TableName()}\` ( ${columnSqlList.join(",")} )`;
+
+        // return "CREATE TABLE `" + entity.TableName() + "` ( " + columnSqlList.join(",") + " ) ENGINE=InnoDB DEFAULT CHARSET=" + this.option.charset + " COLLATE=" + (<any>this.option).collate + ";";
     }
     DeleteTableSql(entity: IEntityObject) {
         return "DROP TABLE IF EXISTS `" + entity.TableName() + "`;";

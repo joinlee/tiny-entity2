@@ -231,7 +231,7 @@ class MysqlDataContext {
             }
             columnSqlList.push(cs);
         }
-        return "CREATE TABLE `" + entity.TableName() + "` ( " + columnSqlList.join(",") + " ) ENGINE=InnoDB DEFAULT CHARSET=" + this.option.charset + " COLLATE=" + this.option.collate + ";";
+        return `CREATE TABLE \`${entity.TableName()}\` ( ${columnSqlList.join(",")} )`;
     }
     DeleteTableSql(entity) {
         return "DROP TABLE IF EXISTS `" + entity.TableName() + "`;";

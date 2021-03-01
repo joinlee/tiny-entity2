@@ -1,6 +1,6 @@
 import { Define } from '../../define/dataDefine';
 import { EntityObjectFactory } from '../../entityObjectFactory';
-const EntityObjectType = EntityObjectFactory.GetEntityObjectType('sqljs');
+const EntityObjectType = EntityObjectFactory.GetEntityObjectType('mysql');
 
 @Define.Table({ TableName: "orders" })
 export class Order extends EntityObjectType<Order> {

@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Person = void 0;
 const dataDefine_1 = require("../../define/dataDefine");
 const entityObjectFactory_1 = require("../../entityObjectFactory");
-const EntityObjectType = entityObjectFactory_1.EntityObjectFactory.GetEntityObjectType('sqljs');
+const EntityObjectType = entityObjectFactory_1.EntityObjectFactory.GetEntityObjectType('mysql');
 let Person = class Person extends EntityObjectType {
 };
 __decorate([
@@ -60,6 +60,12 @@ __decorate([
     }),
     __metadata("design:type", Boolean)
 ], Person.prototype, "status", void 0);
+__decorate([
+    dataDefine_1.Define.Column({
+        DataType: dataDefine_1.Define.DataType.JSON
+    }),
+    __metadata("design:type", Object)
+], Person.prototype, "extends", void 0);
 __decorate([
     dataDefine_1.Define.Mapping({
         Mapping: 'Account',

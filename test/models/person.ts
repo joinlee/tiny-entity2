@@ -1,7 +1,7 @@
 import { Define } from '../../define/dataDefine';
 import { Account } from './account';
 import { EntityObjectFactory } from '../../entityObjectFactory';
-const EntityObjectType = EntityObjectFactory.GetEntityObjectType('sqljs');
+const EntityObjectType = EntityObjectFactory.GetEntityObjectType('mysql');
 
 @Define.Table({ TableName: "person" })
 export class Person extends EntityObjectType<Person> {
@@ -25,25 +25,34 @@ export class Person extends EntityObjectType<Person> {
         DefaultValue: '15928934970'
     })
     phone: string;
-    
+
     @Define.Column({
         DataType: Define.DataType.BOOL
     })
-    gender:Boolean;
+    gender: Boolean;
 
     @Define.Column({
         DataType: Define.DataType.VARCHAR
     })
-    email:string;
+    email: string;
 
     @Define.Column({
         DataType: Define.DataType.BOOL
     })
-    status:Boolean;
+    status: Boolean;
 
-    @Define.Mapping({ 
+    @Define.Column({
+        DataType: Define.DataType.JSON
+    })
+    extends: IPersonExtends;
+
+    @Define.Mapping({
         Mapping: 'Account',
         MappingKey: 'personId'
     })
     accounts: Account[];
+}
+
+export interface IPersonExtends {
+
 }

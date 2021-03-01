@@ -91,7 +91,7 @@ export class CodeGenerator {
     }
 
     private readModelFile(modelPath, exportPath) {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             fs.readdir(modelPath, (err, files) => {
                 if (err) {
                     console.log(err);
@@ -178,7 +178,7 @@ export class CodeGenerator {
 
     private writeFile(data, fileName: string) {
         console.log('file patha:', fileName);
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             fs.writeFile(fileName, data, function (err) {
                 if (err) return reject(err);
                 else return resolve();
@@ -553,11 +553,11 @@ export class CodeGenerator {
     }
 
     private readFile(filePath: string) {
-        return new Promise((resolve, reject) => {
+        return new Promise<string>((resolve, reject) => {
             fs.readFile(filePath, (err, data) => {
                 if (err) {
                     if (err.errno == -4058 || err.errno == -2) {
-                        return resolve();
+                        return resolve('');
                     }
                     return reject(err);
                 }

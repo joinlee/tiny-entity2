@@ -1,13 +1,13 @@
 
             const config = require("./config");
+import { MysqlDataContext } from "../mysql/dataContextMysql"
 import { Account } from "./models/account"
 import { Order } from "./models/order"
 import { Person } from "./models/person"
 import { DeskTable } from "./models/table"
 import { TableParty } from "./models/tableParty"
 import { Users } from "./models/user"
-import { MysqlDataContext } from "../mysql";
-            export class TestDataContext extends  MysqlDataContext{
+            export class TestDataContext extends MysqlDataContext {
                 private account: Account;
 private order: Order;
 private person: Person;

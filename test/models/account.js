@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Account = void 0;
 const dataDefine_1 = require("../../define/dataDefine");
 const entityObjectFactory_1 = require("../../entityObjectFactory");
-const EntityObjectType = entityObjectFactory_1.EntityObjectFactory.GetEntityObjectType('sqljs');
+const EntityObjectType = entityObjectFactory_1.EntityObjectFactory.GetEntityObjectType('mysql');
 let Account = class Account extends EntityObjectType {
 };
 __decorate([
