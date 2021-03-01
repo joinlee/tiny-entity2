@@ -205,7 +205,7 @@ export namespace Define {
     interface MappingOption {
         Mapping?: string;
         MappingType?: MappingType;
-        MappingKey?: { FKey: string, MKey?: string } | string,
+        MappingKey?: { FKey: string, MKey?: string } | string;
     }
 
     export enum MappingType {
