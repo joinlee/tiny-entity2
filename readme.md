@@ -145,7 +145,7 @@ you need install tiny-entity2 global
 ```sh
 $ npm install tiny-entity2 -g
 ```
-at first you need to creat the tinyconfig.json in your project.
+at first you need to create the tinyconfig.json in your project.
 this file provide some options to command.
 ```json
 {
