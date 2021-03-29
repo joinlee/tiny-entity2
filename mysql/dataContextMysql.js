@@ -217,7 +217,7 @@ class MysqlDataContext {
                     }
                 }
             }
-            let cs = "`" + item.ColumnName + "` " + dataType + lengthStr + " COLLATE " + this.option.collate + " " + valueStr;
+            const cs = `\`${item.ColumnName}\` ${dataType}${lengthStr} ${valueStr}`;
             if (item.IsPrimaryKey) {
                 columnSqlList.push("PRIMARY KEY (`" + item.ColumnName + "`)");
             }

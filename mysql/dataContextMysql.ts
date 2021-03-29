@@ -232,7 +232,7 @@ export class MysqlDataContext implements IDataContext {
                 }
             }
 
-            let cs = "`" + item.ColumnName + "` " + dataType + lengthStr + " COLLATE " + (<any>this.option).collate + " " + valueStr;
+            const cs = `\`${item.ColumnName}\` ${dataType}${lengthStr} ${valueStr}`;
             if (item.IsPrimaryKey) {
                 columnSqlList.push("PRIMARY KEY (`" + item.ColumnName + "`)");
             }
