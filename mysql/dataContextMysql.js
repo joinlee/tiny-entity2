@@ -47,6 +47,26 @@ class MysqlDataContext {
             return entity.ConverToEntity(entity);
         });
     }
+    CreateBatch(entities, excludeFields) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let sqlStr = "";
+            let sqlValues = [];
+            for (let entity of entities) {
+                let sqlStrTmp = this.interpreter.TransToInsertSql(entity);
+                let tps = sqlStrTmp.split("VALUES");
+                sqlStr = tps[0];
+                sqlValues.push(tps[1].replace(";", ""));
+            }
+            sqlStr = `${sqlStr}  VALUES ${sqlValues.join(',')};`;
+            if (this.transactionOn) {
+                this.querySentence.push(sqlStr);
+            }
+            else {
+                yield this.onSubmit(sqlStr);
+            }
+            return entities;
+        });
+    }
     Update(entity, excludeFields) {
         return __awaiter(this, void 0, void 0, function* () {
             let sqlStr = this.interpreter.TransToUpdateSql(entity, excludeFields);

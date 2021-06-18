@@ -44,6 +44,12 @@ export class SqliteDataContext implements IDataContext {
         }
         return (<any>entity).ConverToEntity(entity);
     }
+    CreateBatch<T extends IEntityObject>(entities: T[]): Promise<T[]>;
+    CreateBatch<T extends IEntityObject>(entities: T[], excludeFields: string[]): Promise<T[]>;
+    CreateBatch(entities: any, excludeFields?: any) {
+        return null;
+    }
+
     Update<T extends IEntityObject>(entity: T): Promise<T>;
     Update<T extends IEntityObject>(entity: T, excludeFields: string[]): Promise<T>;
     async Update(entity: any, excludeFields?: any) {
@@ -93,7 +99,7 @@ export class SqliteDataContext implements IDataContext {
                         await this.onSubmit(sql);
                     }
                     await this.onSubmit('COMMIT;');
-                    resolve();
+                    resolve(null);
                 } catch (error) {
                     await this.onSubmit('ROLLBACK;');
                     reject(error);

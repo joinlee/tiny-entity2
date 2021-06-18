@@ -49,6 +49,30 @@ export class MysqlDataContext implements IDataContext {
         return (<any>entity).ConverToEntity(entity);
     }
 
+    CreateBatch<T extends IEntityObject>(entities: T[]): Promise<T[]>;
+    CreateBatch<T extends IEntityObject>(entities: T[], excludeFields: string[]): Promise<T[]>;
+    async CreateBatch(entities: any[], excludeFields?: any) {
+        let sqlStr = "";
+        let sqlValues: string[] = [];
+        for (let entity of entities) {
+            let sqlStrTmp = this.interpreter.TransToInsertSql(entity);
+            let tps = sqlStrTmp.split("VALUES");
+
+            sqlStr = tps[0];
+            sqlValues.push(tps[1].replace(";", ""));
+        }
+
+        sqlStr = `${sqlStr}  VALUES ${sqlValues.join(',')};`;
+
+        if (this.transactionOn) {
+            this.querySentence.push(sqlStr);
+        }
+        else {
+            await this.onSubmit(sqlStr);
+        }
+        return entities;
+    }
+
     Update<T extends IEntityObject>(entity: T): Promise<T>;
     Update<T extends IEntityObject>(entity: T, excludeFields: string[]): Promise<T>;
     async Update(entity: any, excludeFields?: any) {

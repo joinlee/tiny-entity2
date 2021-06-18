@@ -4,6 +4,8 @@ import { IQueryParameter, IQuerySelector } from './queryObject';
 export interface IDataContext {
     Create<T extends IEntityObject>(entity: T): Promise<T>;
     Create<T extends IEntityObject>(entity: T, excludeFields: string[]): Promise<T>;
+    CreateBatch<T extends IEntityObject>(entities: T[]): Promise<T[]>;
+    CreateBatch<T extends IEntityObject>(entities: T[], excludeFields: string[]): Promise<T[]>;
     Update<T extends IEntityObject>(entity: T): Promise<T>;
     Update<T extends IEntityObject>(entity: T, excludeFields: string[]): Promise<T>;
     Delete(entity: IEntityObject);

@@ -47,6 +47,9 @@ class SqliteDataContext {
             return entity.ConverToEntity(entity);
         });
     }
+    CreateBatch(entities, excludeFields) {
+        return null;
+    }
     Update(entity, excludeFields) {
         return __awaiter(this, void 0, void 0, function* () {
             let sqlStr = this.interpreter.TransToUpdateSql(entity, excludeFields);
@@ -96,7 +99,7 @@ class SqliteDataContext {
                         yield this.onSubmit(sql);
                     }
                     yield this.onSubmit('COMMIT;');
-                    resolve();
+                    resolve(null);
                 }
                 catch (error) {
                     yield this.onSubmit('ROLLBACK;');
