@@ -464,7 +464,7 @@ class CodeGenerator {
                     columnDefineList.push(indexSql);
                 }
                 else if (dataBaseType == 'sqlite') {
-                    indexSqlList.push(`CREATE INDEX idx_${c.ColumnName} ON ${tableName} (${c.ColumnName});`);
+                    indexSqlList.push(`CREATE INDEX idx_${c.ColumnName}_${tableName} ON ${tableName} (${c.ColumnName});`);
                 }
             }
             else {
