@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EntityObject = exports.EntityObjectBase = void 0;
 class EntityObjectBase {
     First(func, params, entityObj) {
         return null;

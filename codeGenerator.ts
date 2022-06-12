@@ -523,8 +523,13 @@ export class CodeGenerator {
             c.DataType = Define.DataType.TEXT;
         }
 
-        if (diffItem.oldItem.DataType != diffItem.newItem.DataType) {
+        if (action == 'add') {
             columnDefineList.push(Define.DataType[c.DataType] + lengthStr);
+        }
+        else if (action == 'alter') {
+            if (diffItem.oldItem.DataType != diffItem.newItem.DataType) {
+                columnDefineList.push(Define.DataType[c.DataType] + lengthStr);
+            }
         }
 
         if (dataBaseType == 'mysql') {
