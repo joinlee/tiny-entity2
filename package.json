@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@types/mocha": "^2.2.39",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "mocha": "^3.2.0",
     "mysql": "^2.14.1",
     "sqlite3": "^4.0.3",
