@@ -233,12 +233,8 @@ class CodeGenerator {
                     tempColumn.DefaultValue = item.DefaultValue;
                 }
                 else if (oldItem.IsIndex != item.IsIndex) {
-                    let newCtxInstance = this.getCtxInstance();
-                    let dbType = this.GetDataBaseType(newCtxInstance);
-                    if (dbType != 'sqlite') {
-                        isDiff = true;
-                        tempColumn.IsIndex = item.IsIndex;
-                    }
+                    isDiff = true;
+                    tempColumn.IsIndex = item.IsIndex;
                 }
                 else if (oldItem.NotAllowNULL != item.NotAllowNULL) {
                     isDiff = true;
@@ -375,12 +371,22 @@ class CodeGenerator {
                                 }
                             }
                             if (!diffItem.oldItem && diffItem.newItem) {
-                                let columnDefineList = this.getColumnsSqlList(diffItem, 'add');
+                                let cqls = this.getColumnsSqlList(diffItem, 'add', logItem.diffContent.tableName);
+                                let columnDefineList = cqls.columnDefineList;
                                 sqls.push('ALTER TABLE `' + logItem.diffContent.tableName + '` ADD `' + diffItem.newItem.ColumnName + '` ' + columnDefineList.join(' ') + ';');
+                                if (cqls.indexSqlList.length > 0) {
+                                    sqls = sqls.concat(cqls.indexSqlList);
+                                }
                             }
                             if (diffItem.oldItem && diffItem.newItem) {
-                                let columnDefineList = this.getColumnsSqlList(diffItem, 'alter');
-                                sqls.push(`ALTER TABLE \`${logItem.diffContent.tableName}\` CHANGE \`${diffItem.oldItem.ColumnName}\` \`${diffItem.newItem.ColumnName}\` ${columnDefineList.join(' ')};`);
+                                let cqls = this.getColumnsSqlList(diffItem, 'alter', logItem.diffContent.tableName);
+                                let columnDefineList = cqls.columnDefineList;
+                                if (columnDefineList.length > 0 || diffItem.oldItem.ColumnName != diffItem.newItem.ColumnName) {
+                                    sqls.push(`ALTER TABLE \`${logItem.diffContent.tableName}\` CHANGE \`${diffItem.oldItem.ColumnName}\` \`${diffItem.newItem.ColumnName}\` ${columnDefineList.join(' ')};`);
+                                }
+                                if (cqls.indexSqlList.length > 0) {
+                                    sqls = sqls.concat(cqls.indexSqlList);
+                                }
                             }
                         }
                     }
@@ -400,9 +406,10 @@ class CodeGenerator {
         }
         return dataBaseType;
     }
-    getColumnsSqlList(diffItem, action) {
+    getColumnsSqlList(diffItem, action, tableName) {
         let newCtxInstance = this.getCtxInstance();
         let dataBaseType = this.GetDataBaseType(newCtxInstance);
+        let indexSqlList = [];
         let columnDefineList = [];
         let c = diffItem.newItem;
         let lengthStr = '';
@@ -413,7 +420,9 @@ class CodeGenerator {
         if (c.DataType == dataDefine_1.Define.DataType.JSON) {
             c.DataType = dataDefine_1.Define.DataType.TEXT;
         }
-        columnDefineList.push(dataDefine_1.Define.DataType[c.DataType] + lengthStr);
+        if (diffItem.oldItem.DataType != diffItem.newItem.DataType) {
+            columnDefineList.push(dataDefine_1.Define.DataType[c.DataType] + lengthStr);
+        }
         if (dataBaseType == 'mysql') {
             columnDefineList.push(c.NotAllowNULL ? 'NOT NULL' : 'NULL');
         }
@@ -426,30 +435,53 @@ class CodeGenerator {
                 valueStr = "DEFAULT " + c.DefaultValue;
             }
         }
-        columnDefineList.push(valueStr);
+        if (valueStr) {
+            columnDefineList.push(valueStr);
+        }
         if (action == 'add') {
-            if (c.IsIndex && dataBaseType == 'mysql') {
-                columnDefineList.push(', Add INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE');
+            if (c.IsIndex) {
+                if (dataBaseType == 'mysql') {
+                    columnDefineList.push(', Add INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE');
+                }
+                else if (dataBaseType == "sqlite") {
+                    indexSqlList.push(`CREATE INDEX idx_${c.ColumnName}_${tableName} ON ${tableName} (${c.ColumnName});`);
+                }
             }
         }
         else if (action == 'alter') {
             if (c.IsIndex) {
                 let indexSql = '';
                 if (diffItem.oldItem && diffItem.oldItem.IsIndex) {
-                    indexSql = ',DROP INDEX `idx_' + diffItem.oldItem.ColumnName;
+                    if (dataBaseType == 'mysql') {
+                        indexSql = ',DROP INDEX `idx_' + diffItem.oldItem.ColumnName;
+                    }
+                    else if (dataBaseType == 'sqlite') {
+                        indexSqlList.push(`DROP INDEX idx_${diffItem.oldItem.ColumnName}_${tableName};`);
+                    }
                 }
                 if (dataBaseType == 'mysql') {
                     indexSql += ', ADD INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE';
                     columnDefineList.push(indexSql);
                 }
+                else if (dataBaseType == 'sqlite') {
+                    indexSqlList.push(`CREATE INDEX idx_${c.ColumnName}_${tableName} ON ${tableName} (${c.ColumnName});`);
+                }
             }
             else {
                 if (diffItem.oldItem && diffItem.oldItem.IsIndex) {
-                    columnDefineList.push(',DROP INDEX `idx_' + diffItem.oldItem.ColumnName + '`');
+                    if (dataBaseType == 'mysql') {
+                        columnDefineList.push(',DROP INDEX `idx_' + diffItem.oldItem.ColumnName + '`');
+                    }
+                    else if (dataBaseType == 'sqlite') {
+                        indexSqlList.push(`DROP INDEX idx_${diffItem.oldItem.ColumnName}_${tableName};`);
+                    }
                 }
             }
         }
-        return columnDefineList;
+        return {
+            columnDefineList,
+            indexSqlList,
+        };
     }
     readFile(filePath) {
         return new Promise((resolve, reject) => {
