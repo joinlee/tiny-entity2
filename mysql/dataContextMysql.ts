@@ -318,7 +318,6 @@ export class MysqlDataContext implements IDataContext {
             this.mysqlPool.getConnection((err, conn) => {
                 logger(sqlStr);
                 if (err) {
-                    conn.release();
                     reject(err);
                 }
                 conn.query(sqlStr, (err, args) => {
