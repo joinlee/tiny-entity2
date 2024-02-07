@@ -292,6 +292,7 @@ class MysqlDataContext {
             this.mysqlPool.getConnection((err, conn) => {
                 logger(sqlStr);
                 if (err) {
+                    console.log("error sql:", sqlStr);
                     reject(err);
                 }
                 conn.query(sqlStr, (err, args) => {
