@@ -9,6 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TableParty = void 0;
 const dataDefine_1 = require("../../define/dataDefine");
 const entityObjectFactory_1 = require("../../entityObjectFactory");
 const EntityObjectType = entityObjectFactory_1.EntityObjectFactory.GetEntityObjectType('mysql');
@@ -30,4 +31,3 @@ TableParty = __decorate([
     dataDefine_1.Define.Table({ TableName: "tableparty" })
 ], TableParty);
 exports.TableParty = TableParty;
-//# sourceMappingURL=tableParty.js.map

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Guid = void 0;
 class Guid {
     static GetGuid() {
         var s = [];
@@ -15,4 +16,3 @@ class Guid {
     }
 }
 exports.Guid = Guid;
-//# sourceMappingURL=guid.js.map

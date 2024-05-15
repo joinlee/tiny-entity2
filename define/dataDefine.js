@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Define = void 0;
 require("reflect-metadata");
 const tableDefineMetadataKey = Symbol("tableDefine");
 var Define;
@@ -182,4 +183,3 @@ var Define;
         MappingType[MappingType["One"] = 1] = "One";
     })(MappingType = Define.MappingType || (Define.MappingType = {}));
 })(Define = exports.Define || (exports.Define = {}));
-//# sourceMappingURL=dataDefine.js.map
