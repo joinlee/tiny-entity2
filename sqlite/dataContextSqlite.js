@@ -31,6 +31,15 @@ class SqliteDataContext {
         let USER_DIR = process.env.USER_DIR;
         USER_DIR || (USER_DIR = "");
         this.db = new sqlite3.Database(path.resolve(`${USER_DIR}${option.database}`));
+        this.db.serialize(() => {
+            this.db.run('PRAGMA journal_mode = WAL;');
+            this.db.run('PRAGMA auto_vacuum = FULL;');
+            this.db.run('PRAGMA synchronous = FULL;');
+        });
+        this.db.on('error', (err) => {
+            console.error('SqliteDataContext->', err);
+            option.onError && option.onError(err);
+        });
     }
     get ObjectName() {
         return 'SqliteDataContext';

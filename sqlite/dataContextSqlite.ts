@@ -30,6 +30,16 @@ export class SqliteDataContext implements IDataContext {
         let USER_DIR = process.env.USER_DIR;
         USER_DIR || (USER_DIR = "");
         this.db = new sqlite3.Database(path.resolve(`${USER_DIR}${option.database}`));
+        this.db.serialize(() => {
+            this.db.run('PRAGMA journal_mode = WAL;'); // 使用WAL模式，允许多个进程读写同一个数据库
+            this.db.run('PRAGMA auto_vacuum = FULL;'); // 自动清理空闲空间，防止文件膨胀
+            this.db.run('PRAGMA synchronous = FULL;');
+        });
+
+        this.db.on('error', (err) => {
+            console.error('SqliteDataContext->', err);
+            option.onError && option.onError(err);
+        });
         // this.db = SqlitePool.Current.GetConnection(option);
     }
     Create<T extends IEntityObject>(entity: T): Promise<T>;
