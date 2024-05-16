@@ -44,4 +44,4 @@ gulp.task('gop', async () => {
     }
     console.log('gop successful!');
     process.exit(0);
-}));
+});
