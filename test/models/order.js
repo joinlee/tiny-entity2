@@ -62,4 +62,3 @@ Order = __decorate([
     dataDefine_1.Define.Table({ TableName: "orders" })
 ], Order);
 exports.Order = Order;
-//# sourceMappingURL=order.js.map

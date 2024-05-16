@@ -16,4 +16,3 @@ class Guid {
     }
 }
 exports.Guid = Guid;
-//# sourceMappingURL=guid.js.map

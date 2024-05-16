@@ -291,4 +291,3 @@ class MysqlDataContext {
     }
 }
 exports.MysqlDataContext = MysqlDataContext;
-//# sourceMappingURL=dataContextMysql.js.map

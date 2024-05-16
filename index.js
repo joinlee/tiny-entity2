@@ -16,4 +16,3 @@ __exportStar(require("./entityObject"), exports);
 __exportStar(require("./dataContext"), exports);
 __exportStar(require("./entityObjectFactory"), exports);
 __exportStar(require("./transcation"), exports);
-//# sourceMappingURL=index.js.map

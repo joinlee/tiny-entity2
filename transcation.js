@@ -14,4 +14,3 @@ async function Transaction(ctx, action) {
     }
 }
 exports.Transaction = Transaction;
-//# sourceMappingURL=transcation.js.map

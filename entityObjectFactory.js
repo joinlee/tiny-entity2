@@ -19,4 +19,3 @@ class EntityObjectFactory {
     }
 }
 exports.EntityObjectFactory = EntityObjectFactory;
-//# sourceMappingURL=entityObjectFactory.js.map

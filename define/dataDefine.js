@@ -183,4 +183,3 @@ var Define;
         MappingType[MappingType["One"] = 1] = "One";
     })(MappingType = Define.MappingType || (Define.MappingType = {}));
 })(Define = exports.Define || (exports.Define = {}));
-//# sourceMappingURL=dataDefine.js.map

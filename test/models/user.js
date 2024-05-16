@@ -55,4 +55,3 @@ Users = __decorate([
     dataDefine_1.Define.Table({ TableName: "users" })
 ], Users);
 exports.Users = Users;
-//# sourceMappingURL=user.js.map

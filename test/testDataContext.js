@@ -40,4 +40,3 @@ class TestDataContext extends dataContextMysql_1.MysqlDataContext {
     }
 }
 exports.TestDataContext = TestDataContext;
-//# sourceMappingURL=testDataContext.js.map

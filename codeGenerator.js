@@ -401,8 +401,13 @@ class CodeGenerator {
         if (c.DataType == dataDefine_1.Define.DataType.JSON) {
             c.DataType = dataDefine_1.Define.DataType.TEXT;
         }
-        if (diffItem.oldItem.DataType != diffItem.newItem.DataType) {
+        if (action == 'add') {
             columnDefineList.push(dataDefine_1.Define.DataType[c.DataType] + lengthStr);
+        }
+        else if (action == 'alter') {
+            if (diffItem.oldItem.DataType != diffItem.newItem.DataType) {
+                columnDefineList.push(dataDefine_1.Define.DataType[c.DataType] + lengthStr);
+            }
         }
         if (dataBaseType == 'mysql') {
             columnDefineList.push(c.NotAllowNULL ? 'NOT NULL' : 'NULL');
@@ -488,4 +493,3 @@ class CodeGenerator {
     }
 }
 exports.CodeGenerator = CodeGenerator;
-//# sourceMappingURL=codeGenerator.js.map

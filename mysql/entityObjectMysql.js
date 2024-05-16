@@ -225,4 +225,3 @@ class EntityObjectMysql extends entityObject_1.EntityObject {
     }
 }
 exports.EntityObjectMysql = EntityObjectMysql;
-//# sourceMappingURL=entityObjectMysql.js.map

@@ -17,4 +17,3 @@ class MysqlPoolManager {
 }
 exports.MysqlPoolManager = MysqlPoolManager;
 MysqlPoolManager.Current = new MysqlPoolManager();
-//# sourceMappingURL=mysqlPoolManager.js.map

@@ -41,4 +41,3 @@ Account = __decorate([
     dataDefine_1.Define.Table({ TableName: "account" })
 ], Account);
 exports.Account = Account;
-//# sourceMappingURL=account.js.map

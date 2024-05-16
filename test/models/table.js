@@ -31,4 +31,3 @@ DeskTable = __decorate([
     dataDefine_1.Define.Table({ TableName: "desktable" })
 ], DeskTable);
 exports.DeskTable = DeskTable;
-//# sourceMappingURL=table.js.map

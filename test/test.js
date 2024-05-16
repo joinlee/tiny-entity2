@@ -181,4 +181,3 @@ describe("transaction", () => {
         await ctx.Delete(x => x.id != null, ctx.Person);
     });
 });
-//# sourceMappingURL=test.js.map

@@ -73,4 +73,3 @@ class EntityObject extends EntityObjectBase {
     }
 }
 exports.EntityObject = EntityObject;
-//# sourceMappingURL=entityObject.js.map

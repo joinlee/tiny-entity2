@@ -55,4 +55,3 @@ function getGeneratorInstance(tinyconfigFilePath) {
     });
     return codeGen;
 }
-//# sourceMappingURL=cmd.js.map

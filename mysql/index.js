@@ -12,4 +12,3 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./dataContextMysql"), exports);
 __exportStar(require("./entityObjectMysql"), exports);
-//# sourceMappingURL=index.js.map

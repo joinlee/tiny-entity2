@@ -225,4 +225,3 @@ class EntityObjectSqlite extends entityObject_1.EntityObject {
     }
 }
 exports.EntityObjectSqlite = EntityObjectSqlite;
-//# sourceMappingURL=entityObjectSqlite.js.map

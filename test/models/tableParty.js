@@ -31,4 +31,3 @@ TableParty = __decorate([
     dataDefine_1.Define.Table({ TableName: "tableparty" })
 ], TableParty);
 exports.TableParty = TableParty;
-//# sourceMappingURL=tableParty.js.map
