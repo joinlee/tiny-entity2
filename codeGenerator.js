@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CodeGenerator = void 0;
 const fs = require("fs");
@@ -21,14 +12,12 @@ class CodeGenerator {
         if (!options.packageName)
             this.options.packageName = 'tiny-entity2';
     }
-    loadEntityModels() {
-        return __awaiter(this, void 0, void 0, function* () {
-            for (let i = 0; i < this.options.modelLoadPath.length; i++) {
-                let modelPath = this.options.modelLoadPath[i];
-                let exportPath = this.options.modelExportPath[i];
-                yield this.readModelFile(modelPath, exportPath);
-            }
-        });
+    async loadEntityModels() {
+        for (let i = 0; i < this.options.modelLoadPath.length; i++) {
+            let modelPath = this.options.modelLoadPath[i];
+            let exportPath = this.options.modelExportPath[i];
+            await this.readModelFile(modelPath, exportPath);
+        }
     }
     readModelFile(modelPath, exportPath) {
         return new Promise((resolve, reject) => {
@@ -57,36 +46,35 @@ class CodeGenerator {
             });
         });
     }
-    generateCtxFile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.loadEntityModels();
-            let importList = [];
-            let baseCtx = "";
-            importList.push(`const config = require("${this.options.configFilePath}");`);
-            if (this.options.databaseType == "mysql") {
-                baseCtx = "MysqlDataContext";
-            }
-            else if (this.options.databaseType == "sqlite") {
-                baseCtx = "SqliteDataContext";
-            }
-            else if (this.options.databaseType == 'sqljs') {
-                baseCtx = "SqlJSDataContext";
-            }
-            importList.push(`import { ${baseCtx} } from "${this.options.packageName}"`);
-            this.modelList.forEach(item => {
-                importList.push(`import { ${item.className} } from "${item.filePath}"`);
+    async generateCtxFile() {
+        await this.loadEntityModels();
+        let importList = [];
+        let baseCtx = "";
+        importList.push(`const config = require("${this.options.configFilePath}");`);
+        if (this.options.databaseType == "mysql") {
+            baseCtx = "MysqlDataContext";
+        }
+        else if (this.options.databaseType == "sqlite") {
+            baseCtx = "SqliteDataContext";
+        }
+        else if (this.options.databaseType == 'sqljs') {
+            baseCtx = "SqlJSDataContext";
+        }
+        importList.push(`import { ${baseCtx} } from "${this.options.packageName}"`);
+        this.modelList.forEach(item => {
+            importList.push(`import { ${item.className} } from "${item.filePath}"`);
+        });
+        let fileName = this.upperFirstLetter(this.options.outFileName.split('.')[0]);
+        let tempList = [];
+        this.modelList.forEach(item => {
+            tempList.push({
+                feild: "private " + this.lowerFirstLetter(item.className) + ": " + item.className + ";",
+                property: "get " + item.className + "() { return this." + this.lowerFirstLetter(item.className) + "; }",
+                constructorMethod: "this." + this.lowerFirstLetter(item.className) + " = new " + item.className + "(this);",
+                createDatabaseMethod: "await super.CreateTable(this." + this.lowerFirstLetter(item.className) + ");"
             });
-            let fileName = this.upperFirstLetter(this.options.outFileName.split('.')[0]);
-            let tempList = [];
-            this.modelList.forEach(item => {
-                tempList.push({
-                    feild: "private " + this.lowerFirstLetter(item.className) + ": " + item.className + ";",
-                    property: "get " + item.className + "() { return this." + this.lowerFirstLetter(item.className) + "; }",
-                    constructorMethod: "this." + this.lowerFirstLetter(item.className) + " = new " + item.className + "(this);",
-                    createDatabaseMethod: "await super.CreateTable(this." + this.lowerFirstLetter(item.className) + ");"
-                });
-            });
-            let context = `
+        });
+        let context = `
             ${importList.join('\n')}
             export class ${fileName} extends ${baseCtx} {
                 ${tempList.map(x => x.feild).join('\n')}
@@ -103,13 +91,12 @@ class CodeGenerator {
 
                 GetEntityObjectList(){
                     return [${this.modelList.map(item => {
-                return "this." + this.lowerFirstLetter(item.className);
-            }).join(',')}];
+            return "this." + this.lowerFirstLetter(item.className);
+        }).join(',')}];
                 }
             }
             `;
-            this.writeFile(context, this.options.outDir + "/" + this.options.outFileName);
-        });
+        this.writeFile(context, this.options.outDir + "/" + this.options.outFileName);
     }
     writeFile(data, fileName) {
         console.log('file patha:', fileName);
@@ -138,79 +125,75 @@ class CodeGenerator {
             console.log(err);
         });
     }
-    generateOpLogFile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                let newCtxInstance = this.getCtxInstance();
-                let USER_DIR = process.env.USER_DIR;
-                USER_DIR || (USER_DIR = this.options.outDir + '/');
-                this.hisStr = yield this.readFile(path.resolve(`${USER_DIR}oplog.log`));
-                if (this.hisStr) {
-                    let hisData = JSON.parse(this.hisStr);
-                    let lastLogItem = hisData[hisData.length - 1];
-                    let r = this.contrastTable(lastLogItem.logs);
-                    if (r.length > 0) {
-                        this.hisStr = JSON.stringify([lastLogItem, { version: Date.now(), logs: r }]);
-                    }
+    async generateOpLogFile() {
+        try {
+            let newCtxInstance = this.getCtxInstance();
+            let USER_DIR = process.env.USER_DIR;
+            USER_DIR || (USER_DIR = this.options.outDir + '/');
+            this.hisStr = await this.readFile(path.resolve(`${USER_DIR}oplog.log`));
+            if (this.hisStr) {
+                let hisData = JSON.parse(this.hisStr);
+                let lastLogItem = hisData[hisData.length - 1];
+                let r = this.contrastTable(lastLogItem.logs);
+                if (r.length > 0) {
+                    this.hisStr = JSON.stringify([lastLogItem, { version: Date.now(), logs: r }]);
+                }
+            }
+            else {
+                let oplogList = [];
+                for (let item of newCtxInstance.GetEntityObjectList()) {
+                    let t = newCtxInstance.CreateOperateLog(item);
+                    oplogList.push({
+                        action: 'init',
+                        content: t
+                    });
+                }
+                this.hisStr = JSON.stringify([{ version: Date.now(), logs: oplogList }]);
+            }
+            let sqls = await this.transLogToSqlList(this.hisStr);
+            let sqlStr = await this.readFile(path.resolve(`${USER_DIR}sqllogs.logq`));
+            if (sqls.length > 0) {
+                if (sqlStr) {
+                    this.sqlData = JSON.parse(sqlStr);
+                    this.sqlData.push({
+                        version: Date.now(),
+                        sql: sqls
+                    });
                 }
                 else {
-                    let oplogList = [];
-                    for (let item of newCtxInstance.GetEntityObjectList()) {
-                        let t = newCtxInstance.CreateOperateLog(item);
-                        oplogList.push({
-                            action: 'init',
-                            content: t
-                        });
-                    }
-                    this.hisStr = JSON.stringify([{ version: Date.now(), logs: oplogList }]);
-                }
-                let sqls = yield this.transLogToSqlList(this.hisStr);
-                let sqlStr = yield this.readFile(path.resolve(`${USER_DIR}sqllogs.logq`));
-                if (sqls.length > 0) {
-                    if (sqlStr) {
-                        this.sqlData = JSON.parse(sqlStr);
-                        this.sqlData.push({
-                            version: Date.now(),
-                            sql: sqls
-                        });
-                    }
-                    else {
-                        this.sqlData = [{ version: Date.now(), sql: sqls }];
-                    }
+                    this.sqlData = [{ version: Date.now(), sql: sqls }];
                 }
             }
-            catch (error) {
-                console.log('generateOpLogFile', error);
-            }
-        });
+        }
+        catch (error) {
+            console.log('generateOpLogFile', error);
+        }
     }
-    sqlLogToDatabase() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                let USER_DIR = process.env.USER_DIR;
-                USER_DIR || (USER_DIR = this.options.outDir + "/");
-                if (this.sqlData) {
-                    let lastSql = this.sqlData[this.sqlData.length - 1];
-                    if (!lastSql.done) {
-                        let newCtxInstance = this.getCtxInstance();
-                        console.log(newCtxInstance.ObjectName);
-                        yield transcation_1.Transaction(newCtxInstance, (ctx) => __awaiter(this, void 0, void 0, function* () {
-                            yield newCtxInstance.Query(lastSql.sql, true);
-                        }));
-                        console.log('nnnnnnnnnnnnnnnnnn');
-                        lastSql.done = true;
-                        yield this.writeFile(JSON.stringify(this.sqlData), path.resolve(`${USER_DIR}sqllogs.logq`));
-                        yield this.writeFile(this.hisStr, path.resolve(`${USER_DIR}oplog.log`));
-                    }
-                    this.sqlData = null;
-                    this.hisStr = null;
-                    return;
+    async sqlLogToDatabase() {
+        try {
+            let USER_DIR = process.env.USER_DIR;
+            USER_DIR || (USER_DIR = this.options.outDir + "/");
+            if (this.sqlData) {
+                let lastSql = this.sqlData[this.sqlData.length - 1];
+                if (!lastSql.done) {
+                    let newCtxInstance = this.getCtxInstance();
+                    console.log(newCtxInstance.ObjectName);
+                    await transcation_1.Transaction(newCtxInstance, async (ctx) => {
+                        await newCtxInstance.Query(lastSql.sql, true);
+                    });
+                    console.log('nnnnnnnnnnnnnnnnnn');
+                    lastSql.done = true;
+                    await this.writeFile(JSON.stringify(this.sqlData), path.resolve(`${USER_DIR}sqllogs.logq`));
+                    await this.writeFile(this.hisStr, path.resolve(`${USER_DIR}oplog.log`));
                 }
+                this.sqlData = null;
+                this.hisStr = null;
+                return;
             }
-            catch (error) {
-                console.log(error);
-            }
-        });
+        }
+        catch (error) {
+            console.log(error);
+        }
     }
     contrastColumn(oldC, newC) {
         let diff = [];
@@ -335,66 +318,64 @@ class CodeGenerator {
         }
         return diff;
     }
-    transLogToSqlList(hisStr) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let sqls = [];
-            let newCtxInstance = this.getCtxInstance();
-            let dataBaseType = this.GetDataBaseType(newCtxInstance);
-            if (hisStr) {
-                let hisData = JSON.parse(hisStr);
-                let lastLogItem = hisData[hisData.length - 1];
-                for (let logItem of lastLogItem.logs) {
-                    let tableList = newCtxInstance.GetEntityObjectList();
-                    let table;
-                    for (let tableItem of tableList) {
-                        if (tableItem.TableName() == logItem.content.tableName) {
-                            table = tableItem;
-                        }
+    async transLogToSqlList(hisStr) {
+        let sqls = [];
+        let newCtxInstance = this.getCtxInstance();
+        let dataBaseType = this.GetDataBaseType(newCtxInstance);
+        if (hisStr) {
+            let hisData = JSON.parse(hisStr);
+            let lastLogItem = hisData[hisData.length - 1];
+            for (let logItem of lastLogItem.logs) {
+                let tableList = newCtxInstance.GetEntityObjectList();
+                let table;
+                for (let tableItem of tableList) {
+                    if (tableItem.TableName() == logItem.content.tableName) {
+                        table = tableItem;
                     }
-                    if (logItem.action == 'init') {
+                }
+                if (logItem.action == 'init') {
+                    sqls.push(newCtxInstance.DeleteTableSql(table));
+                    sqls.push(newCtxInstance.CreateTableSql(table));
+                }
+                else if (logItem.action == 'add') {
+                    sqls.push(newCtxInstance.CreateTableSql(table));
+                }
+                else if (logItem.action == 'drop') {
+                    if (table) {
                         sqls.push(newCtxInstance.DeleteTableSql(table));
-                        sqls.push(newCtxInstance.CreateTableSql(table));
                     }
-                    else if (logItem.action == 'add') {
-                        sqls.push(newCtxInstance.CreateTableSql(table));
-                    }
-                    else if (logItem.action == 'drop') {
-                        if (table) {
-                            sqls.push(newCtxInstance.DeleteTableSql(table));
+                }
+                else if (logItem.action == 'alter') {
+                    for (let diffItem of logItem.diffContent.column) {
+                        if (diffItem.oldItem && !diffItem.newItem) {
+                            if (dataBaseType == 'mysql') {
+                                sqls.push('ALTER TABLE `' + logItem.diffContent.tableName + '` DROP `' + diffItem.oldItem.ColumnName + '`;');
+                            }
                         }
-                    }
-                    else if (logItem.action == 'alter') {
-                        for (let diffItem of logItem.diffContent.column) {
-                            if (diffItem.oldItem && !diffItem.newItem) {
-                                if (dataBaseType == 'mysql') {
-                                    sqls.push('ALTER TABLE `' + logItem.diffContent.tableName + '` DROP `' + diffItem.oldItem.ColumnName + '`;');
-                                }
+                        if (!diffItem.oldItem && diffItem.newItem) {
+                            let cqls = this.getColumnsSqlList(diffItem, 'add', logItem.diffContent.tableName);
+                            let columnDefineList = cqls.columnDefineList;
+                            sqls.push('ALTER TABLE `' + logItem.diffContent.tableName + '` ADD `' + diffItem.newItem.ColumnName + '` ' + columnDefineList.join(' ') + ';');
+                            if (cqls.indexSqlList.length > 0) {
+                                sqls = sqls.concat(cqls.indexSqlList);
                             }
-                            if (!diffItem.oldItem && diffItem.newItem) {
-                                let cqls = this.getColumnsSqlList(diffItem, 'add', logItem.diffContent.tableName);
-                                let columnDefineList = cqls.columnDefineList;
-                                sqls.push('ALTER TABLE `' + logItem.diffContent.tableName + '` ADD `' + diffItem.newItem.ColumnName + '` ' + columnDefineList.join(' ') + ';');
-                                if (cqls.indexSqlList.length > 0) {
-                                    sqls = sqls.concat(cqls.indexSqlList);
-                                }
+                        }
+                        if (diffItem.oldItem && diffItem.newItem) {
+                            let cqls = this.getColumnsSqlList(diffItem, 'alter', logItem.diffContent.tableName);
+                            let columnDefineList = cqls.columnDefineList;
+                            if (columnDefineList.length > 0 || diffItem.oldItem.ColumnName != diffItem.newItem.ColumnName) {
+                                sqls.push(`ALTER TABLE \`${logItem.diffContent.tableName}\` CHANGE \`${diffItem.oldItem.ColumnName}\` \`${diffItem.newItem.ColumnName}\` ${columnDefineList.join(' ')};`);
                             }
-                            if (diffItem.oldItem && diffItem.newItem) {
-                                let cqls = this.getColumnsSqlList(diffItem, 'alter', logItem.diffContent.tableName);
-                                let columnDefineList = cqls.columnDefineList;
-                                if (columnDefineList.length > 0 || diffItem.oldItem.ColumnName != diffItem.newItem.ColumnName) {
-                                    sqls.push(`ALTER TABLE \`${logItem.diffContent.tableName}\` CHANGE \`${diffItem.oldItem.ColumnName}\` \`${diffItem.newItem.ColumnName}\` ${columnDefineList.join(' ')};`);
-                                }
-                                if (cqls.indexSqlList.length > 0) {
-                                    sqls = sqls.concat(cqls.indexSqlList);
-                                }
+                            if (cqls.indexSqlList.length > 0) {
+                                sqls = sqls.concat(cqls.indexSqlList);
                             }
                         }
                     }
                 }
             }
-            console.log(sqls);
-            return sqls;
-        });
+        }
+        console.log(sqls);
+        return sqls;
     }
     GetDataBaseType(newCtxInstance) {
         let dataBaseType = '';

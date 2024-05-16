@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntityObjectSqlite = void 0;
 const entityObject_1 = require("../entityObject");
@@ -33,39 +24,33 @@ class EntityObjectSqlite extends entityObject_1.EntityObject {
         this.interpreter.TransToSQLOfWhere(func, this.GetTableName(entityObj), params);
         return this;
     }
-    First(func, params, entityObj) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (func) {
-                this.Where(func, params, entityObj);
-            }
-            this.Take(1);
-            let r = yield this.ToList();
-            if (r.length === 0)
-                return null;
-            return r[0];
-        });
+    async First(func, params, entityObj) {
+        if (func) {
+            this.Where(func, params, entityObj);
+        }
+        this.Take(1);
+        let r = await this.ToList();
+        if (r.length === 0)
+            return null;
+        return r[0];
     }
-    Count(func, params) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (func) {
-                this.Where(func, params);
-            }
-            this.interpreter.TransToSQLCount(this);
-            let sql = this.interpreter.GetFinalSql(this.TableName());
-            let r = yield this.ctx.Query(sql);
-            let result = 0;
-            for (let key of Object.keys(r[0])) {
-                result = r[0][key];
-            }
-            this.Disposed();
-            return result;
-        });
+    async Count(func, params) {
+        if (func) {
+            this.Where(func, params);
+        }
+        this.interpreter.TransToSQLCount(this);
+        let sql = this.interpreter.GetFinalSql(this.TableName());
+        let r = await this.ctx.Query(sql);
+        let result = 0;
+        for (let key of Object.keys(r[0])) {
+            result = r[0][key];
+        }
+        this.Disposed();
+        return result;
     }
-    Any(func, params) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let count = yield this.Count(func, params);
-            return count > 0;
-        });
+    async Any(func, params) {
+        let count = await this.Count(func, params);
+        return count > 0;
     }
     Contains(func, values, entity) {
         if (values && values.length == 0)
@@ -122,26 +107,24 @@ class EntityObjectSqlite extends entityObject_1.EntityObject {
         this.interpreter.TransToSQLOfOn(func, mTableName);
         return this;
     }
-    ToList() {
-        return __awaiter(this, void 0, void 0, function* () {
-            let sql = this.interpreter.GetFinalSql(this.TableName());
-            let rows = yield this.ctx.Query(sql);
-            let resultList = [];
-            if (this.joinEntities.length > 0) {
-                if (rows.length > 0) {
-                    let r = this.TransRowToEnity(rows);
-                    resultList = this.SplitColumnList(r);
-                }
+    async ToList() {
+        let sql = this.interpreter.GetFinalSql(this.TableName());
+        let rows = await this.ctx.Query(sql);
+        let resultList = [];
+        if (this.joinEntities.length > 0) {
+            if (rows.length > 0) {
+                let r = this.TransRowToEnity(rows);
+                resultList = this.SplitColumnList(r);
             }
-            else {
-                for (let row of rows) {
-                    let entity = this.ConverToEntity(row);
-                    resultList.push(entity);
-                }
+        }
+        else {
+            for (let row of rows) {
+                let entity = this.ConverToEntity(row);
+                resultList.push(entity);
             }
-            this.Disposed();
-            return resultList;
-        });
+        }
+        this.Disposed();
+        return resultList;
     }
     SplitColumnList(dataList) {
         let objectNameList = [];

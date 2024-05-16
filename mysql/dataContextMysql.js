@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MysqlDataContext = void 0;
 const interpreter_1 = require("../interpreter");
@@ -35,49 +26,43 @@ class MysqlDataContext {
     get ObjectName() {
         return 'MysqlDataContext';
     }
-    Create(entity, excludeFields) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let sqlStr = this.interpreter.TransToInsertSql(entity);
-            if (this.transactionOn) {
-                this.querySentence.push(sqlStr);
-            }
-            else {
-                yield this.onSubmit(sqlStr);
-            }
-            return entity.ConverToEntity(entity);
-        });
+    async Create(entity, excludeFields) {
+        let sqlStr = this.interpreter.TransToInsertSql(entity);
+        if (this.transactionOn) {
+            this.querySentence.push(sqlStr);
+        }
+        else {
+            await this.onSubmit(sqlStr);
+        }
+        return entity.ConverToEntity(entity);
     }
-    CreateBatch(entities, excludeFields) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let sqlStr = "";
-            let sqlValues = [];
-            for (let entity of entities) {
-                let sqlStrTmp = this.interpreter.TransToInsertSql(entity);
-                let tps = sqlStrTmp.split("VALUES");
-                sqlStr = tps[0];
-                sqlValues.push(tps[1].replace(";", ""));
-            }
-            sqlStr = `${sqlStr}  VALUES ${sqlValues.join(',')};`;
-            if (this.transactionOn) {
-                this.querySentence.push(sqlStr);
-            }
-            else {
-                yield this.onSubmit(sqlStr);
-            }
-            return entities;
-        });
+    async CreateBatch(entities, excludeFields) {
+        let sqlStr = "";
+        let sqlValues = [];
+        for (let entity of entities) {
+            let sqlStrTmp = this.interpreter.TransToInsertSql(entity);
+            let tps = sqlStrTmp.split("VALUES");
+            sqlStr = tps[0];
+            sqlValues.push(tps[1].replace(";", ""));
+        }
+        sqlStr = `${sqlStr}  VALUES ${sqlValues.join(',')};`;
+        if (this.transactionOn) {
+            this.querySentence.push(sqlStr);
+        }
+        else {
+            await this.onSubmit(sqlStr);
+        }
+        return entities;
     }
-    Update(entity, excludeFields) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let sqlStr = this.interpreter.TransToUpdateSql(entity, excludeFields);
-            if (this.transactionOn) {
-                this.querySentence.push(sqlStr);
-            }
-            else {
-                yield this.onSubmit(sqlStr);
-            }
-            return entity.ConverToEntity(entity);
-        });
+    async Update(entity, excludeFields) {
+        let sqlStr = this.interpreter.TransToUpdateSql(entity, excludeFields);
+        if (this.transactionOn) {
+            this.querySentence.push(sqlStr);
+        }
+        else {
+            await this.onSubmit(sqlStr);
+        }
+        return entity.ConverToEntity(entity);
     }
     Delete(func, entity, params) {
         if (arguments.length > 1) {
@@ -107,7 +92,7 @@ class MysqlDataContext {
             return false;
         }
         return new Promise((resolve, reject) => {
-            this.mysqlPool.getConnection((err, conn) => __awaiter(this, void 0, void 0, function* () {
+            this.mysqlPool.getConnection(async (err, conn) => {
                 if (err) {
                     conn.destroy();
                     reject(err);
@@ -121,7 +106,7 @@ class MysqlDataContext {
                 try {
                     for (let sql of this.querySentence) {
                         logger(sql);
-                        yield this.TrasnQuery(conn, sql);
+                        await this.TrasnQuery(conn, sql);
                     }
                     conn.commit(err => {
                         if (err)
@@ -140,26 +125,24 @@ class MysqlDataContext {
                     conn.destroy();
                     reject(error);
                 }
-            }));
+            });
         });
     }
-    Query(...args) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (args.length == 1) {
+    async Query(...args) {
+        if (args.length == 1) {
+            return this.onSubmit(args[0]);
+        }
+        else if (args.length == 2) {
+            let sqls = args[0];
+            if (this.transactionOn == 'on') {
+                for (let sql of sqls) {
+                    this.querySentence.push(sql);
+                }
+            }
+            else {
                 return this.onSubmit(args[0]);
             }
-            else if (args.length == 2) {
-                let sqls = args[0];
-                if (this.transactionOn == 'on') {
-                    for (let sql of sqls) {
-                        this.querySentence.push(sql);
-                    }
-                }
-                else {
-                    return this.onSubmit(args[0]);
-                }
-            }
-        });
+        }
     }
     RollBack() {
         this.CleanTransactionStatus();
@@ -194,15 +177,13 @@ class MysqlDataContext {
             });
         });
     }
-    CreateTable(entity) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
-            sqls.push(this.CreateTableSql(entity));
-            for (let sql of sqls) {
-                yield this.onSubmit(sql);
-            }
-            return true;
-        });
+    async CreateTable(entity) {
+        let sqls = ["DROP TABLE IF EXISTS `" + entity.TableName() + "`;"];
+        sqls.push(this.CreateTableSql(entity));
+        for (let sql of sqls) {
+            await this.onSubmit(sql);
+        }
+        return true;
     }
     CreateTableSql(entity) {
         let tableDefine = dataDefine_1.Define.DataDefine.Current.GetMetedata(entity);
@@ -272,18 +253,16 @@ class MysqlDataContext {
         delete r.joinEntities;
         return r;
     }
-    TrasnQuery(conn, sql) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
-                conn.query(sql, (err, result) => {
-                    if (err) {
-                        logger("TrasnQuery", err, sql);
-                        conn.rollback(() => { reject(err); });
-                    }
-                    else {
-                        resolve(result);
-                    }
-                });
+    async TrasnQuery(conn, sql) {
+        return new Promise((resolve, reject) => {
+            conn.query(sql, (err, result) => {
+                if (err) {
+                    logger("TrasnQuery", err, sql);
+                    conn.rollback(() => { reject(err); });
+                }
+                else {
+                    resolve(result);
+                }
             });
         });
     }

@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const gulp = require('gulp');
 const path = require("path");
@@ -27,9 +18,9 @@ let apiGenerator = new _1.CodeGenerator({
     databaseType: 'mysql',
     packageName: '../mysql/dataContextMysql'
 });
-gulp.task('gctx', () => __awaiter(void 0, void 0, void 0, function* () {
+gulp.task('gctx', async () => {
     apiGenerator.generateCtxFile();
-}));
+});
 gulp.task('gdb', () => {
     let index = process.argv.findIndex(x => x == 'gdb');
     let p = process.argv[index + 1];
@@ -40,7 +31,7 @@ gulp.task('gdb', () => {
         apiGenerator.entityToDatabase();
     }
 });
-gulp.task('gop', () => __awaiter(void 0, void 0, void 0, function* () {
+gulp.task('gop', async () => {
     let index = process.argv.findIndex(x => x == 'gop');
     console.log(process.argv);
     let p = process.argv[index + 1];
@@ -48,10 +39,10 @@ gulp.task('gop', () => __awaiter(void 0, void 0, void 0, function* () {
         p = '-api';
     }
     if (p == '-api') {
-        yield apiGenerator.generateOpLogFile();
-        yield apiGenerator.sqlLogToDatabase();
+        await apiGenerator.generateOpLogFile();
+        await apiGenerator.sqlLogToDatabase();
     }
     console.log('gop successful!');
     process.exit(0);
-}));
+});
 //# sourceMappingURL=gulpfile.js.map
