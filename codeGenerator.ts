@@ -477,6 +477,7 @@ export class CodeGenerator {
 
                             if (columnDefineList.length > 0 || diffItem.oldItem.ColumnName != diffItem.newItem.ColumnName) {
                                 sqls.push(`ALTER TABLE \`${logItem.diffContent.tableName}\` CHANGE \`${diffItem.oldItem.ColumnName}\` \`${diffItem.newItem.ColumnName}\` ${columnDefineList.join(' ')};`);
+
                             }
 
 
@@ -532,8 +533,8 @@ export class CodeGenerator {
             }
         }
 
-        if (dataBaseType == 'mysql') {
-            columnDefineList.push(c.NotAllowNULL ? 'NOT NULL' : 'NULL');
+        if (dataBaseType == 'mysql' && c.NotAllowNULL) {
+            columnDefineList.push('NOT NULL');
         }
 
         let valueStr = '';
@@ -575,8 +576,7 @@ export class CodeGenerator {
                     }
                 }
                 if (dataBaseType == 'mysql') {
-                    indexSql += ', ADD INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE';
-                    columnDefineList.push(indexSql);
+                    indexSqlList.push(`ALTER TABLE \`${tableName}\` ADD INDEX \`idx_${c.ColumnName}\` (\`${c.ColumnName}\`);`);
                 }
                 else if (dataBaseType == 'sqlite') {
                     indexSqlList.push(`CREATE INDEX idx_${c.ColumnName}_${tableName} ON ${tableName} (${c.ColumnName});`);

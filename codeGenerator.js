@@ -409,8 +409,8 @@ class CodeGenerator {
                 columnDefineList.push(dataDefine_1.Define.DataType[c.DataType] + lengthStr);
             }
         }
-        if (dataBaseType == 'mysql') {
-            columnDefineList.push(c.NotAllowNULL ? 'NOT NULL' : 'NULL');
+        if (dataBaseType == 'mysql' && c.NotAllowNULL) {
+            columnDefineList.push('NOT NULL');
         }
         let valueStr = '';
         if (c.DefaultValue != undefined) {
@@ -446,8 +446,7 @@ class CodeGenerator {
                     }
                 }
                 if (dataBaseType == 'mysql') {
-                    indexSql += ', ADD INDEX `idx_' + c.ColumnName + '` (`' + c.ColumnName + '`) USING BTREE';
-                    columnDefineList.push(indexSql);
+                    indexSqlList.push(`ALTER TABLE \`${tableName}\` ADD INDEX \`idx_${c.ColumnName}\` (\`${c.ColumnName}\`);`);
                 }
                 else if (dataBaseType == 'sqlite') {
                     indexSqlList.push(`CREATE INDEX idx_${c.ColumnName}_${tableName} ON ${tableName} (${c.ColumnName});`);
