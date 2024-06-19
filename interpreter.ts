@@ -282,8 +282,8 @@ export class Interpreter {
                 funcCharList[index] = funcCharList[index].replace(/\"\)/g, '%"');
                 funcCharList[index] = funcCharList[index].replace(/\(\'/g, '"%');
                 funcCharList[index] = funcCharList[index].replace(/\'\)/g, '%"');
-                funcCharList[index] = funcCharList[index].replace(/\(/g, '"%');
-                funcCharList[index] = funcCharList[index].replace(/\)/g, '%"');
+                // funcCharList[index] = funcCharList[index].replace(/\(/g, '"%');
+                // funcCharList[index] = funcCharList[index].replace(/\)/g, '%"');
             }
         }
 
