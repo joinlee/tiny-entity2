@@ -225,6 +225,7 @@ class Interpreter {
                     let tKey = key.replace(new RegExp('[$]', 'gm'), '');
                     funcCharList[index] = funcCharList[index].replace(new RegExp('[$]', "gm"), '');
                     funcCharList[index] = funcCharList[index].replace(new RegExp(tKey, "gm"), this.escape(param[key]));
+                    funcCharList[index] = funcCharList[index].replace(new RegExp("\"", "gm"), "\\\"");
                 }
             }
         }
@@ -256,11 +257,8 @@ class Interpreter {
                 funcCharList[index] = "NULL";
             }
             if (item.indexOf(".indexOf") > -1) {
-                funcCharList[index] = funcCharList[index].replace(new RegExp("\\.indexOf", "gm"), " LIKE ");
-                funcCharList[index] = funcCharList[index].replace(/\(\"/g, '"%');
-                funcCharList[index] = funcCharList[index].replace(/\"\)/g, '%"');
-                funcCharList[index] = funcCharList[index].replace(/\(\'/g, '"%');
-                funcCharList[index] = funcCharList[index].replace(/\'\)/g, '%"');
+                funcCharList[index] = funcCharList[index].replace(new RegExp("\\.indexOf\\(\'", "gm"), " LIKE \"%");
+                funcCharList[index] = funcCharList[index].substring(0, funcCharList[index].length - 2) + "%\"";
             }
         }
         funcCharList.splice(0, 1);

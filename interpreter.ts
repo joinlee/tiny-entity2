@@ -1,5 +1,6 @@
 import { Define } from './define/dataDefine';
 import { IQueryParameter } from './queryObject';
+import * as querys from 'querystring'
 export class Interpreter {
     private escape: any;
     private partOfWhere: string[] = [];
@@ -248,6 +249,7 @@ export class Interpreter {
                     let tKey = key.replace(new RegExp('[$]', 'gm'), '');
                     funcCharList[index] = funcCharList[index].replace(new RegExp('[$]', "gm"), '');
                     funcCharList[index] = funcCharList[index].replace(new RegExp(tKey, "gm"), this.escape(param[key]));
+                    funcCharList[index] = funcCharList[index].replace(new RegExp("\"", "gm"), "\\\"");
                 }
             }
         }
@@ -277,11 +279,11 @@ export class Interpreter {
                 funcCharList[index] = "NULL";
             }
             if (item.indexOf(".indexOf") > -1) {
-                funcCharList[index] = funcCharList[index].replace(new RegExp("\\.indexOf", "gm"), " LIKE ");
-                funcCharList[index] = funcCharList[index].replace(/\(\"/g, '"%');
-                funcCharList[index] = funcCharList[index].replace(/\"\)/g, '%"');
-                funcCharList[index] = funcCharList[index].replace(/\(\'/g, '"%');
-                funcCharList[index] = funcCharList[index].replace(/\'\)/g, '%"');
+                funcCharList[index] = funcCharList[index].replace(new RegExp("\\.indexOf\\(\'", "gm"), " LIKE \"%");
+                // funcCharList[index] = funcCharList[index].replace(/\(\"/g, '"%');
+                // funcCharList[index] = funcCharList[index].replace(/\"\)/g, '%"');
+                // funcCharList[index] = funcCharList[index].replace(/\(\'/g, '"%');
+                funcCharList[index] = funcCharList[index].substring(0, funcCharList[index].length - 2) + "%\"";
                 // funcCharList[index] = funcCharList[index].replace(/\(/g, '"%');
                 // funcCharList[index] = funcCharList[index].replace(/\)/g, '%"');
             }
@@ -342,5 +344,5 @@ export class Interpreter {
 }
 
 function escape(str: string) {
-    
+
 }
