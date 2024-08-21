@@ -274,7 +274,7 @@ export class Interpreter {
             if (item === "&&") funcCharList[index] = "AND";
             if (item === "||") funcCharList[index] = "OR";
             if (item.toLocaleLowerCase() == "null") {
-                if (funcCharList[index - 1] === "==") funcCharList[index - 1] = "IS";
+                if (funcCharList[index - 1] === "==" || funcCharList[index - 1] === "===") funcCharList[index - 1] = "IS";
                 else if (funcCharList[index - 1] === "!=") funcCharList[index - 1] = "IS NOT";
                 funcCharList[index] = "NULL";
             }

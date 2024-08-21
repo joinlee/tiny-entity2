@@ -250,7 +250,7 @@ class Interpreter {
             if (item === "||")
                 funcCharList[index] = "OR";
             if (item.toLocaleLowerCase() == "null") {
-                if (funcCharList[index - 1] === "==")
+                if (funcCharList[index - 1] === "==" || funcCharList[index - 1] === "===")
                     funcCharList[index - 1] = "IS";
                 else if (funcCharList[index - 1] === "!=")
                     funcCharList[index - 1] = "IS NOT";
