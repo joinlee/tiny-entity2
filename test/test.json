@@ -1,0 +1,574 @@
+[
+    {
+        "version": 1725968343408,
+        "logs": [
+            {
+                "action": "init",
+                "content": {
+                    "tableName": "account",
+                    "column": [
+                        {
+                            "ColumnName": "id",
+                            "IsPrimaryKey": true,
+                            "NotAllowNULL": true,
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 0,
+                            "IsIndex": true,
+                            "ColumnName": "personId",
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 3,
+                            "DataLength": 11,
+                            "DecimalPoint": 3,
+                            "ColumnName": "amount"
+                        },
+                        {
+                            "DataType": 0,
+                            "IsIndex": true,
+                            "ColumnName": "storeId",
+                            "DataLength": 255
+                        }
+                    ],
+                    "version": 1725968343407
+                }
+            },
+            {
+                "action": "init",
+                "content": {
+                    "tableName": "orders",
+                    "column": [
+                        {
+                            "ColumnName": "id",
+                            "IsPrimaryKey": true,
+                            "NotAllowNULL": true,
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 3,
+                            "DataLength": 11,
+                            "DecimalPoint": 3,
+                            "ColumnName": "amountDue"
+                        },
+                        {
+                            "ColumnName": "cart",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "cashier",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "checkout",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "checkoutMode",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 5,
+                            "ColumnName": "closeTime"
+                        },
+                        {
+                            "ColumnName": "createTime",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "creator",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 0,
+                            "IsIndex": true,
+                            "ColumnName": "storeId",
+                            "DataLength": 255
+                        }
+                    ],
+                    "version": 1725968343408
+                }
+            },
+            {
+                "action": "init",
+                "content": {
+                    "tableName": "person",
+                    "column": [
+                        {
+                            "ColumnName": "id",
+                            "IsPrimaryKey": true,
+                            "NotAllowNULL": true,
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 3,
+                            "DataLength": 11,
+                            "DecimalPoint": 3,
+                            "ColumnName": "weight"
+                        },
+                        {
+                            "ColumnName": "name",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 4,
+                            "DataLength": 11,
+                            "ColumnName": "age"
+                        },
+                        {
+                            "DataType": 5,
+                            "ColumnName": "birth"
+                        },
+                        {
+                            "DataType": 0,
+                            "DefaultValue": "15928934970",
+                            "ColumnName": "phone",
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 6,
+                            "ColumnName": "gender"
+                        },
+                        {
+                            "DataType": 0,
+                            "ColumnName": "email",
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 6,
+                            "ColumnName": "status"
+                        },
+                        {
+                            "DataType": 8,
+                            "ColumnName": "extends"
+                        },
+                        {
+                            "Mapping": "Account",
+                            "MappingKey": "personId",
+                            "ColumnName": "accounts",
+                            "MappingType": 0
+                        }
+                    ],
+                    "version": 1725968343408
+                }
+            },
+            {
+                "action": "init",
+                "content": {
+                    "tableName": "desktable",
+                    "column": [
+                        {
+                            "ColumnName": "id",
+                            "IsPrimaryKey": true,
+                            "NotAllowNULL": true,
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "name",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DefaultValue": "opening",
+                            "DataType": 0,
+                            "ColumnName": "status",
+                            "DataLength": 255
+                        }
+                    ],
+                    "version": 1725968343408
+                }
+            },
+            {
+                "action": "init",
+                "content": {
+                    "tableName": "tableparty",
+                    "column": [
+                        {
+                            "ColumnName": "id",
+                            "IsPrimaryKey": true,
+                            "NotAllowNULL": true,
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "IsIndex": true,
+                            "ColumnName": "tableId",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "IsIndex": true,
+                            "ColumnName": "orderId",
+                            "DataType": 0,
+                            "DataLength": 255
+                        }
+                    ],
+                    "version": 1725968343408
+                }
+            },
+            {
+                "action": "init",
+                "content": {
+                    "tableName": "users",
+                    "column": [
+                        {
+                            "ColumnName": "id",
+                            "IsPrimaryKey": true,
+                            "NotAllowNULL": true,
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 3,
+                            "DataLength": 11,
+                            "DecimalPoint": 3,
+                            "ColumnName": "amountDue"
+                        },
+                        {
+                            "ColumnName": "cart",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "cashier",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "checkout",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "checkoutMode",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 5,
+                            "ColumnName": "closeTime"
+                        },
+                        {
+                            "ColumnName": "createTime",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "creator",
+                            "DataType": 0,
+                            "DataLength": 255
+                        }
+                    ],
+                    "version": 1725968343408
+                }
+            }
+        ]
+    },
+    {
+        "version": 1725968497635,
+        "logs": [
+            {
+                "action": "noChange",
+                "content": {
+                    "tableName": "account",
+                    "column": [
+                        {
+                            "ColumnName": "id",
+                            "IsPrimaryKey": true,
+                            "NotAllowNULL": true,
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 0,
+                            "IsIndex": true,
+                            "ColumnName": "personId",
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 3,
+                            "DataLength": 11,
+                            "DecimalPoint": 3,
+                            "ColumnName": "amount"
+                        },
+                        {
+                            "DataType": 0,
+                            "IsIndex": true,
+                            "ColumnName": "storeId",
+                            "DataLength": 255
+                        }
+                    ],
+                    "version": 1725968343407
+                }
+            },
+            {
+                "action": "noChange",
+                "content": {
+                    "tableName": "orders",
+                    "column": [
+                        {
+                            "ColumnName": "id",
+                            "IsPrimaryKey": true,
+                            "NotAllowNULL": true,
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 3,
+                            "DataLength": 11,
+                            "DecimalPoint": 3,
+                            "ColumnName": "amountDue"
+                        },
+                        {
+                            "ColumnName": "cart",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "cashier",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "checkout",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "checkoutMode",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 5,
+                            "ColumnName": "closeTime"
+                        },
+                        {
+                            "ColumnName": "createTime",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "creator",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 0,
+                            "IsIndex": true,
+                            "ColumnName": "storeId",
+                            "DataLength": 255
+                        }
+                    ],
+                    "version": 1725968343408
+                }
+            },
+            {
+                "action": "alter",
+                "content": {
+                    "tableName": "person",
+                    "column": [
+                        {
+                            "ColumnName": "id",
+                            "IsPrimaryKey": true,
+                            "NotAllowNULL": true,
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 4,
+                            "DataLength": 11,
+                            "DecimalPoint": 3,
+                            "ColumnName": "weight"
+                        },
+                        {
+                            "ColumnName": "name",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "address",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 3,
+                            "DataLength": 11,
+                            "ColumnName": "age"
+                        },
+                        {
+                            "DataType": 5,
+                            "ColumnName": "birth"
+                        },
+                        {
+                            "DataType": 0,
+                            "DefaultValue": "15928934970",
+                            "ColumnName": "phone",
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 6,
+                            "ColumnName": "gender"
+                        },
+                        {
+                            "DataType": 0,
+                            "ColumnName": "email",
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 6,
+                            "ColumnName": "status"
+                        },
+                        {
+                            "DataType": 8,
+                            "ColumnName": "extends"
+                        },
+                        {
+                            "Mapping": "Account",
+                            "MappingKey": "personId",
+                            "ColumnName": "accounts",
+                            "MappingType": 0
+                        }
+                    ],
+                    "version": 1725968497635
+                },
+                "diffContent": {
+                    "tableName": "person",
+                    "column": [
+                        {
+                            "newItem": {
+                                "ColumnName": "address",
+                                "DataType": 0,
+                                "DataLength": 255
+                            },
+                            "oldItem": null
+                        }
+                    ]
+                }
+            },
+            {
+                "action": "noChange",
+                "content": {
+                    "tableName": "desktable",
+                    "column": [
+                        {
+                            "ColumnName": "id",
+                            "IsPrimaryKey": true,
+                            "NotAllowNULL": true,
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "name",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DefaultValue": "opening",
+                            "DataType": 0,
+                            "ColumnName": "status",
+                            "DataLength": 255
+                        }
+                    ],
+                    "version": 1725968343408
+                }
+            },
+            {
+                "action": "noChange",
+                "content": {
+                    "tableName": "tableparty",
+                    "column": [
+                        {
+                            "ColumnName": "id",
+                            "IsPrimaryKey": true,
+                            "NotAllowNULL": true,
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "IsIndex": true,
+                            "ColumnName": "tableId",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "IsIndex": true,
+                            "ColumnName": "orderId",
+                            "DataType": 0,
+                            "DataLength": 255
+                        }
+                    ],
+                    "version": 1725968343408
+                }
+            },
+            {
+                "action": "noChange",
+                "content": {
+                    "tableName": "users",
+                    "column": [
+                        {
+                            "ColumnName": "id",
+                            "IsPrimaryKey": true,
+                            "NotAllowNULL": true,
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 3,
+                            "DataLength": 11,
+                            "DecimalPoint": 3,
+                            "ColumnName": "amountDue"
+                        },
+                        {
+                            "ColumnName": "cart",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "cashier",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "checkout",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "checkoutMode",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "DataType": 5,
+                            "ColumnName": "closeTime"
+                        },
+                        {
+                            "ColumnName": "createTime",
+                            "DataType": 0,
+                            "DataLength": 255
+                        },
+                        {
+                            "ColumnName": "creator",
+                            "DataType": 0,
+                            "DataLength": 255
+                        }
+                    ],
+                    "version": 1725968343408
+                }
+            }
+        ]
+    }
+]

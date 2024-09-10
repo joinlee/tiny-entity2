@@ -37,8 +37,9 @@
         {
             "type": "node",
             "request": "launch",
+            "runtimeVersion": "10.24.1",
             "name": "启动程序",
-            "program": "${workspaceRoot}\\test/test.ts",
+            "program": "${workspaceRoot}/debug.js",
             "cwd": "${workspaceRoot}",
             "outFiles": [],
             "sourceMaps": true

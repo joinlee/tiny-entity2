@@ -8,13 +8,16 @@ export class Person extends EntityObjectType<Person> {
     @Define.PrimaryKey()
     id: string;
 
-    @Define.Column({ DataType: Define.DataType.Decimal, DataLength: 11, DecimalPoint: 3 })
+    @Define.Column({ DataType: Define.DataType.INT, DataLength: 11, DecimalPoint: 3 })
     weight: number;
 
     @Define.Column()
     name: string;
 
-    @Define.Column({ DataType: Define.DataType.INT, DataLength: 11 })
+    @Define.Column()
+    address: string;
+
+    @Define.Column({ DataType: Define.DataType.Decimal, DataLength: 11 })
     age: number;
 
     @Define.Column({ DataType: Define.DataType.BIGINT })

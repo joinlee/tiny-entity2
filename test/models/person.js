@@ -20,7 +20,7 @@ __decorate([
     __metadata("design:type", String)
 ], Person.prototype, "id", void 0);
 __decorate([
-    dataDefine_1.Define.Column({ DataType: dataDefine_1.Define.DataType.Decimal, DataLength: 11, DecimalPoint: 3 }),
+    dataDefine_1.Define.Column({ DataType: dataDefine_1.Define.DataType.INT, DataLength: 11, DecimalPoint: 3 }),
     __metadata("design:type", Number)
 ], Person.prototype, "weight", void 0);
 __decorate([
@@ -28,7 +28,11 @@ __decorate([
     __metadata("design:type", String)
 ], Person.prototype, "name", void 0);
 __decorate([
-    dataDefine_1.Define.Column({ DataType: dataDefine_1.Define.DataType.INT, DataLength: 11 }),
+    dataDefine_1.Define.Column(),
+    __metadata("design:type", String)
+], Person.prototype, "address", void 0);
+__decorate([
+    dataDefine_1.Define.Column({ DataType: dataDefine_1.Define.DataType.Decimal, DataLength: 11 }),
     __metadata("design:type", Number)
 ], Person.prototype, "age", void 0);
 __decorate([

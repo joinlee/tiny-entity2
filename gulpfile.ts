@@ -48,8 +48,8 @@ let apiGenerator = new CodeGenerator({
     ctxExportPath: '',
     configFilePath: './config',
     outFileName: 'testDataContext.ts',
-    databaseType: 'mysql',
-    packageName: '../mysql/dataContextMysql'
+    databaseType: 'sqlite',
+    packageName: '../sqlite/dataContextSqlite'
 });
 
 gulp.task('gctx', async () => {

@@ -2,14 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TestDataContext = void 0;
 const config = require("./config");
-const dataContextMysql_1 = require("../mysql/dataContextMysql");
+const dataContextSqlite_1 = require("../sqlite/dataContextSqlite");
 const account_1 = require("./models/account");
 const order_1 = require("./models/order");
 const person_1 = require("./models/person");
 const table_1 = require("./models/table");
 const tableParty_1 = require("./models/tableParty");
 const user_1 = require("./models/user");
-class TestDataContext extends dataContextMysql_1.MysqlDataContext {
+class TestDataContext extends dataContextSqlite_1.SqliteDataContext {
     constructor() {
         super(config);
         this.account = new account_1.Account(this);
